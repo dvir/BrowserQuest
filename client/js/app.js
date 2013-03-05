@@ -113,6 +113,10 @@ define(['jquery', 'storage'], function($, Storage) {
                 	if(firstTimePlaying) {
                 	    self.toggleInstructions();
                 	}
+
+                    log.debug("Initiating bars");
+                    self.initHealthBar();
+                    self.initXPBar();
             	});
             }
         },
@@ -159,6 +163,22 @@ define(['jquery', 'storage'], function($, Storage) {
             setTimeout(function() {
                 $hitpoints.removeClass('white');
             }, 500)
+        },
+
+        initXPBar: function() {
+            var scale = this.game.renderer.getScaleFactor(),
+                XPMaxWidth = $("#xpbar").width() - (12 * scale);
+           
+            var playerxp_callback = function(player) {
+        	    var barWidth = Math.round((XPMaxWidth / player.getMaxXP()) * (player.xp > 0 ? player.xp : 0));
+                $("#xpbar").html(player.xp + "/" + player.getMaxXP());
+        	    $("#xp").css('width', barWidth + "px");
+                $("#level").html(player.level);
+        	};
+
+            this.game.onPlayerXPChange(playerxp_callback);
+
+            playerxp_callback(this.game.player);
         },
 
         toggleButton: function() {
@@ -521,6 +541,7 @@ define(['jquery', 'storage'], function($, Storage) {
                 if(this.game.started) {
                     this.game.resize();
                     this.initHealthBar();
+                    this.initXPBar();
                     this.game.updateBars();
                 } else {
                     var newScale = this.game.renderer.getScaleFactor();

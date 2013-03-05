@@ -78,10 +78,22 @@ define(function() {
             this.save();
         },
 
-        savePlayer: function(img, armor, weapon) {
+        setPlayerLevel: function(level) {
+            this.data.player.level = level;
+            this.save();
+        },
+
+        setPlayerXP: function(xp) {
+            this.data.player.xp = xp;
+            this.save();
+        },
+
+        savePlayer: function(img, armor, weapon, player) {
             this.setPlayerImage(img);
             this.setPlayerArmor(armor);
             this.setPlayerWeapon(weapon);
+            this.setPlayerLevel(player.level);
+            this.setPlayerXP(player.xp);
         },
     
         // Achievements

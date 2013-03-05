@@ -19,8 +19,26 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // modes
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;
+
+            // xp
+            this.level = 1;
+            this.xp = 0;
         },
     
+        increaseXP: function(amount) {
+            amount = 80;
+            this.xp += amount;
+            if (this.xp >= this.getMaxXP()) {
+                // leveled up!
+                this.xp = this.getMaxXP() - this.xp;
+                this.levelUp();
+            }
+        },
+
+        levelUp: function() {
+            this.level++;
+        },
+
         loot: function(item) {
             if(item) {
                 var rank, currentRank, msg, currentArmorName;
@@ -84,7 +102,27 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 return this.sprite;
             }
         },
-    
+   
+        getLevel: function() {
+            return this.level;
+        },
+
+        setLevel: function(level) {
+            this.level = level;
+        },
+
+        getXP: function() {
+            return this.xp;
+        },
+
+        setXP: function(xp) {
+            this.xp = xp;
+        },
+
+        getMaxXP: function() {
+            return this.level*100;
+        },
+
         getWeaponName: function() {
             return this.weaponName;
         },

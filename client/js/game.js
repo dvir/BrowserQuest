@@ -117,6 +117,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             if(this.storage.hasAlreadyPlayed()) {
                 this.player.setSpriteName(this.storage.data.player.armor);
                 this.player.setWeaponName(this.storage.data.player.weapon);
+                this.player.xp = this.storage.data.player.xp;
+                this.player.level = this.storage.data.player.level;
             }
         
         	this.player.setSprite(this.sprites[this.player.getSpriteName()]);
@@ -774,7 +776,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.player.name = name;
                 self.player.setGridPosition(x, y);
                 self.player.setMaxHitPoints(hp);
-            
+
                 self.updateBars();
                 self.resetCamera();
                 self.updatePlateauMode();
@@ -791,7 +793,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     self.storage.initPlayer(self.player.name);
                     self.storage.savePlayer(self.renderer.getPlayerImage(),
                                             self.player.getSpriteName(),
-                                            self.player.getWeaponName());
+                                            self.player.getWeaponName(),
+                                            self.player);
                     self.showNotification("Welcome to BrowserQuest!");
                 } else {
                     self.showNotification("Welcome back to BrowserQuest!");
@@ -1055,7 +1058,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.player.onSwitchItem(function() {
                     self.storage.savePlayer(self.renderer.getPlayerImage(),
                                             self.player.getArmorName(),
-                                            self.player.getWeaponName());
+                                            self.player.getWeaponName(),
+                                            self.player);
                     if(self.equipment_callback) {
                         self.equipment_callback();
                     }
@@ -1360,6 +1364,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         }
                     }
                     
+                    // grant XP for killing a mob
+                    self.increasePlayerXP(10);
+
                     self.storage.incrementTotalKills();
                     self.tryUnlockingAchievement("HUNTER");
 
@@ -1558,6 +1565,15 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             } else {
                 log.debug("Teleport out of bounds: "+x+", "+y);
             }
+        },
+
+        /**
+         * Grant player an amount of XP and update bars.
+         */
+        increasePlayerXP: function(amount) {
+            this.player.increaseXP(amount);
+            this.showNotification("You gained "+amount+" XP");
+            this.updateBars();
         },
 
         /**
@@ -2333,6 +2349,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             this.playerhp_callback = callback;
         },
     
+        onPlayerXPChange: function(callback) {
+            this.playerxp_callback = callback;
+        },
+    
         onPlayerHurt: function(callback) {
             this.playerhurt_callback = callback;
         },
@@ -2367,8 +2387,14 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         updateBars: function() {
-            if(this.player && this.playerhp_callback) {
-                this.playerhp_callback(this.player.hitPoints, this.player.maxHitPoints);
+            if(this.player) {
+                if (this.playerhp_callback) {
+                    this.playerhp_callback(this.player.hitPoints, this.player.maxHitPoints);
+                }
+
+                if (this.playerxp_callback) {
+                    this.playerxp_callback(this.player);
+                }
             }
         },
     
