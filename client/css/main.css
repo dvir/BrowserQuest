@@ -153,10 +153,20 @@ footer, header, hgroup, menu, nav, section {
     #hitpoints.white {-moz-animation:flash 0.5s linear 1;-webkit-animation:flash 0.5s linear 1;-o-animation:flash 0.5s linear 1;-ms-animation:flash 0.5s linear 1;animation:flash 0.5s linear 1;}
     #hitpoints.invincible {-moz-animation:invincible 0.3s steps(3, end) alternate infinite;-webkit-animation:invincible 0.3s steps(3, end) alternate infinite;-o-animation:invincible 0.3s steps(3, end) alternate infinite;-ms-animation:invincible 0.3s steps(3, end) alternate infinite;}
     
-    #xpbar {background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;line-height:25px;text-align:center;vertical-align:middle;}
+    #xpbar {font-family:'GraphicPixel';background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;line-height:23px;text-align:center;vertical-align:middle;}
 	  #xp {background:rgba(210, 216, 57, 0.94);-moz-transition:.5s width ease;-webkit-transition:.5s width ease;-o-transition:.5s width ease;-ms-transition:.5s width ease;transition:.5s width ease;}
 
-    #level {position:absolute;top:34px;left:20px;width:30px;}
+    #level {
+        color: whiteSmoke;
+        text-align: center;
+        padding-left: 1px;
+        width: 18px;
+        font-family: 'GraphicPixel';
+        z-index: 21;
+        position: absolute;
+        top: 14px;
+        left: 16px;
+    }
 
     #notifications {position:absolute;left:50%;text-align:center;font-family:'GraphicPixel';overflow:hidden;}
     #notifications div {position:absolute;-moz-transition:none;-webkit-transition:none;top:0;width:100%;}
@@ -830,8 +840,8 @@ footer, header, hgroup, menu, nav, section {
 		#healthbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 		#hitpoints {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
 
-		#xpbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
-		#xp {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
+		#xpbar {height:26px;background-position:0 -132px;width:204px;top:10px;background-size:960px;z-index:20;}
+		#xp {width:0px;height:22px;top:12px;left:22px;z-index:10;position:absolute;}
 
         #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}
         #weapon {left:208px;top:2px;}
