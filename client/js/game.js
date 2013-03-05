@@ -114,13 +114,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         initPlayer: function() {
-            if(this.storage.hasAlreadyPlayed()) {
-                this.player.setSpriteName(this.storage.data.player.armor);
-                this.player.setWeaponName(this.storage.data.player.weapon);
-                this.player.xp = this.storage.data.player.xp;
-                this.player.level = this.storage.data.player.level;
-            }
-        
+            this.player.setStorage(this.storage);
+            this.player.loadFromStorage();
         	this.player.setSprite(this.sprites[this.player.getSpriteName()]);
         	this.player.idle();
         
@@ -797,8 +792,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                                             self.player);
                     self.showNotification("Welcome to BrowserQuest!");
                 } else {
+                    self.player.setStorage(self.storage);
+                    self.player.loadFromStorage();
+                    self.player.setName(name);
                     self.showNotification("Welcome back to BrowserQuest!");
-                    self.storage.setPlayerName(name);
                 }
         
                 self.player.onStartPathing(function(path) {

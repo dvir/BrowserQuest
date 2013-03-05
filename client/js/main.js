@@ -238,8 +238,10 @@ define(['jquery', 'app'], function($, App) {
     		game.onNotification(function(message) {
     		    app.showMessage(message);
     		});
-	
+
+            app.loadFromStorage();
             app.initHealthBar();
+            app.initXPBar();
 	
             $('#nameinput').attr('value', '');
     		$('#chatbox').attr('value', '');

@@ -23,20 +23,24 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // xp
             this.level = 1;
             this.xp = 0;
+
+            // storage
+            this.storage = null;
         },
     
         increaseXP: function(amount) {
             amount = 80;
-            this.xp += amount;
-            if (this.xp >= this.getMaxXP()) {
+            if (this.getXP() + amount >= this.getMaxXP()) {
                 // leveled up!
-                this.xp = this.getMaxXP() - this.xp;
+                this.setXP(this.getXP() + amount - this.getMaxXP());
                 this.levelUp();
+            } else {
+                this.setXP(this.getXP() + amount);
             }
         },
 
         levelUp: function() {
-            this.level++;
+            this.setLevel(this.getLevel() + 1);
         },
 
         loot: function(item) {
@@ -88,6 +92,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
     
         setSpriteName: function(name) {
             this.spriteName = name;
+            this.updateStorage();
         },
         
         getArmorName: function() {
@@ -109,6 +114,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
         setLevel: function(level) {
             this.level = level;
+            this.updateStorage();
         },
 
         getXP: function() {
@@ -117,10 +123,20 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
         setXP: function(xp) {
             this.xp = xp;
+            this.updateStorage();
         },
 
         getMaxXP: function() {
             return this.level*100;
+        },
+
+        getName: function() {
+            return this.name;
+        },
+
+        setName: function(name) {
+            this.name = name;
+            this.updateStorage();
         },
 
         getWeaponName: function() {
@@ -129,6 +145,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
     
         setWeaponName: function(name) {
             this.weaponName = name;
+            this.updateStorage();
         },
     
         hasWeapon: function() {
@@ -249,6 +266,38 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             if(this.invincibleTimeout) {
                 clearTimeout(this.invincibleTimeout);
             }
+        },
+
+        setStorage: function(storage) {
+            this.storage = storage;
+        },
+
+        loadFromStorage: function() {
+            log.debug("Trying to load from storage");
+            if (!this.storage) return;
+
+            if (this.storage.hasAlreadyPlayed()) {
+                this.spriteName = this.storage.data.player.armor;
+                this.weaponName = this.storage.data.player.weapon;
+                this.xp = this.storage.data.player.xp;
+                this.level = this.storage.data.player.level;
+            }
+
+            log.debug("Loaded from storage");
+        },
+
+        updateStorage: function() {
+            log.debug("Trying to update storage");
+
+            if (!this.storage) return;
+
+            this.storage.data.player.name = this.getName();
+            this.storage.data.player.armor = this.getSpriteName();
+            this.storage.data.player.weapon = this.getWeaponName();
+            this.storage.data.player.xp = this.getXP();
+            this.storage.data.player.level = this.getLevel();
+
+            log.debug("Updated storage");
         }
     });
 

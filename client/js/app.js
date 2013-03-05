@@ -113,10 +113,6 @@ define(['jquery', 'storage'], function($, Storage) {
                 	if(firstTimePlaying) {
                 	    self.toggleInstructions();
                 	}
-
-                    log.debug("Initiating bars");
-                    self.initHealthBar();
-                    self.initXPBar();
             	});
             }
         },
@@ -548,6 +544,10 @@ define(['jquery', 'storage'], function($, Storage) {
                     this.game.renderer.rescale(newScale);
                 }
             } 
+        },
+
+        loadFromStorage: function() {
+            this.game.player.loadFromStorage();
         }
     });
 

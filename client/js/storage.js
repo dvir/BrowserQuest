@@ -15,6 +15,8 @@ define(function() {
                 hasAlreadyPlayed: false,
                 player: {
                     name: "",
+                    xp: 0,
+                    level: 1,
                     weapon: "",
                     armor: "",
                     image: ""
