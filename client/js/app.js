@@ -549,8 +549,8 @@ define(['jquery', 'storage'], function($, Storage) {
             } 
         },
 
-        loadFromStorage: function() {
-            this.game.player.loadFromStorage();
+        loadFromStorage: function(callback) {
+            this.game.player.loadFromStorage(callback);
         }
     });
 

@@ -23,7 +23,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // xp
             this.level = 1;
             this.xp = 0;
-            this.maxXp = 0;
+            this.maxXP = 0;
 
             // storage
             this.storage = null;
@@ -262,10 +262,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.storage = storage;
         },
 
-        loadFromStorage: function() {
-            if (!this.storage) return;
-
-            if (this.storage.hasAlreadyPlayed()) {
+        loadFromStorage: function(callback) {
+            if (this.storage && this.storage.hasAlreadyPlayed()) {
                 this.spriteName = this.storage.data.player.armor;
                 this.weaponName = this.storage.data.player.weapon;
                 this.xp = this.storage.data.player.xp;
@@ -274,19 +272,27 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             }
 
             log.debug("Loaded from storage");
+            
+            if (callback) {
+                callback();
+            }
         },
 
-        updateStorage: function() {
-            if (!this.storage) return;
-
-            this.storage.data.player.name = this.getName();
-            this.storage.data.player.armor = this.getSpriteName();
-            this.storage.data.player.weapon = this.getWeaponName();
-            this.storage.data.player.xp = this.getXP();
-            this.storage.data.player.level = this.getLevel();
-            this.storage.data.player.hp = this.getHP();
-
+        updateStorage: function(callback) {
+            if (this.storage) {
+                this.storage.data.player.name = this.getName();
+                this.storage.data.player.armor = this.getSpriteName();
+                this.storage.data.player.weapon = this.getWeaponName();
+                this.storage.data.player.xp = this.getXP();
+                this.storage.data.player.level = this.getLevel();
+                this.storage.data.player.hp = this.getHP();
+            }
+            
             log.debug("Updated storage");
+
+            if (callback) {
+                callback();
+            }
         }
     });
 

@@ -114,8 +114,11 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         initPlayer: function() {
+            var self = this;
             this.player.setStorage(this.storage);
-            this.player.loadFromStorage();
+            this.player.loadFromStorage(function(){
+                self.updateBars();               
+            });
         	this.player.setSprite(this.sprites[this.player.getSpriteName()]);
         	this.player.idle();
         
@@ -1410,19 +1413,29 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.client.onPlayerChangeMaxHitPoints(function(hp) {
                     self.player.setMaxHP(hp);
                     self.player.setHP(Math.min(self.player.getHP(), hp));
+
                     self.updateBars();
                 });
 
                 self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
                     self.player.setXP(xp);
 
+                    if (gainedXP > 0) {
+                        self.showNotification("You gained "+gainedXP+" XP"); 
+                        self.infoManager.addDamageInfo("+"+gainedXP+" XP", self.player.x + 5, self.player.y - 15, "xp");
+                    }
+
                     if (!self.player.getMaxXP() || self.player.getMaxXP() != maxXP) {
                         self.player.setMaxXP(maxXP);
                     }
+
+                    self.updateBars();
                 });
 
                 self.client.onPlayerChangeLevel(function(level) {
                     self.player.setLevel(level);
+                    
+                    self.updateBars();
                 });
             
                 self.client.onPlayerEquipItem(function(playerId, itemKind) {

@@ -239,9 +239,9 @@ define(['jquery', 'app'], function($, App) {
     		    app.showMessage(message);
     		});
 
-            app.loadFromStorage();
-            app.initHealthBar();
+            app.initHealthBar();                  
             app.initXPBar();
+            log.debug("initiated bars");
 	
             $('#nameinput').attr('value', '');
     		$('#chatbox').attr('value', '');

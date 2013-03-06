@@ -1,5 +1,5 @@
 
-define(function() {
+define(['../../shared/js/gametypes'],function() {
 
     var InfoManager = Class.extend({
         init: function(game) {
@@ -46,15 +46,23 @@ define(function() {
     var damageInfoColors = {
         "received": {
             fill: "rgb(255, 50, 50)",
-            stroke: "rgb(255, 180, 180)"
+            stroke: "rgb(255, 180, 180)",
+            direction: Types.Orientations.LEFT
         },
         "inflicted": {
             fill: "white",
-            stroke: "#373737"
+            stroke: "#373737",
+            direction: Types.Orientations.CENTER
         },
         "healed": {
             fill: "rgb(80, 255, 80)",
-            stroke: "rgb(50, 120, 50)"
+            stroke: "rgb(50, 120, 50)",
+            direction: Types.Orientations.RIGHT
+        },
+        "xp": {
+            fill: "rgba(210, 216, 57, 0.94)",
+            stroke: "rgb(50, 120, 50)",
+            direction: Types.Orientations.RIGHT
         }
     };
 
@@ -73,6 +81,7 @@ define(function() {
             this.speed = 100;
             this.fillColor = damageInfoColors[type].fill;
             this.strokeColor = damageInfoColors[type].stroke;
+            this.direction = damageInfoColors[type].direction;
         },
     
         isTimeToAnimate: function(time) {
@@ -88,6 +97,14 @@ define(function() {
     
         tick: function() {
             this.y -= 1;
+            switch(this.direction) {
+                case Types.Orientations.LEFT:
+                    this.x -= 1;
+                    break;
+                case Types.Orientations.RIGHT:
+                    this.x += 1;
+                    break;
+            }
             this.opacity -= 0.07;
             if(this.opacity < 0) {
                 this.destroy();
