@@ -31,7 +31,9 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.KILL] = this.receiveKill;
             this.handlers[Types.Messages.HP] = this.receiveHitPoints;
             this.handlers[Types.Messages.BLINK] = this.receiveBlink;
-        
+            this.handlers[Types.Messages.XP] = this.receiveXP;
+            this.handlers[Types.Messages.LEVEL] = this.receiveLevel;
+            
             this.useBison = false;
             this.enable();
         },
@@ -363,12 +365,30 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 this.hp_callback(maxHp);
             }
         },
+
+        receiveXP: function(data) {
+            var xp = data[1],
+                maxXP = data[2],
+                gainedXP = data[3];
+
+            if (this.xp_callback) {
+                this.xp_callback(xp, maxXP, gainedXP);
+            }
+        },
     
         receiveBlink: function(data) {
             var id = data[1];
         
             if(this.blink_callback) {
                 this.blink_callback(id);
+            }
+        },
+
+        receiveLevel: function(data) {
+            var level = data[1];
+
+            if (this.level_callback) {
+                this.level_callback(level);
             }
         },
         
@@ -458,6 +478,14 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
     
         onPlayerChangeMaxHitPoints: function(callback) {
             this.hp_callback = callback;
+        },
+
+        onPlayerChangeXP: function(callback) {
+            this.xp_callback = callback;
+        },
+
+        onPlayerChangeLevel: function(callback) {
+            this.level_callback = callback;
         },
     
         onItemBlink: function(callback) {

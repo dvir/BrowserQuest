@@ -21,6 +21,17 @@ Formulas.hp = function(armorLevel) {
     return hp;
 };
 
+/**
+ * Give 1% of the total xp needed, but reduce 1/8% of it for each level of diff
+ * between the attacker and the victim.
+ * Also, give 1/8% for each level of positive diff (attacker's level is lower
+ * than the victim's)
+ */
+Formulas.xp = function(attacker, victim) {
+    var xp = Math.ceil(Math.max(0, ((attacker.getMaxXP() * 0.01) - (attacker.getLevel() - victim.getLevel()) * (attacker.getMaxXP() * 0.00125)))) + 60;
+    return xp;
+};
+
 if(!(typeof exports === 'undefined')) {
     module.exports = Formulas;
 }

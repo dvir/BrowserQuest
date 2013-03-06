@@ -31,8 +31,8 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             this.attackers = {};
         
             // Health
-            this.hitPoints = 0;
-            this.maxHitPoints = 0;
+            this.hp = 0;
+            this.maxHP = 0;
         
             // Modes
             this.isDead = false;
@@ -46,11 +46,23 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
                 attacker.idle();
             });
     	},
-	
-    	setMaxHitPoints: function(hp) {
-    	    this.maxHitPoints = hp;
-    	    this.hitPoints = hp;
-    	},
+
+        getHP: function() {
+            return this.hp;
+        },
+
+        setHP: function(hp) {
+            this.hp = hp;
+            this.updateStorage();
+        },
+
+        setMaxHP: function(maxHP) {
+            this.maxHP = maxHP;
+        },
+    
+        getMaxHP: function() {
+            return this.maxHP;
+        },
     
     	setDefaultAnimation: function() {
     		this.idle();

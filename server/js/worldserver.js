@@ -351,8 +351,6 @@ module.exports = World = cls.Class.extend({
         this.addEntity(player);
         this.players[player.id] = player;
         this.outgoingQueues[player.id] = [];
-        
-        //log.info("Added player : " + player.id);
     },
     
     removePlayer: function(player) {
@@ -542,7 +540,8 @@ module.exports = World = cls.Class.extend({
                 var mob = entity,
                     item = this.getDroppedItem(mob);
 
-                this.pushToPlayer(attacker, new Messages.Kill(mob));
+                attacker.killed(mob);
+
                 this.pushToAdjacentGroups(mob.group, mob.despawn()); // Despawn must be enqueued before the item drop
                 if(item) {
                     this.pushToAdjacentGroups(mob.group, mob.drop(item));

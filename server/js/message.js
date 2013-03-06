@@ -167,6 +167,30 @@ Messages.Population = Message.extend({
     }
 });
 
+Messages.Level = Message.extend({
+    init: function(level) {
+        this.level = level;
+    },
+    serialize: function() {
+        return [Types.Messages.LEVEL,
+                this.level];
+    }
+});
+
+Messages.XP = Message.extend({
+    init: function(xp, maxXP, gainedXP) {
+        this.xp = xp;
+        this.maxXP = maxXP;
+        this.gainedXP = gainedXP | 0;
+    },
+    serialize: function() {
+        return [Types.Messages.XP,
+                this.xp,
+                this.maxXP,
+                this.gainedXP];
+    }
+});
+
 Messages.Kill = Message.extend({
     init: function(mob) {
         this.mob = mob;

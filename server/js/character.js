@@ -12,6 +12,19 @@ module.exports = Character = Entity.extend({
         this.orientation = Utils.randomOrientation();
         this.attackers = {};
         this.target = null;
+
+        this.level = 1;
+
+        this.hitPoints = 0;
+        this.maxHitPoints = 0;
+    },
+
+    setLevel: function(level) {
+        this.level = level;
+    },
+
+    getLevel: function() {
+        return this.level;
     },
     
     getState: function() {
@@ -34,15 +47,8 @@ module.exports = Character = Entity.extend({
     regenHealthBy: function(value) {
         var hp = this.hitPoints,
             max = this.maxHitPoints;
-            
-        if(hp < max) {
-            if(hp + value <= max) {
-                this.hitPoints += value;
-            }
-            else {
-                this.hitPoints = max;
-            }
-        }
+
+        this.hitPoints = Math.min(hp + value, max);
     },
     
     hasFullHealth: function() {

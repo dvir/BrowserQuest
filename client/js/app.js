@@ -144,11 +144,14 @@ define(['jquery', 'storage'], function($, Storage) {
             var scale = this.game.renderer.getScaleFactor(),
                 healthMaxWidth = $("#healthbar").width() - (12 * scale);
 
-        	this.game.onPlayerHealthChange(function(hp, maxHp) {
-        	    var barWidth = Math.round((healthMaxWidth / maxHp) * (hp > 0 ? hp : 0));
+            
+            var playerhp_callback = function(player) {
+        	    var barWidth = Math.round((healthMaxWidth / player.getMaxHP()) * (player.hp > 0 ? player.hp : 0));
         	    $("#hitpoints").css('width', barWidth + "px");
-        	});
+                $("#healthbar").html(player.hp + "/" + player.getMaxHP());
+        	};
 
+        	this.game.onPlayerHealthChange(playerhp_callback);
         	this.game.onPlayerHurt(this.blinkHealthBar.bind(this));
         },
 

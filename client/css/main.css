@@ -148,7 +148,7 @@ footer, header, hgroup, menu, nav, section {
     #mask {height:100%;width:100%;position:fixed;top:0;left:0;background:rgba(20,20,20,1);opacity:1;z-index:20;-moz-transition:0.5s opacity linear;-webkit-transition:0.5s opacity linear;-o-transition:0.5s opacity linear;-ms-transition:0.5s opacity linear;transition:0.5s opacity linear;pointer-events:none;}
 
     #bar-container {background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:relative;width:100%;z-index:10;}
-    #healthbar {background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;}
+    #healthbar {font-family:'GraphicPixel';background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;line-height:23px;text-align:center;vertical-align:middle;}
     #hitpoints {background:#d83939;-moz-transition:.5s width ease;-webkit-transition:.5s width ease;-o-transition:.5s width ease;-ms-transition:.5s width ease;transition:.5s width ease;}
     #hitpoints.white {-moz-animation:flash 0.5s linear 1;-webkit-animation:flash 0.5s linear 1;-o-animation:flash 0.5s linear 1;-ms-animation:flash 0.5s linear 1;animation:flash 0.5s linear 1;}
     #hitpoints.invincible {-moz-animation:invincible 0.3s steps(3, end) alternate infinite;-webkit-animation:invincible 0.3s steps(3, end) alternate infinite;-o-animation:invincible 0.3s steps(3, end) alternate infinite;-ms-animation:invincible 0.3s steps(3, end) alternate infinite;}

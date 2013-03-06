@@ -23,26 +23,12 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // xp
             this.level = 1;
             this.xp = 0;
+            this.maxXp = 0;
 
             // storage
             this.storage = null;
         },
     
-        increaseXP: function(amount) {
-            amount = 80;
-            if (this.getXP() + amount >= this.getMaxXP()) {
-                // leveled up!
-                this.setXP(this.getXP() + amount - this.getMaxXP());
-                this.levelUp();
-            } else {
-                this.setXP(this.getXP() + amount);
-            }
-        },
-
-        levelUp: function() {
-            this.setLevel(this.getLevel() + 1);
-        },
-
         loot: function(item) {
             if(item) {
                 var rank, currentRank, msg, currentArmorName;
@@ -126,8 +112,12 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.updateStorage();
         },
 
+        setMaxXP: function(maxXP) {
+            this.maxXP = maxXP;
+        },
+
         getMaxXP: function() {
-            return this.level*100;
+            return this.maxXP;
         },
 
         getName: function() {
@@ -273,7 +263,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         loadFromStorage: function() {
-            log.debug("Trying to load from storage");
             if (!this.storage) return;
 
             if (this.storage.hasAlreadyPlayed()) {
@@ -281,14 +270,13 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 this.weaponName = this.storage.data.player.weapon;
                 this.xp = this.storage.data.player.xp;
                 this.level = this.storage.data.player.level;
+                this.hp = this.storage.data.player.hp;
             }
 
             log.debug("Loaded from storage");
         },
 
         updateStorage: function() {
-            log.debug("Trying to update storage");
-
             if (!this.storage) return;
 
             this.storage.data.player.name = this.getName();
@@ -296,6 +284,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.storage.data.player.weapon = this.getWeaponName();
             this.storage.data.player.xp = this.getXP();
             this.storage.data.player.level = this.getLevel();
+            this.storage.data.player.hp = this.getHP();
 
             log.debug("Updated storage");
         }

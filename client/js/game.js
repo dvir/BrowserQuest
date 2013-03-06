@@ -762,7 +762,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 }
             });
         
-            this.client.onWelcome(function(id, name, x, y, hp) {
+            this.client.onWelcome(function(id, name, x, y) {
                 log.info("Received player ID from server : "+ id);
                 self.player.id = id;
                 self.playerId = id;
@@ -770,7 +770,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 // sanitize and shorten names exceeding the allowed length.
                 self.player.name = name;
                 self.player.setGridPosition(x, y);
-                self.player.setMaxHitPoints(hp);
 
                 self.updateBars();
                 self.resetCamera();
@@ -1361,9 +1360,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         }
                     }
                     
-                    // grant XP for killing a mob
-                    self.increasePlayerXP(10);
-
                     self.storage.incrementTotalKills();
                     self.tryUnlockingAchievement("HUNTER");
 
@@ -1388,11 +1384,11 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         isHurt;
                 
                     if(player && !player.isDead && !player.invincible) {
-                        isHurt = points <= player.hitPoints;
-                        diff = points - player.hitPoints;
-                        player.hitPoints = points;
+                        isHurt = (points <= player.getHP());
+                        diff = points - player.getHP();
+                        player.setHP(points);
 
-                        if(player.hitPoints <= 0) {
+                        if(player.getHP() <= 0) {
                             player.die();
                         }
                         if(isHurt) {
@@ -1410,11 +1406,23 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         self.updateBars();
                     }
                 });
-            
+
                 self.client.onPlayerChangeMaxHitPoints(function(hp) {
-                    self.player.maxHitPoints = hp;
-                    self.player.hitPoints = hp;
+                    self.player.setMaxHP(hp);
+                    self.player.setHP(Math.min(self.player.getHP(), hp));
                     self.updateBars();
+                });
+
+                self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
+                    self.player.setXP(xp);
+
+                    if (!self.player.getMaxXP() || self.player.getMaxXP() != maxXP) {
+                        self.player.setMaxXP(maxXP);
+                    }
+                });
+
+                self.client.onPlayerChangeLevel(function(level) {
+                    self.player.setLevel(level);
                 });
             
                 self.client.onPlayerEquipItem(function(playerId, itemKind) {
@@ -1563,16 +1571,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 log.debug("Teleport out of bounds: "+x+", "+y);
             }
         },
-
-        /**
-         * Grant player an amount of XP and update bars.
-         */
-        increasePlayerXP: function(amount) {
-            this.player.increaseXP(amount);
-            this.showNotification("You gained "+amount+" XP");
-            this.updateBars();
-        },
-
+        
         /**
          *
          */
@@ -2386,7 +2385,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         updateBars: function() {
             if(this.player) {
                 if (this.playerhp_callback) {
-                    this.playerhp_callback(this.player.hitPoints, this.player.maxHitPoints);
+                    this.playerhp_callback(this.player);
                 }
 
                 if (this.playerxp_callback) {

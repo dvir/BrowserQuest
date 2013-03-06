@@ -17,6 +17,8 @@ module.exports = Player = Character.extend({
 
         this._super(this.connection.id, "player", Types.Entities.WARRIOR, 0, 0, "");
 
+        this.xp = 0;
+
         this.hasEnteredGame = false;
         this.isDead = false;
         this.haters = {};
@@ -65,6 +67,9 @@ module.exports = Player = Character.extend({
                 self.send([Types.Messages.WELCOME, self.id, self.name, self.x, self.y, self.hitPoints]);
                 self.hasEnteredGame = true;
                 self.isDead = false;
+
+                self.updateHitPoints();
+                self.send(new Messages.XP(self.getXP(), self.getMaxXP()).serialize());
             }
             else if(action === Types.Messages.WHO) {
                 message.shift();
@@ -355,9 +360,48 @@ module.exports = Player = Character.extend({
             }
         }
     },
-    
+  
+    killed: function(victim) {
+        this.send(new Messages.Kill(victim).serialize());
+
+        var xp = Formulas.xp(this, victim);
+        this.receiveXP(xp);
+    },
+
+    receiveXP: function(xp) {
+        if (xp + this.getXP() > this.getMaxXP()) {
+            // level up!
+            this.setXP(this.getMaxXP() - xp);
+            this.levelUp();
+        } else {
+            this.setXP(this.getXP() + xp);
+        }
+
+        this.send(new Messages.XP(this.getXP(), this.getMaxXP(), xp).serialize());
+    },
+
+    getXP: function() {
+        return this.xp;
+    },
+
+    setXP: function(xp) {
+        this.xp = xp;
+    },
+
+    getMaxXP: function(maxXP) {
+       return this.level*100; 
+    },
+
+    levelUp: function() {
+        this.setLevel(this.getLevel() + 1);
+
+        this.send(new Messages.Level(this.getLevel()).serialize());
+    },
+
     updateHitPoints: function() {
         this.resetHitPoints(Formulas.hp(this.armorLevel));
+        this.send(new Messages.Health(this.hitPoints).serialize());
+        this.send(new Messages.HitPoints(this.maxHitPoints).serialize());
     },
     
     updatePosition: function() {
