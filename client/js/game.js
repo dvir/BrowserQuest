@@ -1104,7 +1104,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
 
                                 self.addEntity(entity);
                         
-                                log.debug("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
+                                log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
                         
                                 if(entity instanceof Character) {
                                     entity.onBeforeStep(function() {
@@ -1437,6 +1437,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     
                     self.updateBars();
                 });
+
+                self.client.onDataUpdate(function(data) {
+                    self.player.data = data;
+
+                    self.updateBars();
+                });
             
                 self.client.onPlayerEquipItem(function(playerId, itemKind) {
                     var player = self.getEntityById(playerId),
@@ -1444,9 +1450,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 
                     if(player) {
                         if(Types.isArmor(itemKind)) {
-                            player.setSprite(self.sprites[itemName]);
+                            player.equipArmor(itemKind);
                         } else if(Types.isWeapon(itemKind)) {
-                            player.setWeaponName(itemName);
+                            player.equipWeapon(itemKind);
                         }
                     }
                 });

@@ -29,7 +29,8 @@ Types = {
         OPEN: 25,
         CHECK: 26,
         XP: 27,
-        LEVEL: 28
+        LEVEL: 28,
+        DATA: 29
     },
     
     Entities: {

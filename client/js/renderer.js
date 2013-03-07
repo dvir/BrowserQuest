@@ -327,7 +327,7 @@ function(Camera, Item, Character, Player, Timer) {
         },
 
         drawEntity: function(entity) {
-            var sprite = entity.sprite,
+            var sprite = this.game.sprites[entity.getSpriteName()],
                 shadow = this.game.shadows["small"],
                 anim = entity.currentAnimation,
                 os = this.upscaledRendering ? 1 : this.scale,
@@ -490,7 +490,7 @@ function(Camera, Item, Character, Player, Timer) {
                 var weapon = this.game.sprites[entity.getWeaponName()];
                 spr = weapon;
             } else {
-                spr = entity.sprite;
+                spr = this.game.sprites[entity.getSpriteName()];
             }
     
             if(spr) {

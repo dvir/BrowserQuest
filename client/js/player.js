@@ -7,7 +7,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         init: function(id, name, kind) {
             this._super(id, kind);
         
-            this.name = name;
+            this.data.name = name;
         
             // Renderer
      		this.nameOffsetY = -10;
@@ -20,10 +20,11 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;
 
-            // xp
-            this.level = 1;
-            this.xp = 0;
-            this.maxXP = 0;
+            $.extend(this.data, {
+                // xp
+                xp: 0,
+                maxXP: 0
+            });
 
             // storage
             this.storage = null;
@@ -78,7 +79,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
     
         setSpriteName: function(name) {
             this.spriteName = name;
-            this.updateStorage();
         },
         
         getArmorName: function() {
@@ -94,39 +94,20 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             }
         },
    
-        getLevel: function() {
-            return this.level;
-        },
-
-        setLevel: function(level) {
-            this.level = level;
-            this.updateStorage();
-        },
-
         getXP: function() {
-            return this.xp;
+            return this.data.xp;
         },
 
         setXP: function(xp) {
-            this.xp = xp;
-            this.updateStorage();
+            this.data.xp = xp;
         },
 
         setMaxXP: function(maxXP) {
-            this.maxXP = maxXP;
+            this.data.maxXP = maxXP;
         },
 
         getMaxXP: function() {
-            return this.maxXP;
-        },
-
-        getName: function() {
-            return this.name;
-        },
-
-        setName: function(name) {
-            this.name = name;
-            this.updateStorage();
+            return this.data.maxXP;
         },
 
         getWeaponName: function() {
@@ -135,7 +116,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
     
         setWeaponName: function(name) {
             this.weaponName = name;
-            this.updateStorage();
         },
     
         hasWeapon: function() {
@@ -263,6 +243,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         loadFromStorage: function(callback) {
+            return;
+
             if (this.storage && this.storage.hasAlreadyPlayed()) {
                 this.spriteName = this.storage.data.player.armor;
                 this.weaponName = this.storage.data.player.weapon;
@@ -279,6 +261,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         updateStorage: function(callback) {
+            return;
+
             if (this.storage) {
                 this.storage.data.player.name = this.getName();
                 this.storage.data.player.armor = this.getSpriteName();
@@ -293,6 +277,10 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             if (callback) {
                 callback();
             }
+        },
+
+        loadFromObject: function(data) {
+            $.extend(this.data, data);
         }
     });
 

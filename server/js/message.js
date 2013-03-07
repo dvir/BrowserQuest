@@ -232,3 +232,13 @@ Messages.Blink = Message.extend({
                 this.item.id];
     }
 });
+
+Messages.Data = Message.extend({
+    init: function(data) {
+        this.data = data;
+    },
+    serialize: function() {
+        return [Types.Messages.DATA,
+                this.data];
+    }
+});

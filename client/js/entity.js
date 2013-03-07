@@ -25,11 +25,20 @@ define(function() {
             this.visible = true;
             this.isFading = false;
             this.setDirty();
+
+            // Data holder
+            this.data = {
+                name: "unknown"
+            };
     	},
 	
     	setName: function(name) {
-    		this.name = name;
+    		this.data.name = name;
     	},
+
+        getName: function() {
+            return this.data.name;
+        },
 	
     	setPosition: function(x, y) {
     		this.x = x;

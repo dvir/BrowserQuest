@@ -15,12 +15,13 @@ var cls = require("./lib/class"),
     Messages = require('./message'),
     Properties = require("./properties"),
     Utils = require("./utils"),
+    DB = require("./db"),
     Types = require("../../shared/js/gametypes");
 
 // ======= GAME SERVER ========
 
 module.exports = World = cls.Class.extend({
-    init: function(id, maxPlayers, websocketServer) {
+    init: function(id, maxPlayers, websocketServer, map_filepath) {
         var self = this;
 
         this.id = id;
@@ -48,7 +49,17 @@ module.exports = World = cls.Class.extend({
         this.playerCount = 0;
         
         this.zoneGroupsReady = false;
-        
+
+        DB.connection.once('open', function callback () {
+            console.log("DB is ready");
+            var dbPlayersCount = Players.count({}, function(err, count){
+                if (!err) {
+                    console.log("There are %d players in the database.", count);
+                }
+            });
+            self.run(map_filepath);
+        });
+
         this.onPlayerConnect(function(player) {
             player.onRequestPosition(function() {
                 if(player.lastCheckpoint) {
@@ -60,7 +71,7 @@ module.exports = World = cls.Class.extend({
         });
         
         this.onPlayerEnter(function(player) {
-            log.info(player.name + " has joined "+ self.id);
+            log.info(player.getName() + " has joined "+ self.id);
             
             if(!player.hasEnteredGame) {
                 self.incrementPlayerCount();
@@ -71,7 +82,7 @@ module.exports = World = cls.Class.extend({
             self.pushRelevantEntityListTo(player);
     
             var move_callback = function(x, y) {
-                log.debug(player.name + " is moving to (" + x + ", " + y + ").");
+                log.debug(player.getName() + " is moving to (" + x + ", " + y + ").");
                 
                 player.forEachAttacker(function(mob) {
                     var target = self.getEntityById(mob.target);
@@ -109,7 +120,7 @@ module.exports = World = cls.Class.extend({
             });
     
             player.onExit(function() {
-                log.info(player.name + " has left the game.");
+                log.info(player.getName() + " has left the game.");
                 self.removePlayer(player);
                 self.decrementPlayerCount();
                 
@@ -135,7 +146,7 @@ module.exports = World = cls.Class.extend({
         this.onRegenTick(function() {
             self.forEachCharacter(function(character) {
                 if(!character.hasFullHealth()) {
-                    character.regenHealthBy(Math.floor(character.maxHitPoints / 25));
+                    character.regenHealthBy(Math.floor(character.getMaxHP() / 25));
             
                     if(character.type === 'player') {
                         self.pushToPlayer(character, character.regen());
@@ -469,7 +480,7 @@ module.exports = World = cls.Class.extend({
             mob.increaseHateFor(playerId, hatePoints);
             player.addHater(mob);
             
-            if(mob.hitPoints > 0) { // only choose a target if still alive
+            if(mob.getHP() > 0) { // only choose a target if still alive
                 this.chooseMobTarget(mob);
             }
         }
@@ -535,7 +546,7 @@ module.exports = World = cls.Class.extend({
         }
 
         // If the entity is about to die
-        if(entity.hitPoints <= 0) {
+        if(entity.getHP() <= 0) {
             if(entity.type === "mob") {
                 var mob = entity,
                     item = this.getDroppedItem(mob);

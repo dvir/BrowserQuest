@@ -33,6 +33,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.BLINK] = this.receiveBlink;
             this.handlers[Types.Messages.XP] = this.receiveXP;
             this.handlers[Types.Messages.LEVEL] = this.receiveLevel;
+            this.handlers[Types.Messages.DATA] = this.receiveData;
             
             this.useBison = false;
             this.enable();
@@ -243,8 +244,8 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 var character = EntityFactory.createEntity(kind, id, name);
             
                 if(character instanceof Player) {
-                    character.weaponName = Types.getKindAsString(weapon);
-                    character.spriteName = Types.getKindAsString(armor);
+                    character.equipWeapon(weapon);
+                    character.equipArmor(armor);
                 }
             
                 if(this.spawn_character_callback) {
@@ -391,6 +392,14 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 this.level_callback(level);
             }
         },
+
+        receiveData: function(data) {
+            var dataObject = data[1];
+
+            if (this.data_callback) {
+                this.data_callback(dataObject);
+            }
+        },
         
         onDispatched: function(callback) {
             this.dispatched_callback = callback;
@@ -486,6 +495,10 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
 
         onPlayerChangeLevel: function(callback) {
             this.level_callback = callback;
+        },
+
+        onDataUpdate: function(callback) {
+            this.data_callback = callback;
         },
     
         onItemBlink: function(callback) {

@@ -48,16 +48,37 @@ Utils.randomOrientation = function() {
 };
 
 Utils.Mixin = function(target, source) {
-  if (source) {
-    for (var key, keys = Object.keys(source), l = keys.length; l--; ) {
-      key = keys[l];
+    if (!source) return target;
 
-      if (source.hasOwnProperty(key)) {
-        target[key] = source[key];
-      }
+    for (var key, keys = Object.keys(source), l = keys.length; l--; ) {
+        key = keys[l];
+
+        if (source.hasOwnProperty(key)) {
+            target[key] = source[key];
+        }
     }
-  }
-  return target;
+
+    return target;
+};
+
+/**
+ * Gets an object and returns it without method/objects/functions
+ * properties.
+ */
+Utils.filterMethods = function(source) {
+    var target = {};
+    if (!source) return target;
+
+    for (var key, keys = Object.keys(source), l = keys.length; l--; ) {
+        key = keys[l];
+
+        // skip functions/objects/etc
+        if (key.indexOf('_') == 0 || typeof(source[key]) == "function") continue;
+
+        target[key] = source[key];
+    }
+    
+    return target;
 };
 
 Utils.distanceTo = function(x, y, x2, y2) {

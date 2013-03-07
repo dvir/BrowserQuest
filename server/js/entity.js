@@ -10,6 +10,12 @@ module.exports = Entity = cls.Class.extend({
         this.kind = kind;
         this.x = x;
         this.y = y;
+
+        this.data = {
+            name: "unknown"
+        };
+
+        this.dbEntity = null;
     },
     
     destroy: function() {
@@ -62,5 +68,54 @@ module.exports = Entity = cls.Class.extend({
                 pos.x += 1;
         }
         return pos;
+    },
+    
+    setName: function(name) {
+        this.data.name = name;
+        this.save();
+    },
+
+    getName: function() {
+        return this.data.name;
+    },
+
+    setDBEntity: function(dbEntity) {
+        this.dbEntity = dbEntity;
+
+        this.loadFromDB();
+    },
+
+    loadFromDB: function() {
+        if (!this.dbEntity) return;
+
+        Utils.Mixin(this.data, {
+            name: this.dbEntity.name,
+            level: this.dbEntity.level,
+            hp: this.dbEntity.hp,
+            xp: this.dbEntity.xp,
+            weapon: this.dbEntity.weapon,
+            armor: this.dbEntity.armor
+        });
+
+        log.debug("Loaded entity "+this.dbEntity._id+" from DB");
+    },
+
+    save: function() {
+        if (!this.dbEntity) return; 
+       
+//        Utils.Mixin(this.dbEntity, this.data);
+        this.dbEntity.xp = this.data.xp;
+        this.dbEntity.hp = this.data.hp;
+        this.dbEntity.level = this.data.level;
+        this.dbEntity.name = this.data.name;
+        this.dbEntity.weapon = this.data.weapon;
+        this.dbEntity.armor = this.data.armor;
+
+        this.dbEntity.save(function (err) {
+            if (err) {
+                log.debug("error saving: " + err);
+            }
+        });
+        log.debug("Saved entity "+this.dbEntity._id);
     }
 });

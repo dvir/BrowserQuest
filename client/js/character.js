@@ -29,10 +29,19 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
     		this.target = null;
             this.unconfirmedTarget = null;
             this.attackers = {};
-        
-            // Health
-            this.hp = 0;
-            this.maxHP = 0;
+       
+            $.extend(this.data, {
+                // Health
+                hp: 0,
+                maxHP: 0,
+               
+                // Level
+                level: 1,
+
+                // Gear
+                weapon: null,
+                armor: null
+            });
         
             // Modes
             this.isDead = false;
@@ -48,20 +57,55 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
     	},
 
         getHP: function() {
-            return this.hp;
+            return this.data.hp;
         },
 
         setHP: function(hp) {
-            this.hp = hp;
-            this.updateStorage();
+            this.data.hp = hp;
         },
 
         setMaxHP: function(maxHP) {
-            this.maxHP = maxHP;
+            this.data.maxHP = maxHP;
         },
     
         getMaxHP: function() {
-            return this.maxHP;
+            return this.data.maxHP;
+        },
+
+        getArmor: function() {
+            return this.data.armor;
+        },
+
+        equipArmor: function(kind) {
+            this.data.armor = kind;
+
+            var itemName = Types.getKindAsString(this.data.armor);
+            this.setSpriteName(itemName);
+        },
+
+        getArmorLevel: function() {
+            return Properties.getArmorLevel(this.data.armor);
+        },
+       
+        getWeapon: function() {
+            return this.data.weapon;
+        },
+
+        equipWeapon: function(kind) {
+            this.data.weapon = kind;
+            this.setWeaponName(Types.getKindAsString(this.data.weapon));
+        },
+
+        getWeaponLevel: function() {
+            return Properties.getWeaponLevel(this.data.weapon);
+        },
+        
+        getLevel: function() {
+            return this.data.level;
+        },
+
+        setLevel: function(level) {
+            this.data.level = level;
         },
     
     	setDefaultAnimation: function() {

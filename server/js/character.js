@@ -13,18 +13,62 @@ module.exports = Character = Entity.extend({
         this.attackers = {};
         this.target = null;
 
-        this.level = 1;
-
-        this.hitPoints = 0;
-        this.maxHitPoints = 0;
+        Utils.Mixin(this.data, {
+            level: 1,
+            hp: 0,
+            armor: null,
+            weapon: null
+        });
+    },
+    
+    getArmor: function() {
+        return this.data.armor;
     },
 
+    equipArmor: function(kind) {
+        this.data.armor = kind;
+    },
+
+    getArmorLevel: function() {
+        return Properties.getArmorLevel(this.data.armor);
+    },
+   
+    getWeapon: function() {
+        return this.data.weapon;
+    },
+
+    equipWeapon: function(kind) {
+        this.data.weapon = kind;
+    },
+
+    getWeaponLevel: function() {
+        return Properties.getWeaponLevel(this.data.weapon);
+    }, 
+
     setLevel: function(level) {
-        this.level = level;
+        this.data.level = level;
+        this.save();
     },
 
     getLevel: function() {
-        return this.level;
+        return this.data.level;
+    },
+
+    getHP: function() {
+        return this.data.hp;
+    },
+
+    setHP: function(hp) {
+        this.data.hp = Math.min(this.getMaxHP(), hp);
+        this.save();
+    },
+
+    getMaxHP: function() {
+        return this.getLevel()*80;
+    },
+
+    setMaxHP: function(maxHP) {
+        this.maxHitPoints = this.getLevel()*80;
     },
     
     getState: function() {
@@ -40,19 +84,19 @@ module.exports = Character = Entity.extend({
     },
     
     resetHitPoints: function(maxHitPoints) {
-        this.maxHitPoints = maxHitPoints;
-        this.hitPoints = this.maxHitPoints;
+        this.setHP(maxHitPoints);
+        this.setMaxHP(maxHitPoints);
     },
     
     regenHealthBy: function(value) {
-        var hp = this.hitPoints,
-            max = this.maxHitPoints;
+        var hp = this.getHP(),
+            max = this.getMaxHP();
 
-        this.hitPoints = Math.min(hp + value, max);
+        this.setHP(Math.min(hp + value, max));
     },
     
     hasFullHealth: function() {
-        return this.hitPoints === this.maxHitPoints;
+        return this.getHP() === this.getMaxHP();
     },
     
     setTarget: function(entity) {
@@ -72,11 +116,11 @@ module.exports = Character = Entity.extend({
     },
     
     health: function() {
-        return new Messages.Health(this.hitPoints, false);
+        return new Messages.Health(this.getHP(), false);
     },
     
     regen: function() {
-        return new Messages.Health(this.hitPoints, true);
+        return new Messages.Health(this.getHP(), true);
     },
     
     addAttacker: function(entity) {
@@ -96,5 +140,17 @@ module.exports = Character = Entity.extend({
         for(var id in this.attackers) {
             callback(this.attackers[id]);
         }
+    },
+
+    loadFromDB: function() {
+        if (!this.dbEntity) return;
+        
+        this._super();
+    },
+
+    save: function() {
+        if (!this.dbEntity) return;
+
+        this._super();
     }
 });
