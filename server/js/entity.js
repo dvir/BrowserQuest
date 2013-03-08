@@ -110,7 +110,9 @@ module.exports = Entity = cls.Class.extend({
             hp: this.dbEntity.hp,
             xp: this.dbEntity.xp,
             weapon: this.dbEntity.weapon,
-            armor: this.dbEntity.armor
+            armor: this.dbEntity.armor,
+            x: this.dbEntity.x,
+            y: this.dbEntity.y
         });
 
         log.debug("Loaded entity "+this.dbEntity._id+" from DB");

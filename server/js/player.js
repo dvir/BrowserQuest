@@ -56,11 +56,9 @@ module.exports = Player = Character.extend({
                 // Always ensure that the name is not longer than a maximum length.
                 // (also enforced by the maxlength attribute of the name input element).
                 self.name = (name === "") ? "lorem ipsum" : name.substr(0, 15);
-                self.data.name = self.name;
 
                 self.kind = Types.Entities.WARRIOR;
                 self.orientation = Utils.randomOrientation();
-                self.updatePosition();
                 
                 self.server.addPlayer(self);
                 self.server.enter_callback(self);
@@ -86,12 +84,12 @@ module.exports = Player = Character.extend({
 
                     self.setDBEntity(dbPlayer);
 
+                    self.updatePosition();
+                    self.updateHitPoints();
+
                     self.send([Types.Messages.WELCOME, self.getData()]);
                     self.hasEnteredGame = true;
                     self.isDead = false;
-
-                    self.updateHitPoints();
-                    self.send(new Messages.Data(self.getData()).serialize());
                 });
             }
             else if(action === Types.Messages.WHO) {

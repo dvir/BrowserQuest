@@ -327,12 +327,17 @@ function(Camera, Item, Character, Player, Timer) {
         },
 
         drawEntity: function(entity) {
-            var sprite = this.game.sprites[entity.getSpriteName()],
+            var kindString = Types.getKindAsString(entity.skin);
+            if (entity instanceof Item) {
+                kindString = "item-" + kindString;
+            }
+
+            var sprite = this.game.sprites[kindString],
                 shadow = this.game.shadows["small"],
                 anim = entity.currentAnimation,
                 os = this.upscaledRendering ? 1 : this.scale,
                 ds = this.upscaledRendering ? this.scale : 1;
-        
+
             if(anim && sprite) {
                 var	frame = anim.currentFrame,
                     s = this.scale,
@@ -396,7 +401,7 @@ function(Camera, Item, Character, Player, Timer) {
                 }
             
                 if(entity instanceof Character && !entity.isDead && entity.hasWeapon()) {
-                    var weapon = this.game.sprites[entity.getWeaponName()];
+                    var weapon = this.game.sprites[Types.getKindAsString(entity.weapon)];
         
                     if(weapon) {
                         var weaponAnimData = weapon.animationData[anim.name],

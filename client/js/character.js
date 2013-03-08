@@ -66,7 +66,6 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         },
 
         set hp(hp) {
-            console.log(this);
             this._hp = hp;
         },
 
@@ -88,6 +87,14 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
    
         get armor() {
             return this._armor;
+        },
+ 
+        get skin() {
+            if (!this.armor) {
+                return this.kind;
+            }
+
+            return this.armor;
         },
 
         set armor(armor) {

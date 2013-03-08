@@ -14,6 +14,9 @@ define(function() {
             this._name = "unknown";
             this._x = 0;
             this._y = 0;
+
+            this.gridX = 0;
+            this.gridY = 0;
 	    
             this.id = id;
             this.kind = kind;
@@ -60,7 +63,7 @@ define(function() {
         set name(name) {
             this._name = name;
         },
-
+/*
         get gridX() {
             return Math.floor(this.x / 16);
         },
@@ -76,7 +79,7 @@ define(function() {
         set gridY(y) {
             this.y = y * 16;
         },
-
+*/
     	setPosition: function(x, y) {
     		this.x = x;
     		this.y = y;
@@ -85,6 +88,9 @@ define(function() {
     	setGridPosition: function(x, y) {
     		this.gridX = x;
     		this.gridY = y;
+
+            this.x = x * 16;
+            this.y = y * 16;
     	},
 	
     	setSprite: function(sprite) {
@@ -111,6 +117,10 @@ define(function() {
     			this.ready_func();
     		}
     	},
+
+        get skin() {
+            return this.kind;
+        },
 	
     	getSprite: function() {
     	    return this.sprite;

@@ -281,8 +281,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
         loadFromObject: function(data) {
             // x and y in server are mapped to gridX and gridY on client
-            data.gridX = data.x;
-            data.gridY = data.y;
+            this.setGridPosition(data.x, data.y);
             delete data.x;
             delete data.y;
 
