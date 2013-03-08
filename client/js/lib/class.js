@@ -9,6 +9,8 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 // The base Class implementation (does nothing)
 Class = function() {};
 
+Class.data = {};
+
 // Create a new Class that inherits from this class
 Class.extend = function(prop) {
     var _super = this.prototype;
@@ -18,9 +20,21 @@ Class.extend = function(prop) {
     initializing = true;
     var prototype = new this();
     initializing = false;
-    
+
     // Copy the properties over onto the new prototype
     for (var name in prop) {
+        // check if the property is a getter or a setter
+        // and if so handle it differently
+        var g = prop.__lookupGetter__(name), s = prop.__lookupSetter__(name);
+        if (g || s) {
+            if (g)
+                prototype.__defineGetter__(name, g);
+            if (s)
+                prototype.__defineSetter__(name, s);
+
+            continue;
+        }
+
         // Check if we're overwriting an existing function
         prototype[name] = typeof prop[name] == "function" &&
             typeof _super[name] == "function" && fnTest.test(prop[name]) ?
@@ -42,7 +56,7 @@ Class.extend = function(prop) {
             })(name, prop[name]) :
             prop[name];
     }
-    
+   
     // The dummy class constructor
     Class = function () {
         // All construction is actually done in the init method
@@ -58,7 +72,7 @@ Class.extend = function(prop) {
     
     // And make this class extendable
     Class.extend = arguments.callee;
-    
+
     return Class;
 };
 

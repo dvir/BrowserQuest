@@ -765,14 +765,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 }
             });
         
-            this.client.onWelcome(function(id, name, x, y) {
-                log.info("Received player ID from server : "+ id);
-                self.player.id = id;
-                self.playerId = id;
-                // Always accept name received from the server which will
-                // sanitize and shorten names exceeding the allowed length.
-                self.player.name = name;
-                self.player.setGridPosition(x, y);
+            this.client.onWelcome(function(data) {
+                self.player.loadFromObject(data);
+
+                log.info("Received player ID from server : "+ self.player.id);
 
                 self.updateBars();
                 self.resetCamera();
@@ -796,7 +792,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 } else {
                     self.player.setStorage(self.storage);
                     self.player.loadFromStorage();
-                    self.player.setName(name);
+                    self.player.name = name;
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
         
@@ -843,7 +839,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
 
                 self.player.onBeforeStep(function() {
                     var blockingEntity = self.getEntityAt(self.player.nextGridX, self.player.nextGridY);
-                    if(blockingEntity && blockingEntity.id !== self.playerId) {
+                    if(blockingEntity && blockingEntity.id !== self.player.id) {
                         log.debug("Blocked by " + blockingEntity.id);
                     }
                     self.unregisterEntityPosition(self.player);
@@ -932,7 +928,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                                 self.audioManager.playSound("loot");
                             }
                             
-                            if(item.wasDropped && !_(item.playersInvolved).include(self.playerId)) {
+                            if(item.wasDropped && !_(item.playersInvolved).include(self.player.id)) {
                                 self.tryUnlockingAchievement("NINJA_LOOT");
                             }
                         } catch(e) {
@@ -1019,12 +1015,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 });
             
                 self.player.onDeath(function() {
-                    log.info(self.playerId + " is dead");
+                    log.info(self.player.id + " is dead");
                 
                     self.player.stopBlinking();
                     self.player.setSprite(self.sprites["death"]);
                     self.player.animate("death", 120, 1, function() {
-                        log.info(self.playerId + " was removed");
+                        log.info(self.player.id + " was removed");
                     
                         self.removeEntity(self.player);
                         self.removeFromRenderingGrid(self.player, self.player.gridX, self.player.gridY);
@@ -1096,7 +1092,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.client.onSpawnCharacter(function(entity, x, y, orientation, targetId) {
                     if(!self.entityIdExists(entity.id)) {
                         try {
-                            if(entity.id !== self.playerId) {
+                            if(entity.id !== self.player.id) {
                                 entity.setSprite(self.sprites[entity.getSpriteName()]);
                                 entity.setGridPosition(x, y);
                                 entity.setOrientation(orientation);
@@ -1142,7 +1138,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                                             }
                                         
                                             entity.forEachAttacker(function(attacker) {
-                                                if(!attacker.isAdjacentNonDiagonal(entity) && attacker.id !== self.playerId) {
+                                                if(!attacker.isAdjacentNonDiagonal(entity) && attacker.id !== self.player.id) {
                                                     attacker.follow(entity);
                                                 }
                                             });
@@ -1275,7 +1271,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.client.onEntityMove(function(id, x, y) {
                     var entity = null;
 
-                    if(id !== self.playerId) {
+                    if(id !== self.player.id) {
                         entity = self.getEntityById(id);
                 
                         if(entity) {
@@ -1304,7 +1300,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 self.client.onPlayerMoveToItem(function(playerId, itemId) {
                     var player, item;
 
-                    if(playerId !== self.playerId) {
+                    if(playerId !== self.player.id) {
                         player = self.getEntityById(playerId);
                         item = self.getEntityById(itemId);
                 
@@ -1318,10 +1314,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     var attacker = self.getEntityById(attackerId),
                         target = self.getEntityById(targetId);
                 
-                    if(attacker && target && attacker.id !== self.playerId) {
+                    if(attacker && target && attacker.id !== self.player.id) {
                         log.debug(attacker.id + " attacks " + target.id);
                         
-                        if(attacker && target instanceof Player && target.id !== self.playerId && target.target && target.target.id === attacker.id && attacker.getDistanceToEntity(target) < 3) {
+                        if(attacker && target instanceof Player && target.id !== self.player.id && target.target && target.target.id === attacker.id && attacker.getDistanceToEntity(target) < 3) {
                             setTimeout(function() {
                                 self.createAttackLink(attacker, target);
                             }, 200); // delay to prevent other players attacking mobs from ending up on the same tile as they walk towards each other.
@@ -1387,11 +1383,11 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         isHurt;
                 
                     if(player && !player.isDead && !player.invincible) {
-                        isHurt = (points <= player.getHP());
-                        diff = points - player.getHP();
-                        player.setHP(points);
+                        isHurt = (points <= player.hp);
+                        diff = points - player.hp;
+                        player.hp = points;
 
-                        if(player.getHP() <= 0) {
+                        if(player.hp <= 0) {
                             player.die();
                         }
                         if(isHurt) {
@@ -1411,35 +1407,35 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 });
 
                 self.client.onPlayerChangeMaxHitPoints(function(hp) {
-                    self.player.setMaxHP(hp);
-                    self.player.setHP(Math.min(self.player.getHP(), hp));
+                    self.player.maxHP = hp;
+                    self.player.hp = Math.min(self.player.hp, hp);
 
                     self.updateBars();
                 });
 
                 self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
-                    self.player.setXP(xp);
+                    self.player.xp = xp;
 
                     if (gainedXP > 0) {
                         self.showNotification("You gained "+gainedXP+" XP"); 
                         self.infoManager.addDamageInfo("+"+gainedXP+" XP", self.player.x + 5, self.player.y - 15, "xp");
                     }
 
-                    if (!self.player.getMaxXP() || self.player.getMaxXP() != maxXP) {
-                        self.player.setMaxXP(maxXP);
+                    if (!self.player.maxXP || self.player.maxXP != maxXP) {
+                        self.player.maxXP = maxXP;
                     }
 
                     self.updateBars();
                 });
 
                 self.client.onPlayerChangeLevel(function(level) {
-                    self.player.setLevel(level);
+                    self.player.level = level;
                     
                     self.updateBars();
                 });
 
                 self.client.onDataUpdate(function(data) {
-                    self.player.data = data;
+                    self.player.loadFromObject(data);
 
                     self.updateBars();
                 });
@@ -1461,7 +1457,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     var entity = null,
                         currentOrientation;
 
-                    if(id !== self.playerId) {
+                    if(id !== self.player.id) {
                         entity = self.getEntityById(id);
                 
                         if(entity) {
@@ -1532,7 +1528,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
             attacker.engage(target);
             
-            if(attacker.id !== this.playerId) {
+            if(this.player && attacker.id !== this.player.id) {
                 target.addAttacker(attacker);
             }
         },
@@ -2147,7 +2143,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         
                         character.hit();
                         
-                        if(character.id === this.playerId) {
+                        if(this.player && character.id === this.player.id) {
                             this.client.sendHit(character.target);
                         }
                         
@@ -2155,7 +2151,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                             this.audioManager.playSound("hit"+Math.floor(Math.random()*2+1));
                         }
                         
-                        if(character.hasTarget() && character.target.id === this.playerId && this.player && !this.player.invincible) {
+                        if(character.hasTarget() && this.player && character.target.id === this.player.id && !this.player.invincible) {
                             this.client.sendHurt(character);
                         }
                     }

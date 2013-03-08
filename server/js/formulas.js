@@ -28,7 +28,7 @@ Formulas.hp = function(armorLevel) {
  * than the victim's)
  */
 Formulas.xp = function(attacker, victim) {
-    var xp = Math.ceil(Math.max(0, ((attacker.getMaxXP() * 0.01) - (attacker.getLevel() - victim.getLevel()) * (attacker.getMaxXP() * 0.00125)))) + 60;
+    var xp = Math.ceil(Math.max(0, ((attacker.maxXP * 0.01) - (attacker.level - victim.level) * (attacker.maxXP * 0.00125)))) + 60;
     return xp;
 };
 

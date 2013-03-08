@@ -18,8 +18,8 @@ module.exports = Mob = Character.extend({
         this.weaponLevel = Properties.getWeaponLevel(this.kind);
         */
         // @TODO: load from mobs types data
-        this.equipArmor(21); // cloth armor
-        this.equipWeapon(60); // sword1
+        this.armor = 21; // cloth armor
+        this.weapon = 60; // sword1
 
         this.hatelist = [];
         this.respawnTimeout = null;
@@ -38,7 +38,7 @@ module.exports = Mob = Character.extend({
     },
     
     receiveDamage: function(points, playerId) {
-        this.setHP(this.getHP() - points);
+        this.hp -= points;
     },
     
     hates: function(playerId) {

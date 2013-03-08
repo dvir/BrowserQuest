@@ -5,17 +5,33 @@ var cls = require("./lib/class"),
 
 module.exports = Entity = cls.Class.extend({
     init: function(id, type, kind, x, y) {
+        this.data = {
+            name: "unknown",
+            x: x,
+            y: y
+        };
+
         this.id = parseInt(id);
         this.type = type;
         this.kind = kind;
-        this.x = x;
-        this.y = y;
-
-        this.data = {
-            name: "unknown"
-        };
 
         this.dbEntity = null;
+    },
+
+    get x() {
+        return this.data.x;
+    },
+
+    get y() {
+        return this.data.y;
+    },
+
+    set x(x) {
+        this.data.x = x;
+    },
+
+    set y(y) {
+        this.data.y = y;
     },
     
     destroy: function() {
@@ -110,6 +126,8 @@ module.exports = Entity = cls.Class.extend({
         this.dbEntity.name = this.data.name;
         this.dbEntity.weapon = this.data.weapon;
         this.dbEntity.armor = this.data.armor;
+        this.dbEntity.x = this.data.x;
+        this.dbEntity.y = this.data.y;
 
         this.dbEntity.save(function (err) {
             if (err) {

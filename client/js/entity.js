@@ -2,8 +2,18 @@
 define(function() {
 
     var Entity = Class.extend({
+        data: {
+            name: "unknown",
+            x: 0,
+            y: 0
+        },
+
         init: function(id, kind) {
     	    var self = this;
+
+            this._name = "unknown";
+            this._x = 0;
+            this._y = 0;
 	    
             this.id = id;
             this.kind = kind;
@@ -25,21 +35,48 @@ define(function() {
             this.visible = true;
             this.isFading = false;
             this.setDirty();
-
-            // Data holder
-            this.data = {
-                name: "unknown"
-            };
-    	},
-	
-    	setName: function(name) {
-    		this.data.name = name;
     	},
 
-        getName: function() {
-            return this.data.name;
+        get x() {
+            return this._x;
         },
-	
+
+        get y() {
+            return this._y;
+        },
+
+        set x(x) {
+            this._x = x;
+        },
+
+        set y(y) {
+            this._y = y;
+        },
+
+        get name() {
+            return this._name;
+        },
+
+        set name(name) {
+            this._name = name;
+        },
+
+        get gridX() {
+            return Math.floor(this.x / 16);
+        },
+
+        get gridY() {
+            return Math.floor(this.y / 16);
+        },
+
+        set gridX(x) {
+            this.x = x * 16;
+        },
+
+        set gridY(y) {
+            this.y = y * 16;
+        },
+
     	setPosition: function(x, y) {
     		this.x = x;
     		this.y = y;
@@ -48,8 +85,6 @@ define(function() {
     	setGridPosition: function(x, y) {
     		this.gridX = x;
     		this.gridY = y;
-		
-    		this.setPosition(x * 16, y * 16);
     	},
 	
     	setSprite: function(sprite) {

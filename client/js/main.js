@@ -166,12 +166,10 @@ define(['jquery', 'app'], function($, App) {
     
     var initGame = function() {
         require(['game'], function(Game) {
-            
             var canvas = document.getElementById("entities"),
         	    background = document.getElementById("background"),
         	    foreground = document.getElementById("foreground"),
         	    input = document.getElementById("chatinput");
-
     		game = new Game(app);
     		game.setup('#bubbles', canvas, background, foreground, input);
     		game.setStorage(app.storage);

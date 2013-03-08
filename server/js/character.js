@@ -20,57 +20,55 @@ module.exports = Character = Entity.extend({
             weapon: null
         });
     },
-    
-    getArmor: function() {
-        return this.data.armor;
-    },
-
-    equipArmor: function(kind) {
-        this.data.armor = kind;
-    },
-
-    getArmorLevel: function() {
-        return Properties.getArmorLevel(this.data.armor);
-    },
    
-    getWeapon: function() {
-        return this.data.weapon;
-    },
-
-    equipWeapon: function(kind) {
-        this.data.weapon = kind;
-    },
-
-    getWeaponLevel: function() {
-        return Properties.getWeaponLevel(this.data.weapon);
-    }, 
-
-    setLevel: function(level) {
+    set level(level) {
         this.data.level = level;
         this.save();
     },
 
-    getLevel: function() {
+    get level() {
         return this.data.level;
     },
 
-    getHP: function() {
-        return this.data.hp;
-    },
-
-    setHP: function(hp) {
-        this.data.hp = Math.min(this.getMaxHP(), hp);
+    set hp(hp) {
+        this.data.hp = Math.min(this.maxHP, hp);
         this.save();
     },
 
-    getMaxHP: function() {
-        return this.getLevel()*80;
+    get hp() {
+        return this.data.hp;
     },
 
-    setMaxHP: function(maxHP) {
-        this.maxHitPoints = this.getLevel()*80;
+    get maxHP() {
+        return 80 + this.level*20;
     },
-    
+
+    get armor() {
+        return this.data.armor;
+    },
+
+    set armor(armor) {
+        this.data.armor = armor;
+        this.save();
+    },
+
+    get weapon() {
+        return this.data.weapon;
+    },
+
+    set weapon(weapon) {
+        this.data.weapon = weapon;
+        this.save();
+    },
+
+    get armorLevel() {
+        return Properties.getArmorLevel(this.armor);
+    },
+
+    get weaponLevel() {
+        return Properties.getWeaponLevel(this.weapon);
+    },
+
     getState: function() {
         var basestate = this._getBaseState(),
             state = [];
@@ -84,19 +82,19 @@ module.exports = Character = Entity.extend({
     },
     
     resetHitPoints: function(maxHitPoints) {
-        this.setHP(maxHitPoints);
-        this.setMaxHP(maxHitPoints);
+        this.hp = maxHitPoints;
+        this.maxHP = maxHitPoints;
     },
     
     regenHealthBy: function(value) {
-        var hp = this.getHP(),
-            max = this.getMaxHP();
+        var hp = this.hp,
+            max = this.maxHP;
 
-        this.setHP(Math.min(hp + value, max));
+        this.hp = Math.min(hp + value, max);
     },
     
     hasFullHealth: function() {
-        return this.getHP() === this.getMaxHP();
+        return this.hp === this.maxHP;
     },
     
     setTarget: function(entity) {
@@ -116,11 +114,11 @@ module.exports = Character = Entity.extend({
     },
     
     health: function() {
-        return new Messages.Health(this.getHP(), false);
+        return new Messages.Health(this.hp, false);
     },
     
     regen: function() {
-        return new Messages.Health(this.getHP(), true);
+        return new Messages.Health(this.hp, true);
     },
     
     addAttacker: function(entity) {

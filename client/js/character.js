@@ -2,11 +2,29 @@
 define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
     var Character = Entity.extend({
+        data: {
+            // Health
+            hp: 0,
+            maxHP: 0,
+           
+            // Level
+            level: 1,
+
+            // Gear
+            weapon: null,
+            armor: null
+        },
+
         init: function(id, kind) {
     	    var self = this;
-	    
             this._super(id, kind);
-		    
+        
+            this._hp = 0;
+            this._maxHP = 0;
+            this._level = 1;
+            this._weapon = null;
+            this._armor = null;
+
     		// Position and orientation
     		this.nextGridX = -1;
     		this.nextGridY = -1;
@@ -30,19 +48,6 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             this.unconfirmedTarget = null;
             this.attackers = {};
        
-            $.extend(this.data, {
-                // Health
-                hp: 0,
-                maxHP: 0,
-               
-                // Level
-                level: 1,
-
-                // Gear
-                weapon: null,
-                armor: null
-            });
-        
             // Modes
             this.isDead = false;
             this.attackingMode = false;
@@ -56,58 +61,67 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             });
     	},
 
-        getHP: function() {
-            return this.data.hp;
+        get hp() {
+            return this._hp;
         },
 
-        setHP: function(hp) {
-            this.data.hp = hp;
+        set hp(hp) {
+            console.log(this);
+            this._hp = hp;
         },
 
-        setMaxHP: function(maxHP) {
-            this.data.maxHP = maxHP;
-        },
-    
-        getMaxHP: function() {
-            return this.data.maxHP;
+        get maxHP() {
+            return this._maxHP;
         },
 
-        getArmor: function() {
-            return this.data.armor;
+        set maxHP(maxHP) {
+            this._maxHP = maxHP;
+        },
+        
+        get level() {
+            return this._level;
+        },
+
+        set level(level) {
+            this._level = level;
+        },
+   
+        get armor() {
+            return this._armor;
+        },
+
+        set armor(armor) {
+            this._armor = armor;
+        },
+
+        get weapon() {
+            return this._weapon;
+        },
+
+        set weapon(weapon) {
+            this._weapon = weapon;
         },
 
         equipArmor: function(kind) {
-            this.data.armor = kind;
+            this.armor = kind;
 
-            var itemName = Types.getKindAsString(this.data.armor);
+            var itemName = Types.getKindAsString(this.armor);
             this.setSpriteName(itemName);
         },
 
         getArmorLevel: function() {
-            return Properties.getArmorLevel(this.data.armor);
+            return Properties.getArmorLevel(this.armor);
         },
-       
-        getWeapon: function() {
-            return this.data.weapon;
-        },
-
+      
         equipWeapon: function(kind) {
-            this.data.weapon = kind;
-            this.setWeaponName(Types.getKindAsString(this.data.weapon));
+            this.weapon = kind;
+            this.setWeaponName(Types.getKindAsString(this.weapon));
         },
 
         getWeaponLevel: function() {
-            return Properties.getWeaponLevel(this.data.weapon);
+            return Properties.getWeaponLevel(this.weapon);
         },
         
-        getLevel: function() {
-            return this.data.level;
-        },
-
-        setLevel: function(level) {
-            this.data.level = level;
-        },
-    
     	setDefaultAnimation: function() {
     		this.idle();
     	},
@@ -474,7 +488,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             if(this.isAttackedBy(character)) {
                 delete this.attackers[character.id];
             } else {
-                log.error(this.id + " is not attacked by " + character.id);
+       //         log.error(this.id + " is not attacked by " + character.id);
             }
         },
     

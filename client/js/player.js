@@ -3,11 +3,17 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
     var Player = Character.extend({
         MAX_LEVEL: 10,
+        
+        data: {
+            // xp
+            xp: 0,
+            maxXP: 0,
+        },
     
         init: function(id, name, kind) {
             this._super(id, kind);
-        
-            this.data.name = name;
+
+            this.name = name;
         
             // Renderer
      		this.nameOffsetY = -10;
@@ -19,12 +25,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // modes
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;
-
-            $.extend(this.data, {
-                // xp
-                xp: 0,
-                maxXP: 0
-            });
 
             // storage
             this.storage = null;
@@ -94,20 +94,20 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             }
         },
    
-        getXP: function() {
-            return this.data.xp;
+        get xp() {
+            return this._xp;
         },
 
-        setXP: function(xp) {
-            this.data.xp = xp;
+        set xp(xp) {
+            this._xp = xp;
         },
 
-        setMaxXP: function(maxXP) {
-            this.data.maxXP = maxXP;
+        get maxXP() {
+            return this._maxXP;
         },
 
-        getMaxXP: function() {
-            return this.data.maxXP;
+        set maxXP(maxXP) {
+            this._maxXP = maxXP;
         },
 
         getWeaponName: function() {
@@ -280,7 +280,13 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         loadFromObject: function(data) {
-            $.extend(this.data, data);
+            // x and y in server are mapped to gridX and gridY on client
+            data.gridX = data.x;
+            data.gridY = data.y;
+            delete data.x;
+            delete data.y;
+
+            $.extend(this, data);
         }
     });
 

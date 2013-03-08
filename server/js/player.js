@@ -59,37 +59,34 @@ module.exports = Player = Character.extend({
                 self.data.name = self.name;
 
                 self.kind = Types.Entities.WARRIOR;
-                self.equipArmor(message[2]);
-                self.equipWeapon(message[3]);
                 self.orientation = Utils.randomOrientation();
                 self.updatePosition();
                 
                 self.server.addPlayer(self);
                 self.server.enter_callback(self);
 
-                log.debug("Hello from '"+self.data.name+"'");
-
                 // find previous player with this id
-                Players.findOne({name: self.getName()}, function(err, dbPlayer){
+                Players.findOne({name: self.name}, function(err, dbPlayer){
                     if (dbPlayer) {
                         log.debug("Found previous player record '"+dbPlayer.name+"'");
-                        log.debug("xp: "+dbPlayer.xp+" | hp: "+dbPlayer.hp+" | level: "+dbPlayer.level);
                     } else {
-                        log.debug("Creating new player record '"+self.getName()+"'");
+                        log.debug("Creating new player record '"+self.name+"'");
                         var dbPlayer = new Players({
-                            name: self.getName(), 
-                            xp: self.getXP(), 
-                            level: self.getLevel(), 
-                            hp: self.getHP(),
+                            name: self.name, 
+                            xp: self.xp, 
+                            level: self.level, 
+                            hp: self.hp,
                             armor: 21,
-                            weapon: 60
+                            weapon: 60,
+                            x: self.x,
+                            y: self.y
                         });
                         dbPlayer.save();
                     }
 
                     self.setDBEntity(dbPlayer);
 
-                    self.send([Types.Messages.WELCOME, self.id, self.getName(), self.x, self.y, self.getHP()]);
+                    self.send([Types.Messages.WELCOME, self.getData()]);
                     self.hasEnteredGame = true;
                     self.isDead = false;
 
@@ -156,7 +153,7 @@ module.exports = Player = Character.extend({
             else if(action === Types.Messages.HIT) {
                 var mob = self.server.getEntityById(message[1]);
                 if(mob) {
-                    var dmg = Formulas.dmg(self.getWeaponLevel(), mob.getArmorLevel());
+                    var dmg = Formulas.dmg(self.weaponLevel, mob.armorLevel);
                     
                     if(dmg > 0) {
                         mob.receiveDamage(dmg, self.id);
@@ -167,11 +164,11 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.HURT) {
                 var mob = self.server.getEntityById(message[1]);
-                if(mob && self.getHP() > 0) {
-                    self.setHP(self.getHP() - Formulas.dmg(mob.getWeaponLevel(), self.getArmorLevel()));
+                if(mob && self.hp > 0) {
+                    self.hp -= Formulas.dmg(mob.weaponLevel, self.armorLevel);
                     self.server.handleHurtEntity(self);
                     
-                    if(self.getHP() <= 0) {
+                    if(self.hp <= 0) {
                         self.isDead = true;
                         if(self.firepotionTimeout) {
                             clearTimeout(self.firepotionTimeout);
@@ -193,10 +190,10 @@ module.exports = Player = Character.extend({
                             self.updateHitPoints();
                             self.broadcast(self.equip(Types.Entities.FIREFOX));
                             self.firepotionTimeout = setTimeout(function() {
-                                self.broadcast(self.equip(self.getArmor())); // return to normal after 15 sec
+                                self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
                                 self.firepotionTimeout = null;
                             }, 15000);
-                            self.send(new Messages.HitPoints(self.getMaxHP()).serialize());
+                            self.send(new Messages.HitPoints(self.maxHP).serialize());
                         } else if(Types.isHealingItem(kind)) {
                             var amount;
                             
@@ -282,7 +279,7 @@ module.exports = Player = Character.extend({
     
     getState: function() {
         var basestate = this._getBaseState(),
-            state = [this.getName(), this.orientation, this.getArmor(), this.getWeapon()];
+            state = [this.name, this.orientation, this.armor, this.weapon];
 
         if(this.target) {
             state.push(this.target);
@@ -365,13 +362,13 @@ module.exports = Player = Character.extend({
    
     equipItem: function(item) {
         if(item) {
-            log.debug(this.getName() + " equips " + Types.getKindAsString(item.kind));
+            log.debug(this.name + " equips " + Types.getKindAsString(item.kind));
             
             if(Types.isArmor(item.kind)) {
-                this.equipArmor(item.kind);
+                this.armor = item.kind;
                 this.updateHitPoints();
             } else if(Types.isWeapon(item.kind)) {
-                this.equipWeapon(item.kind);
+                this.weapon = item.kind;
             }
         }
     },
@@ -380,45 +377,42 @@ module.exports = Player = Character.extend({
         this.send(new Messages.Kill(victim).serialize());
 
         var xp = Formulas.xp(this, victim);
-        this.receiveXP(xp);
+        this.xp += xp;
     },
 
-    receiveXP: function(xp) {
-        if (xp + this.getXP() > this.getMaxXP()) {
+    set xp(xp) {
+        var diff = xp - this.xp;
+
+        if (xp > this.maxXP) {
             // level up!
-            this.setXP(this.getXP() + xp - this.getMaxXP());
+            this.data.xp = xp - this.maxXP;
             this.levelUp();
         } else {
-            this.setXP(this.getXP() + xp);
+            this.data.xp = xp;
         }
-
-        this.send(new Messages.XP(this.getXP(), this.getMaxXP(), xp).serialize());
+       
+        this.send(new Messages.XP(this.xp, this.maxXP, diff).serialize());
     },
 
-    getXP: function() {
+    get xp() {
         return this.data.xp;
     },
 
-    setXP: function(xp) {
-        this.data.xp = xp;
-        this.save();
-    },
-
-    getMaxXP: function(maxXP) {
-       return this.getLevel()*100; 
+    get maxXP() {
+        return this.level*100;
     },
 
     levelUp: function() {
-        this.setLevel(this.getLevel() + 1);
+        this.level++;
+        this.hp = this.maxHP;
 
-        this.send(new Messages.Level(this.getLevel()).serialize());
         this.send(new Messages.Data(this.getData()).serialize());
     },
 
     updateHitPoints: function() {
-        this.resetHitPoints(Formulas.hp(this.getArmorLevel()));
-        this.send(new Messages.Health(this.getHP()).serialize());
-        this.send(new Messages.HitPoints(this.getMaxHP()).serialize());
+        this.resetHitPoints(Formulas.hp(this.armorLevel));
+        this.send(new Messages.Health(this.hp).serialize());
+        this.send(new Messages.HitPoints(this.maxHP).serialize());
     },
     
     updatePosition: function() {
@@ -457,8 +451,9 @@ module.exports = Player = Character.extend({
     getData: function() {
         var dataObject = this.data;
         Utils.Mixin(dataObject, {
-            maxXP: this.getMaxXP(),
-            maxHP: this.getMaxHP()
+            maxXP: this.maxXP,
+            maxHP: this.maxHP,
+            id: this.id
         });
 
         return dataObject;

@@ -8,6 +8,8 @@ var cls = require("./lib/class"),
 
 playerSchema = mongoose.Schema({
     name: String,
+    x: Number,
+    y: Number,
     xp: Number,
     level: Number,
     hp: Number,

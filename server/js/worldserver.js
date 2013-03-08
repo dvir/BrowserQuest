@@ -62,16 +62,26 @@ module.exports = World = cls.Class.extend({
 
         this.onPlayerConnect(function(player) {
             player.onRequestPosition(function() {
+                /*
+                 * we remember his last x/y coordinates, so there's no need
+                 * to load from checkpoint.
+                 */
+                /*
                 if(player.lastCheckpoint) {
                     return player.lastCheckpoint.getRandomPosition();
-                } else {
+                }
+                */
+
+                if (player.x == 0 && player.y == 0) {
                     return self.map.getRandomStartingPosition();
+                } else {
+                    return {x: player.x, y: player.y};  
                 }
             });
         });
         
         this.onPlayerEnter(function(player) {
-            log.info(player.getName() + " has joined "+ self.id);
+            log.info(player.name + " has joined "+ self.id);
             
             if(!player.hasEnteredGame) {
                 self.incrementPlayerCount();
@@ -82,7 +92,7 @@ module.exports = World = cls.Class.extend({
             self.pushRelevantEntityListTo(player);
     
             var move_callback = function(x, y) {
-                log.debug(player.getName() + " is moving to (" + x + ", " + y + ").");
+                log.debug(player.name + " is moving to (" + x + ", " + y + ").");
                 
                 player.forEachAttacker(function(mob) {
                     var target = self.getEntityById(mob.target);
@@ -120,7 +130,8 @@ module.exports = World = cls.Class.extend({
             });
     
             player.onExit(function() {
-                log.info(player.getName() + " has left the game.");
+                log.info(player.name + " has left the game.");
+
                 self.removePlayer(player);
                 self.decrementPlayerCount();
                 
@@ -146,7 +157,7 @@ module.exports = World = cls.Class.extend({
         this.onRegenTick(function() {
             self.forEachCharacter(function(character) {
                 if(!character.hasFullHealth()) {
-                    character.regenHealthBy(Math.floor(character.getMaxHP() / 25));
+                    character.regenHealthBy(Math.floor(character.maxHP / 25));
             
                     if(character.type === 'player') {
                         self.pushToPlayer(character, character.regen());
@@ -480,7 +491,7 @@ module.exports = World = cls.Class.extend({
             mob.increaseHateFor(playerId, hatePoints);
             player.addHater(mob);
             
-            if(mob.getHP() > 0) { // only choose a target if still alive
+            if(mob.hp > 0) { // only choose a target if still alive
                 this.chooseMobTarget(mob);
             }
         }
@@ -546,7 +557,7 @@ module.exports = World = cls.Class.extend({
         }
 
         // If the entity is about to die
-        if(entity.getHP() <= 0) {
+        if(entity.hp <= 0) {
             if(entity.type === "mob") {
                 var mob = entity,
                     item = this.getDroppedItem(mob);

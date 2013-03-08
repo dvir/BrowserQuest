@@ -146,9 +146,9 @@ define(['jquery', 'storage'], function($, Storage) {
 
             
             var playerhp_callback = function(player) {
-        	    var barWidth = Math.round((healthMaxWidth / player.getMaxHP()) * (player.getHP() > 0 ? player.getHP() : 0));
+        	    var barWidth = Math.round((healthMaxWidth / player.maxHP) * (player.hp > 0 ? player.hp : 0));
         	    $("#hitpoints").css('width', barWidth + "px");
-                $("#healthbar").html(player.getHP() + "/" + player.getMaxHP());
+                $("#healthbar").html(player.hp + "/" + player.maxHP);
         	};
 
         	this.game.onPlayerHealthChange(playerhp_callback);
@@ -169,10 +169,10 @@ define(['jquery', 'storage'], function($, Storage) {
                 XPMaxWidth = $("#xpbar").width() - (12 * scale);
            
             var playerxp_callback = function(player) {
-        	    var barWidth = Math.round((XPMaxWidth / player.getMaxXP()) * (player.getXP() > 0 ? player.getXP() : 0));
-                $("#xpbar").html(player.getXP() + "/" + player.getMaxXP());
+        	    var barWidth = Math.round((XPMaxWidth / player.maxXP) * (player.xp > 0 ? player.xp : 0));
+                $("#xpbar").html(player.xp + "/" + player.maxXP);
         	    $("#xp").css('width', barWidth + "px");
-                $("#level").html(player.getLevel());
+                $("#level").html(player.level);
         	};
 
             this.game.onPlayerXPChange(playerxp_callback);
