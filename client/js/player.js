@@ -99,7 +99,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         set xp(xp) {
-            this._xp = xp;
+            // 0 <= xp <= maxXP
+            this._xp = Math.max(0, Math.min(xp, this.maxXP));
         },
 
         get maxXP() {
@@ -107,7 +108,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         set maxXP(maxXP) {
-            this._maxXP = maxXP;
+            // 0 <= maxXP
+            this._maxXP = Math.max(0, maxXP);
         },
 
         getWeaponName: function() {
