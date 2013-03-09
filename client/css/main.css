@@ -510,11 +510,13 @@ footer, header, hgroup, menu, nav, section {
 	    /*GUI Bar*/
 	    #bar-container {height:51px;top:-3px;background-size:1440px;}
 
-		#healthbar {height:39px;background-position:0 -51px;width:306px;top:9px;background-size:1440px;z-index:20;}
+		#healthbar {font-size:110%;line-height:35px;height:39px;background-position:0 -51px;width:306px;top:9px;background-size:1440px;z-index:20;}
 		#hitpoints {width:0px;height:33px;top:12px;left:33px;z-index:10;position:absolute;}
 
-		#xpbar {height:39px;background-position:0 -51px;width:306px;top:9px;background-size:1440px;z-index:20;}
-		#xp {width:0px;height:33px;top:12px;left:33px;z-index:10;position:absolute;}
+		#xpbar {font-size:110%;line-height:35px;height:39px;background-position:0 -195px;width:306px;top:15px;background-size:1440px;z-index:20;}
+		#xp {width:0px;height:33px;top:18px;left:33px;z-index:10;position:absolute;}
+
+    #level {font-size:110%;top:25px;left:28px;}
 
         #armor, #weapon {width:48px;height:48px;position:absolute;background-size:288px;background-position:-96px;}
         #weapon {left:312px;top:3px;background-size:288px;}
@@ -837,11 +839,13 @@ footer, header, hgroup, menu, nav, section {
 	    /*GUI Bar*/
 		#bar-container {height:34px;top:-2px;background-size:960px;}
 
-		#healthbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
+		#healthbar {font-size:100%;line-height:23px;height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 		#hitpoints {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
 
-		#xpbar {height:26px;background-position:0 -132px;width:204px;top:10px;background-size:960px;z-index:20;}
+		#xpbar {font-size:100%;line-height:23px;height:26px;background-position:0 -132px;width:204px;top:10px;background-size:960px;z-index:20;}
 		#xp {width:0px;height:22px;top:12px;left:22px;z-index:10;position:absolute;}
+
+    #level {font-size:100%;top:14px;left:16px;}
 
         #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}
         #weapon {left:208px;top:2px;}
