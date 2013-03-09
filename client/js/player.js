@@ -13,6 +13,9 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         init: function(id, name, kind) {
             this._super(id, kind);
 
+            this._xp = 0;
+            this._maxXP = 0;
+
             this.name = name;
         
             // Renderer
@@ -99,8 +102,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         set xp(xp) {
-            // 0 <= xp <= maxXP
-            this._xp = Math.max(0, Math.min(xp, this.maxXP));
+            this._xp = xp;
         },
 
         get maxXP() {
@@ -108,8 +110,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         },
 
         set maxXP(maxXP) {
-            // 0 <= maxXP
-            this._maxXP = Math.max(0, maxXP);
+            this._maxXP = maxXP;
         },
 
         getWeaponName: function() {
@@ -248,11 +249,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             return;
 
             if (this.storage && this.storage.hasAlreadyPlayed()) {
-                this.spriteName = this.storage.data.player.armor;
-                this.weaponName = this.storage.data.player.weapon;
-                this.xp = this.storage.data.player.xp;
-                this.level = this.storage.data.player.level;
-                this.hp = this.storage.data.player.hp;
+                this.armor = this.storage.data.player.armor;
+                this.weapon = this.storage.data.player.weapon;
             }
 
             log.debug("Loaded from storage");
@@ -267,11 +265,8 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
             if (this.storage) {
                 this.storage.data.player.name = this.getName();
-                this.storage.data.player.armor = this.getSpriteName();
-                this.storage.data.player.weapon = this.getWeaponName();
-                this.storage.data.player.xp = this.getXP();
-                this.storage.data.player.level = this.getLevel();
-                this.storage.data.player.hp = this.getHP();
+                this.storage.data.player.armor = this.armor;
+                this.storage.data.player.weapon = this.weapon;
             }
             
             log.debug("Updated storage");

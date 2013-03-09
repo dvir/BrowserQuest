@@ -66,8 +66,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         },
 
         set hp(hp) {
-            // make sure 0 <= HP <= MaxHP
-            this._hp = Math.max(0, Math.min(hp, this.maxHP));
+            this._hp = hp;
         },
 
         get maxHP() {
@@ -75,8 +74,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         },
 
         set maxHP(maxHP) {
-            // 0 <= maxHP
-            this._maxHP = Math.max(0, maxHP);
+            this._maxHP = maxHP;
         },
         
         get level() {
@@ -84,8 +82,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         },
 
         set level(level) {
-            // 1 <= level
-            this._level = Math.max(1, level);
+            this._level = level;
         },
    
         get armor() {
