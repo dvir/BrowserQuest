@@ -111,9 +111,6 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         equipArmor: function(kind) {
             this.armor = kind;
-
-            var itemName = Types.getKindAsString(this.armor);
-            this.setSpriteName(itemName);
         },
 
         getArmorLevel: function() {

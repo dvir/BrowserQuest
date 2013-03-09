@@ -338,6 +338,10 @@ function(Camera, Item, Character, Player, Timer) {
                 os = this.upscaledRendering ? 1 : this.scale,
                 ds = this.upscaledRendering ? this.scale : 1;
 
+            if (entity.isDying) {
+                sprite = this.game.sprites["death"];
+            }
+
             if(anim && sprite) {
                 var	frame = anim.currentFrame,
                     s = this.scale,
@@ -492,7 +496,7 @@ function(Camera, Item, Character, Player, Timer) {
                 spr;
                 
             if(entity instanceof Player && entity.hasWeapon()) {
-                var weapon = this.game.sprites[entity.getWeaponName()];
+                var weapon = this.game.sprites[Types.getKindAsString(entity.weapon)];
                 spr = weapon;
             } else {
                 spr = this.game.sprites[entity.getSpriteName()];
@@ -675,7 +679,7 @@ function(Camera, Item, Character, Player, Timer) {
     	        ctx = canvas.getContext('2d'),
     	        os = this.upscaledRendering ? 1 : this.scale,
     	        player = this.game.player,
-    	        sprite = player.getArmorSprite(),
+    	        sprite = this.game.sprites[Types.getKindAsString(this.game.player.armor)], 
     	        spriteAnim = sprite.animationData["idle_down"],
     	        // character
     	        row = spriteAnim.row,
@@ -683,7 +687,7 @@ function(Camera, Item, Character, Player, Timer) {
                 h = sprite.height * os,
     	        y = row * h,
     	        // weapon
-    	        weapon = this.game.sprites[this.game.player.getWeaponName()],
+    	        weapon = this.game.sprites[Types.getKindAsString(this.game.player.weapon)],
     	        ww = weapon.width * os,
     	        wh = weapon.height * os,
     	        wy = wh * row,

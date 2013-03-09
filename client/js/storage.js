@@ -15,11 +15,7 @@ define(function() {
                 hasAlreadyPlayed: false,
                 player: {
                     name: "",
-		    hp: 0,
-                    xp: 0,
                     level: 1,
-                    weapon: "",
-                    armor: "",
                     image: ""
                 },
                 achievements: {
@@ -71,32 +67,14 @@ define(function() {
             this.save();
         },
 
-        setPlayerArmor: function(armor) {
-            this.data.player.armor = armor;
-            this.save();
-        },
-    
-        setPlayerWeapon: function(weapon) {
-            this.data.player.weapon = weapon;
-            this.save();
-        },
-
         setPlayerLevel: function(level) {
             this.data.player.level = level;
             this.save();
         },
-
-        setPlayerXP: function(xp) {
-            this.data.player.xp = xp;
-            this.save();
-        },
-
-        savePlayer: function(img, armor, weapon, player) {
+        
+        savePlayer: function(img, player) {
             this.setPlayerImage(img);
-            this.setPlayerArmor(armor);
-            this.setPlayerWeapon(weapon);
             this.setPlayerLevel(player.level);
-            this.setPlayerXP(player.xp);
         },
     
         // Achievements

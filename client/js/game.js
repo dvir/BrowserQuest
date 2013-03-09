@@ -1,4 +1,4 @@
-
+globalSprites = {};
 define(['infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
         'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
         'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', '../../shared/js/gametypes'],
@@ -126,7 +126,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             this.player.loadFromStorage(function(){
                 self.updateBars();               
             });
-        	this.player.setSprite(this.sprites[this.player.getSpriteName()]);
+        	this.player.setSprite(globalSprites["clotharmor"]);
         	this.player.idle();
         
     	    log.debug("Finished initPlayer");
@@ -342,7 +342,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 this.sprites = this.spritesets[scale - 1];
                 
                 _.each(this.entities, function(entity) {
-                    entity.sprite = null;
                     var kindString = Types.getKindAsString(entity.skin);
                     if (entity instanceof Item) {
                         kindString = "item-" + kindString;
@@ -353,6 +352,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 this.initShadows();
                 this.initCursors();
             }
+
+            globalSprites = this.sprites;
         },
     
         loadSprites: function() {
@@ -797,8 +798,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 if(!self.storage.hasAlreadyPlayed()) {
                     self.storage.initPlayer(self.player.name);
                     self.storage.savePlayer(self.renderer.getPlayerImage(),
-                                            self.player.getSpriteName(),
-                                            self.player.getWeaponName(),
                                             self.player);
                     self.showNotification("Welcome to BrowserQuest!");
                 } else {
@@ -1030,7 +1029,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     log.info(self.player.id + " is dead");
                 
                     self.player.stopBlinking();
-                    self.player.setSprite(self.sprites["death"]);
                     self.player.animate("death", 120, 1, function() {
                         log.info(self.player.id + " was removed");
                     
@@ -1059,13 +1057,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 });
                 
                 self.player.onArmorLoot(function(armorName) {
-                    self.player.switchArmor(self.sprites[armorName]);
+                    console.error("DONT USE ONARMORLOOT!");
+//                    self.player.switchArmor(self.sprites[armorName]);
                 });
             
                 self.player.onSwitchItem(function() {
                     self.storage.savePlayer(self.renderer.getPlayerImage(),
-                                            self.player.getArmorName(),
-                                            self.player.getWeaponName(),
                                             self.player);
                     if(self.equipment_callback) {
                         self.equipment_callback();
@@ -1074,7 +1071,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 
                 self.player.onInvincible(function() {
                     self.invincible_callback();
-                    self.player.switchArmor(self.sprites["firefox"]);
+                    // no need to swithc armor anymore.
+                    // invincibility will be triggered by .invincible boolean
+                    // only.
+//                    self.player.switchArmor(self.sprites["firefox"]);
                 });
             
                 self.client.onSpawnItem(function(item, x, y) {
@@ -1100,7 +1100,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                         });
                     });
                 });
-            
+
                 self.client.onSpawnCharacter(function(entity, x, y, orientation, targetId) {
                     if(!self.entityIdExists(entity.id)) {
                         try {
@@ -1456,7 +1456,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     var player = self.getEntityById(playerId),
                         itemName = Types.getKindAsString(itemKind);
                 
-                    if(player) {
+                    if (player) {
                         if(Types.isArmor(itemKind)) {
                             player.equipArmor(itemKind);
                         } else if(Types.isWeapon(itemKind)) {

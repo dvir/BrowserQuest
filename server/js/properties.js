@@ -9,8 +9,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 25,
-        armor: 1,
-        weapon: 1
+        armor: Types.Entities.CLOTHARMOR,
+        weapon: Types.Entities.SWORD1
     },
     
     skeleton: {
@@ -21,8 +21,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 110,
-        armor: 2,
-        weapon: 2
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.SWORD2
     },
     
     goblin: {
@@ -33,8 +33,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 90,
-        armor: 2,
-        weapon: 1
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.SWORD1
     },
     
     ogre: {
@@ -46,8 +46,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 200,
-        armor: 3,
-        weapon: 2
+        armor: Types.Entities.MAILARMOR,
+        weapon: Types.Entities.SWORD2
     },
     
     spectre: {
@@ -58,8 +58,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 250,
-        armor: 2,
-        weapon: 4
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.MORNINGSTAR
     },
     
     deathknight: {
@@ -68,8 +68,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 250,
-        armor: 3,
-        weapon: 3
+        armor: Types.Entities.MAILARMOR,
+        weapon: Types.Entities.AXE
     },
     
     crab: {
@@ -80,8 +80,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 60,
-        armor: 2,
-        weapon: 1
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.SWORD1
     },
     
     snake: {
@@ -92,8 +92,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 150,
-        armor: 3,
-        weapon: 2
+        armor: Types.Entities.MAILARMOR,
+        weapon: Types.Entities.SWORD2
     },
     
     skeleton2: {
@@ -104,8 +104,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 200,
-        armor: 3,
-        weapon: 3
+        armor: Types.Entities.MAILARMOR,
+        weapon: Types.Entities.AXE
     },
     
     eye: {
@@ -116,8 +116,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 200,
-        armor: 3,
-        weapon: 3
+        armor: Types.Entities.MAILARMOR,
+        weapon: Types.Entities.AXE
     },
     
     bat: {
@@ -127,8 +127,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 80,
-        armor: 2,
-        weapon: 1
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.SWORD1
     },
     
     wizard: {
@@ -138,8 +138,8 @@ var Properties = {
             firepotion: 5
         },
         hp: 100,
-        armor: 2,
-        weapon: 6
+        armor: Types.Entities.LEATHERARMOR,
+        weapon: Types.Entities.REDSWORD
     },
     
     boss: {
@@ -147,8 +147,8 @@ var Properties = {
             goldensword: 100
         },
         hp: 700,
-        armor: 6,
-        weapon: 7
+        armor: Types.Entities.GOLDENARMOR,
+        weapon: Types.Entities.GOLDENSWORD
     }
 };
 

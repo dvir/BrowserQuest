@@ -92,24 +92,24 @@ define(function() {
             this.x = x * 16;
             this.y = y * 16;
     	},
-	
+
     	setSprite: function(sprite) {
     	    if(!sprite) {
     	        log.error(this.id + " : sprite is null", true);
     	        throw "Error";
     	    }
-	    
+
     	    if(this.sprite && this.sprite.name === sprite.name) {
     	        return;
     	    }
 
     	    this.sprite = sprite;
             this.normalSprite = this.sprite;
-        
+       
             if(Types.isMob(this.kind) || Types.isPlayer(this.kind)) {
             	this.hurtSprite = sprite.getHurtSprite();
             }
-		
+
     		this.animations = sprite.createAnimations();
 		
     		this.isLoaded = true;

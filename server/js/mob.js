@@ -13,13 +13,8 @@ module.exports = Mob = Character.extend({
         this.spawningX = x;
         this.spawningY = y;
 
-        /*
-        this.armorLevel = Properties.getArmorLevel(this.kind);
-        this.weaponLevel = Properties.getWeaponLevel(this.kind);
-        */
-        // @TODO: load from mobs types data
-        this.armor = 21; // cloth armor
-        this.weapon = 60; // sword1
+        this.armor = Properties[Types.getKindAsString(this.kind)].armor;
+        this.weapon = Properties[Types.getKindAsString(this.kind)].weapon;
 
         this.hatelist = [];
         this.respawnTimeout = null;

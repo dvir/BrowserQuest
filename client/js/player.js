@@ -21,10 +21,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // Renderer
      		this.nameOffsetY = -10;
         
-            // sprites
-            this.spriteName = "clotharmor";
-            this.weaponName = "sword1";
-        
             // modes
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;
@@ -32,41 +28,38 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             // storage
             this.storage = null;
         },
+
+        lootedArmor: function(item) {
+            // make sure that we aren't weilding the same armor already,
+            // and that it's better than what we already have
+            if(item.kind !== this.armor && 
+               Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) 
+            {
+                this.switchArmor(item);
+            }
+        },
+    
+        lootedWeapon: function(item) {
+            // make sure that we aren't weilding the same weapon already,
+            // and that it's better than what we already have
+            if(item.kind !== this.weapon && 
+               Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)) 
+            {
+                this.switchWeapon(item);
+            }
+        },
     
         loot: function(item) {
-            if(item) {
-                var rank, currentRank, msg, currentArmorName;
-            
-                if(this.currentArmorSprite) {
-                    currentArmorName = this.currentArmorSprite.name;
-                } else {
-                    currentArmorName = this.spriteName;
-                }
+            log.info('Player '+this.id+' has looted '+item.id);
 
-                if(item.type === "armor") {
-                    rank = Types.getArmorRank(item.kind);
-                    currentRank = Types.getArmorRank(Types.getKindFromString(currentArmorName));
-                    msg = "You are wearing a better armor";
-                } else if(item.type === "weapon") {
-                    rank = Types.getWeaponRank(item.kind);
-                    currentRank = Types.getWeaponRank(Types.getKindFromString(this.weaponName));
-                    msg = "You are wielding a better weapon";
-                }
-
-                if(rank && currentRank) {
-                    if(rank === currentRank) {
-                        throw new Exceptions.LootException("You already have this "+item.type);
-                    } else if(rank <= currentRank) {
-                        throw new Exceptions.LootException(msg);
-                    }
-                }
-            
-                log.info('Player '+this.id+' has looted '+item.id);
-                if(Types.isArmor(item.kind) && this.invincible) {
-                    this.stopInvincibility();
-                }
-                item.onLoot(this);
+            // commented out. Why stop invincibiility?! 
+            /*
+            if(Types.isArmor(item.kind) && this.invincible) {
+                this.stopInvincibility();
             }
+            */
+
+            item.onLoot(this);
         },
     
         /**
@@ -80,21 +73,16 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             return this.spriteName;
         },
     
-        setSpriteName: function(name) {
-            this.spriteName = name;
-        },
-        
-        getArmorName: function() {
-            var sprite = this.getArmorSprite();
-            return sprite.id;
-        },
-        
-        getArmorSprite: function() {
-            if(this.invincible) {
-                return this.currentArmorSprite;
-            } else {
-                return this.sprite;
+        get skin() {
+            if (this.invincible) {
+                return Types.Entities.FIREFOX;
             }
+
+            if (!this.armor) {
+                return this.kind;
+            }
+
+            return this.armor;
         },
    
         get xp() {
@@ -135,34 +123,30 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 return value;
             };
         
-            if(item.kind !== this.weapon && 
-               Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)) 
-            {
-                if(this.isSwitchingWeapon) {
-                    clearInterval(blanking);
-                }
-            
-                this.switchingWeapon = true;
-                var blanking = setInterval(function() {
-                    if(toggle()) {
-//                        self.setWeaponName(newWeaponName);
-                        self.weapon = item.kind;
-                    } else {
-//                        self.setWeaponName(null);
-                        self.weapon = null;
-                    }
-
-                    count -= 1;
-                    if(count === 1) {
-                        clearInterval(blanking);
-                        self.switchingWeapon = false;
-                    
-                        if(self.switch_callback) {
-                            self.switch_callback();
-                        }
-                    }
-                }, 90);
+            if(this.isSwitchingWeapon) {
+                clearInterval(blanking);
             }
+        
+            this.switchingWeapon = true;
+            var blanking = setInterval(function() {
+                if(toggle()) {
+//                        self.setWeaponName(newWeaponName);
+                    self.weapon = item.kind;
+                } else {
+//                        self.setWeaponName(null);
+                    self.weapon = null;
+                }
+
+                count -= 1;
+                if(count === 1) {
+                    clearInterval(blanking);
+                    self.switchingWeapon = false;
+                
+                    if(self.switch_callback) {
+                        self.switch_callback();
+                    }
+                }
+            }, 90);
         },
     
         switchArmor: function(item) {
@@ -175,35 +159,31 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 return value;
             };
         
-            if(item.kind !== this.armor &&
-               Types.getArmorRank(item.kind) > Types.getArmorRank(this.weapon)) 
-            {
-                if(this.isSwitchingArmor) {
-                    clearInterval(blanking);
-                }
-            
-                this.isSwitchingArmor = true;
-                self.armor = item.kind;
-                var blanking = setInterval(function() {
-                    self.setVisible(toggle());
-
-                    count -= 1;
-                    if(count === 1) {
-                        clearInterval(blanking);
-                        self.isSwitchingArmor = false;
-                    
-                        if(self.switch_callback) {
-                            self.switch_callback();
-                        }
-                    }
-                }, 90);
+            if(this.isSwitchingArmor) {
+                clearInterval(blanking);
             }
-        },
         
+            this.isSwitchingArmor = true;
+            self.armor = item.kind;
+            var blanking = setInterval(function() {
+                self.setVisible(toggle());
+
+                count -= 1;
+                if(count === 1) {
+                    clearInterval(blanking);
+                    self.isSwitchingArmor = false;
+                
+                    if(self.switch_callback) {
+                        self.switch_callback();
+                    }
+                }
+            }, 90);
+        },
+    
         onArmorLoot: function(callback) {
             this.armorloot_callback = callback;
         },
-    
+
         onSwitchItem: function(callback) {
             this.switch_callback = callback;
         },
@@ -215,15 +195,14 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
         startInvincibility: function() {
             var self = this;
         
-            if(!this.invincible) {
-                this.currentArmorSprite = this.getSprite();
-                this.invincible = true;
-                this.invincible_callback();      
-            } else {
+            if (this.invincible) {
                 // If the player already has invincibility, just reset its duration.
                 if(this.invincibleTimeout) {
                     clearTimeout(this.invincibleTimeout);
                 }
+            } else {
+                this.invincible = true;
+                this.invincible_callback();      
             }
         
             this.invincibleTimeout = setTimeout(function() {
@@ -236,11 +215,6 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.invincible_callback();
             this.invincible = false;
         
-            if(this.currentArmorSprite) {
-                this.setSprite(this.currentArmorSprite);
-                this.setSpriteName(this.currentArmorSprite.id);
-                this.currentArmorSprite = null;
-            }
             if(this.invincibleTimeout) {
                 clearTimeout(this.invincibleTimeout);
             }
@@ -269,7 +243,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             return;
 
             if (this.storage) {
-                this.storage.data.player.name = this.getName();
+                this.storage.data.player.name = this.name;
                 this.storage.data.player.armor = this.armor;
                 this.storage.data.player.weapon = this.weapon;
             }

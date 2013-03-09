@@ -19,6 +19,8 @@ module.exports = Character = Entity.extend({
             armor: null,
             weapon: null
         });
+
+        this.hp = this.maxHP;
     },
    
     set level(level) {

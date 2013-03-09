@@ -85,7 +85,6 @@ module.exports = Player = Character.extend({
                     self.setDBEntity(dbPlayer);
 
                     self.updatePosition();
-                    self.updateHitPoints();
 
                     self.send([Types.Messages.WELCOME, self.getData()]);
                     self.hasEnteredGame = true;
@@ -185,7 +184,6 @@ module.exports = Player = Character.extend({
                         self.server.removeEntity(item);
                         
                         if(kind === Types.Entities.FIREPOTION) {
-                            self.updateHitPoints();
                             self.broadcast(self.equip(Types.Entities.FIREFOX));
                             self.firepotionTimeout = setTimeout(function() {
                                 self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
@@ -364,7 +362,6 @@ module.exports = Player = Character.extend({
             
             if(Types.isArmor(item.kind)) {
                 this.armor = item.kind;
-                this.updateHitPoints();
             } else if(Types.isWeapon(item.kind)) {
                 this.weapon = item.kind;
             }
@@ -407,12 +404,6 @@ module.exports = Player = Character.extend({
         this.send(new Messages.Data(this.getData()).serialize());
     },
 
-    updateHitPoints: function() {
-        this.resetHitPoints(Formulas.hp(this.armorLevel));
-        this.send(new Messages.Health(this.hp).serialize());
-        this.send(new Messages.HitPoints(this.maxHP).serialize());
-    },
-    
     updatePosition: function() {
         if(this.requestpos_callback) {
             var pos = this.requestpos_callback();
