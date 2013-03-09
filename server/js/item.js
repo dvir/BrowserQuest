@@ -5,6 +5,10 @@ module.exports = Item = Entity.extend({
         this.isStatic = false;
         this.isFromChest = false;
     },
+
+    isBetterThan: function(other) {
+        return Types.itemRankCompare(this, other);
+    },
     
     handleDespawn: function(params) {
         var self = this;

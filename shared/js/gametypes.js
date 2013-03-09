@@ -213,6 +213,18 @@ Types.getArmorRank = function(armorKind) {
     return _.indexOf(Types.rankedArmors, armorKind);
 };
 
+Types.itemRankCompare = function(item1, item2) {
+    if (Types.isArmor(item1.kind) && Types.isArmor(item2.kind)) {
+        return (Types.getArmorRank(item1.kind) > Types.getArmorRank(item2.kind));
+    }
+
+    if (Types.isWeapon(item1.kind) && Types.isWeapon(item2.kind)) {
+        return (Types.getWeaponRank(item1.kind) > Types.getWeaponRank(item2.kind));
+    }
+
+    throw "Cannot compare rank of items not of the same type.";
+};
+
 Types.isPlayer = function(kind) {
     return kinds.getType(kind) === "player";
 };

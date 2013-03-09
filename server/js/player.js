@@ -24,6 +24,7 @@ module.exports = Player = Character.extend({
 
         this.hasEnteredGame = false;
         this.isDead = false;
+        this.isAutoEquip = true;
         this.haters = {};
         this.lastCheckpoint = null;
         this.formatChecker = new FormatChecker();
@@ -207,8 +208,7 @@ module.exports = Player = Character.extend({
                                 self.server.pushToPlayer(self, self.health());
                             }
                         } else if(Types.isArmor(kind) || Types.isWeapon(kind)) {
-                            self.equipItem(item);
-                            self.broadcast(self.equip(kind));
+                            self.lootedItem(item);
                         }
                     }
                 }
@@ -355,17 +355,29 @@ module.exports = Player = Character.extend({
             callback(mob);
         });
     },
-   
-    equipItem: function(item) {
-        if(item) {
-            log.debug(this.name + " equips " + Types.getKindAsString(item.kind));
-            
-            if(Types.isArmor(item.kind)) {
-                this.armor = item.kind;
-            } else if(Types.isWeapon(item.kind)) {
-                this.weapon = item.kind;
+  
+    lootedItem: function(item) {
+        log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
+
+        if (this.isAutoEquip) {
+            if ((Types.isArmor(item.kind) && Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) ||
+                (Types.isWeapon(item.kind) && Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)))
+            {
+                this.equipItem(item);
             }
         }
+    },
+
+    equipItem: function(item) {
+        log.debug(this.name + " equips " + Types.getKindAsString(item.kind));
+        
+        if(Types.isArmor(item.kind)) {
+            this.armor = item.kind;
+        } else if(Types.isWeapon(item.kind)) {
+            this.weapon = item.kind;
+        }
+
+        this.broadcast(this.equip(item.kind));
     },
   
     killed: function(victim) {
