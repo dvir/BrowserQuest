@@ -50,6 +50,8 @@ define(['jquery', 'animation', 'sprites'], function($, Animation, sprites) {
     	},
 	
     	createHurtSprite: function() {
+            if (!this.isLoaded) return;
+
     	    var canvas = document.createElement('canvas'),
     	        ctx = canvas.getContext('2d'),
     	        width = this.image.width,
@@ -59,7 +61,6 @@ define(['jquery', 'animation', 'sprites'], function($, Animation, sprites) {
     	    canvas.width = width;
     	    canvas.height = height;
     	    ctx.drawImage(this.image, 0, 0, width, height);
-    	    
     	    try {
         	    spriteData = ctx.getImageData(0, 0, width, height);
 
@@ -83,6 +84,7 @@ define(['jquery', 'animation', 'sprites'], function($, Animation, sprites) {
             	};
     	    } catch(e) {
     	        log.error("Error getting image data for sprite : "+this.name);
+                log.error(e);
     	    }
         },
 	
