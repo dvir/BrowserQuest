@@ -382,6 +382,9 @@ define(['jquery', 'app'], function($, App) {
                         case Types.Keys.P:
                             $('#playercount').click();
                             break;
+                        case Types.Keys.T:
+                            game.activateTownPortal();
+                            break;
                         default:
                             break;
                     }

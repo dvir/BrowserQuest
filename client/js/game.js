@@ -76,6 +76,13 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     		this.setRenderer(new Renderer(this, canvas, background, foreground));
     		this.setChatInput(input);
         },
+
+        activateTownPortal: function() {
+            if (this.player && !this.player.isDead) {
+                this.makeCharacterTeleportTo(this.player, 36, 210);
+                this.resetCamera();
+            }
+        },
         
         setStorage: function(storage) {
             this.storage = storage;
@@ -336,7 +343,11 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 
                 _.each(this.entities, function(entity) {
                     entity.sprite = null;
-                    entity.setSprite(self.sprites[entity.getSpriteName()]);
+                    var kindString = Types.getKindAsString(entity.skin);
+                    if (entity instanceof Item) {
+                        kindString = "item-" + kindString;
+                    }
+                    entity.setSprite(self.sprites[kindString]);
                 });
                 this.initHurtSprites();
                 this.initShadows();
@@ -440,7 +451,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         addItem: function(item, x, y) {
-            item.setSprite(this.sprites[item.getSpriteName()]);
+            var kindString = "item-" + Types.getKindAsString(item.skin);
+            item.setSprite(this.sprites[kindString]);
             item.setGridPosition(x, y);
             item.setAnimation("idle", 150);
             this.addEntity(item);

@@ -16,10 +16,12 @@ define(['entity'], function(Entity) {
 
         onLoot: function(player) {
             if(this.type === "weapon") {
-                player.switchWeapon(this.itemKind);
+//                player.switchWeapon(this.itemKind);
+                player.switchWeapon(this);
             }
             else if(this.type === "armor") {
-                player.armorloot_callback(this.itemKind);
+//                player.armorloot_callback(this.itemKind);
+                player.switchArmor(this);
             }
         },
 

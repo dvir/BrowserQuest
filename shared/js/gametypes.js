@@ -117,6 +117,7 @@ Types = {
         H: 72,
         M: 77,
         P: 80,
+        T: 84,
         KEYPAD_4: 100,
         KEYPAD_6: 102,
         KEYPAD_8: 104,

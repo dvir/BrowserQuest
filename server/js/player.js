@@ -218,12 +218,12 @@ module.exports = Player = Character.extend({
             else if(action === Types.Messages.TELEPORT) {
                 var x = message[1],
                     y = message[2];
-                
                 if(self.server.isValidPosition(x, y)) {
                     self.setPosition(x, y);
                     self.clearTarget();
                     
                     self.broadcast(new Messages.Teleport(self));
+                    self.send(new Messages.Teleport(self).serialize());
                     
                     self.server.handlePlayerVanish(self);
                     self.server.pushRelevantEntityListTo(self);

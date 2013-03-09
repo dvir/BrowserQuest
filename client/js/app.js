@@ -253,8 +253,8 @@ define(['jquery', 'storage'], function($, Storage) {
             var getIconPath = function(spriteName) {
                     return 'img/'+ scale +'/item-' + spriteName + '.png';
                 },
-                weapon = this.game.player.getWeaponName(),
-                armor = this.game.player.getSpriteName(),
+                weapon = Types.getKindAsString(this.game.player.weapon),
+                armor = Types.getKindAsString(this.game.player.armor),
                 weaponPath = getIconPath(weapon),
                 armorPath = getIconPath(armor);
 

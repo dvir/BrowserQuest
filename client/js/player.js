@@ -125,7 +125,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             return this.weaponName !== null;
         },
     
-        switchWeapon: function(newWeaponName) {
+        switchWeapon: function(item) {
             var count = 14, 
                 value = false, 
                 self = this;
@@ -135,7 +135,9 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 return value;
             };
         
-            if(newWeaponName !== this.getWeaponName()) {
+            if(item.kind !== this.weapon && 
+               Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)) 
+            {
                 if(this.isSwitchingWeapon) {
                     clearInterval(blanking);
                 }
@@ -143,9 +145,11 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 this.switchingWeapon = true;
                 var blanking = setInterval(function() {
                     if(toggle()) {
-                        self.setWeaponName(newWeaponName);
+//                        self.setWeaponName(newWeaponName);
+                        self.weapon = item.kind;
                     } else {
-                        self.setWeaponName(null);
+//                        self.setWeaponName(null);
+                        self.weapon = null;
                     }
 
                     count -= 1;
@@ -161,7 +165,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             }
         },
     
-        switchArmor: function(newArmorSprite) {
+        switchArmor: function(item) {
             var count = 14, 
                 value = false, 
                 self = this;
@@ -171,14 +175,15 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
                 return value;
             };
         
-            if(newArmorSprite && newArmorSprite.id !== this.getSpriteName()) {
+            if(item.kind !== this.armor &&
+               Types.getArmorRank(item.kind) > Types.getArmorRank(this.weapon)) 
+            {
                 if(this.isSwitchingArmor) {
                     clearInterval(blanking);
                 }
             
                 this.isSwitchingArmor = true;
-                self.setSprite(newArmorSprite);
-                self.setSpriteName(newArmorSprite.id);
+                self.armor = item.kind;
                 var blanking = setInterval(function() {
                     self.setVisible(toggle());
 
