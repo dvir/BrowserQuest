@@ -247,6 +247,41 @@ define(['jquery', 'storage'], function($, Storage) {
                 });
             }
         },
+        
+        toggleInventory: function() {
+            if (!$('#inventory').hasClass('active')) {
+                this.game.updateInventory();
+            }
+            $('#inventory').toggleClass('active');
+        },
+
+        updateInventory: function(inventory) {
+            var scale = this.game.renderer.getScaleFactor();
+            var $inventory = $("#inventory"),
+                $list = $inventory.children("ul");
+
+            $list.html("");
+            var items = inventory.toArray();
+            var itemsCount = 0;
+            for (var itemId in items) {
+                if (itemsCount >= inventory.size) break;
+
+                var item = items[itemId];
+                var $div = $("<div/>");
+                if (item.isStackable && item.amount > 0) {
+                    $div.append($("<span/>").addClass("amount").html(item.amount));
+                }
+                $list.append($("<li/>").append($div));
+                $div.css("background-image", "url('/img/"+scale+"/item-"+Types.getKindAsString(item.kind)+".png')");
+
+                itemsCount++;
+            }
+
+            // fill inventory with empty slots
+            for (var i = Math.min(inventory.size, Object.keys(items).length); i < inventory.size; i++) {
+                $list.append($("<li/>"));
+            }
+        },
 
         initEquipmentIcons: function() {
             var scale = this.game.renderer.getScaleFactor();
@@ -272,6 +307,10 @@ define(['jquery', 'storage'], function($, Storage) {
         	if($('#instructions').hasClass('active')) {
         	    this.toggleInstructions();
         	    $('#helpbutton').removeClass('active');
+        	}
+        	if($('#inventory').hasClass('active')) {
+        	    this.toggleInventory();
+        	    $('#inventorybutton').removeClass('active');
         	}
         	if($('body').hasClass('credits')) {
         	    this.closeInGameCredits();

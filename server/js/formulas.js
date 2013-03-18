@@ -33,6 +33,13 @@ Formulas.xp = function(attacker, victim) {
     return xp;
 };
 
+/**
+ * Regenerate 20% HP per tick.
+ */
+Formulas.regenHP = function(character) {
+    return Math.floor(character.maxHP / 5);
+};
+
 if(!(typeof exports === 'undefined')) {
     module.exports = Formulas;
 }

@@ -7,6 +7,7 @@ var cls = require("./lib/class"),
     Formulas = require("./formulas"),
     check = require("./format").check,
     DB = require("./db"),
+    Inventory = require("./inventory"),
     Types = require("../../shared/js/gametypes");
 
 module.exports = Player = Character.extend({
@@ -21,6 +22,8 @@ module.exports = Player = Character.extend({
         Utils.Mixin(this.data, {
             xp: 0
         });
+
+        this.inventory = null; 
 
         this.hasEnteredGame = false;
         this.isDead = false;
@@ -83,13 +86,12 @@ module.exports = Player = Character.extend({
                         dbPlayer.save();
                     }
 
-                    self.setDBEntity(dbPlayer);
-
-                    self.updatePosition();
-
-                    self.send([Types.Messages.WELCOME, self.getData()]);
-                    self.hasEnteredGame = true;
-                    self.isDead = false;
+                    self.setDBEntity(dbPlayer, function(){
+                        self.updatePosition();
+                        self.send([Types.Messages.WELCOME, self.getData()]);
+                        self.hasEnteredGame = true;
+                        self.isDead = false;
+                    });
                 });
             }
             else if(action === Types.Messages.WHO) {
@@ -176,40 +178,9 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.LOOT) {
                 var item = self.server.getEntityById(message[1]);
-                
-                if(item) {
-                    var kind = item.kind;
-                    
-                    if(Types.isItem(kind)) {
-                        self.broadcast(item.despawn());
-                        self.server.removeEntity(item);
-                        
-                        if(kind === Types.Entities.FIREPOTION) {
-                            self.broadcast(self.equip(Types.Entities.FIREFOX));
-                            self.firepotionTimeout = setTimeout(function() {
-                                self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
-                                self.firepotionTimeout = null;
-                            }, 15000);
-                            self.send(new Messages.HitPoints(self.maxHP).serialize());
-                        } else if(Types.isHealingItem(kind)) {
-                            var amount;
-                            
-                            switch(kind) {
-                                case Types.Entities.FLASK: 
-                                    amount = 40;
-                                    break;
-                                case Types.Entities.BURGER: 
-                                    amount = 100;
-                                    break;
-                            }
-                            
-                            if(!self.hasFullHealth()) {
-                                self.regenHealthBy(amount);
-                                self.server.pushToPlayer(self, self.health());
-                            }
-                        } else if(Types.isArmor(kind) || Types.isWeapon(kind)) {
-                            self.lootedItem(item);
-                        }
+                if (item) {
+                    if(Types.isItem(item.kind)) {
+                        self.lootedItem(item);
                     }
                 }
             }
@@ -355,16 +326,67 @@ module.exports = Player = Character.extend({
             callback(mob);
         });
     },
+
+    useItem: function(item) {
+        var self = this;
+
+        if (item.kind === Types.Entities.FIREPOTION) {
+            self.broadcast(self.equip(Types.Entities.FIREFOX));
+            self.firepotionTimeout = setTimeout(function() {
+                self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
+                self.firepotionTimeout = null;
+            }, 15000);
+            self.send(new Messages.HitPoints(self.maxHP).serialize());
+        } else if (Types.isHealingItem(item.kind)) {
+            var amount;
+            
+            switch (kind) {
+                case Types.Entities.FLASK: 
+                    amount = 40;
+                    break;
+                case Types.Entities.BURGER: 
+                    amount = 100;
+                    break;
+            }
+            
+            if (!self.hasFullHealth()) {
+                self.regenHealthBy(amount);
+                self.server.pushToPlayer(self, self.health());
+            }
+        }
+
+        self.broadcast(item.despawn());
+        self.server.removeEntity(item);
+    },
   
     lootedItem: function(item) {
-        log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
+        var self = this;
 
-        if (this.isAutoEquip) {
-            if ((Types.isArmor(item.kind) && Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) ||
-                (Types.isWeapon(item.kind) && Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)))
-            {
-                this.equipItem(item);
+        if (item.useOnPickup) {
+            self.useItem(item);
+            return;
+        }
+
+        if (this.inventory.add(item)) {
+            log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
+            self.server.pushToPlayer(self, self.loot(item));
+            self.broadcast(item.despawn());
+            self.server.removeEntity(item);
+            if (this.isAutoEquip) {
+                if ((Types.isArmor(item.kind) && Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) ||
+                    (Types.isWeapon(item.kind) && Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)))
+                {
+                    this.equipItem(item);
+                    this.inventory.remove(item);
+                    return;
+                }
             }
+
+            this.send(new Messages.Inventory(this.inventory).serialize());
+        } else {
+            // no room for this item in the inventory!
+            // do not pick it up.
+            return;
         }
     },
 
@@ -385,6 +407,14 @@ module.exports = Player = Character.extend({
 
         var xp = Formulas.xp(this, victim);
         this.xp += xp;
+    },
+    
+    loot: function(item) {
+        return new Messages.Loot(item);
+    },
+
+    getId: function() {
+        return this.dbEntity._id;
     },
 
     set xp(xp) {
@@ -437,16 +467,46 @@ module.exports = Player = Character.extend({
         this.connection.close("Player was idle for too long");
     },
 
-    loadFromDB: function() {
+    setDBEntity: function(dbEntity, callback) {
+        this.dbEntity = dbEntity;
+
+        this.loadFromDB(callback);
+    },
+
+    loadFromDB: function(callback) {
         if (!this.dbEntity) return;
         
         this._super();
+        
+        Utils.Mixin(this.data, {
+            name: this.dbEntity.name,
+            level: this.dbEntity.level,
+            hp: this.dbEntity.hp,
+            xp: this.dbEntity.xp,
+            weapon: this.dbEntity.weapon,
+            armor: this.dbEntity.armor,
+            x: this.dbEntity.x,
+            y: this.dbEntity.y
+        });
+
+        this.inventory = new Inventory(this, callback);
     },
 
     save: function() {
         if (!this.dbEntity) return;
 
+//        Utils.Mixin(this.dbEntity, this.data);
+        this.dbEntity.xp = this.data.xp;
+        this.dbEntity.hp = this.data.hp;
+        this.dbEntity.level = this.data.level;
+        this.dbEntity.name = this.data.name;
+        this.dbEntity.weapon = this.data.weapon;
+        this.dbEntity.armor = this.data.armor;
+        this.dbEntity.x = this.data.x;
+        this.dbEntity.y = this.data.y;
+
         this._super();
+        this.inventory.save();
     },
     
     getData: function() {
@@ -454,7 +514,8 @@ module.exports = Player = Character.extend({
         Utils.Mixin(dataObject, {
             maxXP: this.maxXP,
             maxHP: this.maxHP,
-            id: this.id
+            id: this.id,
+            inventory: this.inventory.serialize() 
         });
 
         return dataObject;

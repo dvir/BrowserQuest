@@ -2,12 +2,24 @@
 define(['entity'], function(Entity) {
 
     var Item = Entity.extend({
-        init: function(id, kind, type) {
+        init: function(id, kind) {
     	    this._super(id, kind);
 
-            this.itemKind = Types.getKindAsString(kind);
-    	    this.type = type;
     	    this.wasDropped = false;
+
+            this.amount = 1;
+        },
+
+        get itemKind() {
+            return Types.getKindAsString(this.kind);
+        },
+
+        get type() {
+            return Types.getType(this.kind);
+        },
+
+        get isStackable() {
+            return Types.isStackable(this.kind);
         },
 
         hasShadow: function() {
@@ -16,11 +28,9 @@ define(['entity'], function(Entity) {
 
         onLoot: function(player) {
             if(this.type === "weapon") {
-//                player.switchWeapon(this.itemKind);
                 player.lootedWeapon(this);
             }
             else if(this.type === "armor") {
-//                player.armorloot_callback(this.itemKind);
                 player.lootedArmor(this);
             }
         },

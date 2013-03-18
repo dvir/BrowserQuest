@@ -16,6 +16,7 @@ var cls = require("./lib/class"),
     Properties = require("./properties"),
     Utils = require("./utils"),
     DB = require("./db"),
+    Formulas = require("./formulas"),
     Types = require("../../shared/js/gametypes");
 
 // ======= GAME SERVER ========
@@ -157,7 +158,7 @@ module.exports = World = cls.Class.extend({
         this.onRegenTick(function() {
             self.forEachCharacter(function(character) {
                 if(!character.hasFullHealth()) {
-                    character.regenHealthBy(Math.floor(character.maxHP / 25));
+                    character.regenHealthBy(Formulas.regenHP(character));
             
                     if(character.type === 'player') {
                         self.pushToPlayer(character, character.regen());

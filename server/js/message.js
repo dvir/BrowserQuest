@@ -53,6 +53,16 @@ Messages.LootMove = Message.extend({
     }
 });
 
+Messages.Loot = Message.extend({
+    init: function(item) {
+        this.item = item;
+    },
+    serialize: function() {
+        return [Types.Messages.LOOT,
+                this.item.id];
+    }
+});
+
 Messages.Attack = Message.extend({
     init: function(attackerId, targetId) {
         this.attackerId = attackerId;
@@ -240,5 +250,15 @@ Messages.Data = Message.extend({
     serialize: function() {
         return [Types.Messages.DATA,
                 this.data];
+    }
+});
+
+Messages.Inventory = Message.extend({
+    init: function(inventory) {
+        this.inventory = inventory;
+    },
+    serialize: function() {
+        return [Types.Messages.INVENTORY,
+                    this.inventory.serialize()];
     }
 });

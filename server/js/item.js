@@ -1,9 +1,12 @@
 
 module.exports = Item = Entity.extend({
-    init: function(id, kind, x, y) {
+    init: function(id, kind, x, y, amount) {
         this._super(id, "item", kind, x, y);
         this.isStatic = false;
         this.isFromChest = false;
+        this.isStackable = Types.isStackable(kind);
+        this.useOnPickup = Types.isUseOnPickup(kind);
+        this.amount = Utils.isNumber(amount) ? amount : 1;
     },
 
     isBetterThan: function(other) {

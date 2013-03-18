@@ -18,6 +18,19 @@ playerSchema = mongoose.Schema({
 });
 Players = mongoose.model('Player', playerSchema);
 
+inventorySchema = mongoose.Schema({
+    playerId: String,
+    size: Number
+});
+Inventories = mongoose.model('Inventory', inventorySchema);
+
+itemSchema = mongoose.Schema({
+   kind: Number,
+   amount: Number,
+   inventoryId: String
+});
+Items = mongoose.model('Item', itemSchema);
+
 DB = cls.Class.extend({
     init: function() {
         mongoose.connect("mongodb://localhost/browserquest");

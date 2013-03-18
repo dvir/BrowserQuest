@@ -94,7 +94,11 @@ function main(config) {
     }
     
     process.on('uncaughtException', function (e) {
-        log.error('uncaughtException: ' + e.stack);
+        log.error('uncaughtException. Error: '+e);
+
+        if (e.stack) {
+            log.error(e.stack);
+        }
     });
 }
 

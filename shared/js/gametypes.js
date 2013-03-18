@@ -30,10 +30,13 @@ Types = {
         CHECK: 26,
         XP: 27,
         LEVEL: 28,
-        DATA: 29
+        DATA: 29,
+        INVENTORY: 30
     },
     
     Entities: {
+        UNKNOWN: 0,
+
         WARRIOR: 1,
         
         // Mobs
@@ -113,8 +116,9 @@ Types = {
         S: 83,
         D: 68,
         SPACE: 32,
-        I: 73,
         H: 72,
+        I: 73,
+        K: 75,
         M: 77,
         P: 80,
         T: 84,
@@ -126,6 +130,8 @@ Types = {
 };
 
 var kinds = {
+    unknown: [Types.Entities.UNKNOWN, "unknown"],
+
     warrior: [Types.Entities.WARRIOR, "player"],
     
     rat: [Types.Entities.RAT, "mob"],
@@ -249,6 +255,14 @@ Types.isWeapon = function(kind) {
     return kinds.getType(kind) === "weapon";
 };
 
+Types.isStackable = function(kind) {
+    return (kind == Types.Entities.FLASK);
+};
+
+Types.isUseOnPickup = function(kind) {
+    return (kind == Types.Entities.FIREPOTION);
+};
+
 Types.isObject = function(kind) {
     return kinds.getType(kind) === "object";
 };
@@ -272,6 +286,10 @@ Types.isExpendableItem = function(kind) {
     return Types.isHealingItem(kind)
         || kind === Types.Entities.FIREPOTION
         || kind === Types.Entities.CAKE;
+};
+
+Types.getType = function(kind) {
+    return kinds.getType(kind);
 };
 
 Types.getKindFromString = function(kind) {

@@ -77,6 +77,10 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     		this.setChatInput(input);
         },
 
+        updateInventory: function() {
+            this.app.updateInventory(this.player.inventory);
+        },
+
         activateTownPortal: function() {
             if (this.player && !this.player.isDead) {
                 this.makeCharacterTeleportTo(this.player, 36, 210);
@@ -910,46 +914,9 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     if(self.isItemAt(x, y)) {
                         var item = self.getItemAt(x, y);
                     
-                        try {
-                            self.player.loot(item);
-                            self.client.sendLoot(item); // Notify the server that this item has been looted
-                            self.removeItem(item);
-                            self.showNotification(item.getLootMessage());
-                        
-                            if(item.type === "armor") {
-                                self.tryUnlockingAchievement("FAT_LOOT");
-                            }
-                            
-                            if(item.type === "weapon") {
-                                self.tryUnlockingAchievement("A_TRUE_WARRIOR");
-                            }
-
-                            if(item.kind === Types.Entities.CAKE) {
-                                self.tryUnlockingAchievement("FOR_SCIENCE");
-                            }
-                            
-                            if(item.kind === Types.Entities.FIREPOTION) {
-                                self.tryUnlockingAchievement("FOXY");
-                                self.audioManager.playSound("firefox");
-                            }
-                        
-                            if(Types.isHealingItem(item.kind)) {
-                                self.audioManager.playSound("heal");
-                            } else {
-                                self.audioManager.playSound("loot");
-                            }
-                            
-                            if(item.wasDropped && !_(item.playersInvolved).include(self.player.id)) {
-                                self.tryUnlockingAchievement("NINJA_LOOT");
-                            }
-                        } catch(e) {
-                            if(e instanceof Exceptions.LootException) {
-                                self.showNotification(e.message);
-                                self.audioManager.playSound("noloot");
-                            } else {
-                                throw e;
-                            }
-                        }
+                        // notify the server that the user is trying
+                        // to loot the item
+                        self.client.sendLoot(item); 
                     }
                 
                     if(!self.player.hasTarget() && self.map.isDoor(x, y)) {
@@ -1446,10 +1413,62 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     self.updateBars();
                 });
 
+                self.client.onInventoryUpdate(function(data) {
+                    self.player.loadInventory(data);
+
+                    self.updateInventory();
+                });
+            
                 self.client.onDataUpdate(function(data) {
                     self.player.loadFromObject(data);
 
                     self.updateBars();
+                    self.updateInventory();
+                });
+
+                self.client.onLootItem(function(itemId) {
+                    var item = self.getEntityById(itemId);
+                    if (!item) return;
+
+                    try {
+                        self.player.loot(item);
+                        self.removeItem(item);
+                        self.showNotification(item.getLootMessage());
+                    
+                        if(item.type === "armor") {
+                            self.tryUnlockingAchievement("FAT_LOOT");
+                        }
+                        
+                        if(item.type === "weapon") {
+                            self.tryUnlockingAchievement("A_TRUE_WARRIOR");
+                        }
+
+                        if(item.kind === Types.Entities.CAKE) {
+                            self.tryUnlockingAchievement("FOR_SCIENCE");
+                        }
+                        
+                        if(item.kind === Types.Entities.FIREPOTION) {
+                            self.tryUnlockingAchievement("FOXY");
+                            self.audioManager.playSound("firefox");
+                        }
+                    
+                        if(Types.isHealingItem(item.kind)) {
+                            self.audioManager.playSound("heal");
+                        } else {
+                            self.audioManager.playSound("loot");
+                        }
+                        
+                        if(item.wasDropped && !_(item.playersInvolved).include(self.player.id)) {
+                            self.tryUnlockingAchievement("NINJA_LOOT");
+                        }
+                    } catch(e) {
+                        if(e instanceof Exceptions.LootException) {
+                            self.showNotification(e.message);
+                            self.audioManager.playSound("noloot");
+                        } else {
+                            throw e;
+                        }
+                    }
                 });
             
                 self.client.onPlayerEquipItem(function(playerId, itemKind) {

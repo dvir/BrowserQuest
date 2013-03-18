@@ -1,5 +1,5 @@
 
-define(['character', 'exceptions'], function(Character, Exceptions) {
+define(['character', 'exceptions', 'inventory'], function(Character, Exceptions, Inventory) {
 
     var Player = Character.extend({
         MAX_LEVEL: 10,
@@ -15,6 +15,7 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
             this._xp = 0;
             this._maxXP = 0;
+            this._inventory = null;
 
             this.name = name;
         
@@ -27,6 +28,16 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
 
             // storage
             this.storage = null;
+        },
+
+        loadInventory: function(data) {
+            if (this.inventory) {
+                this.inventory.loadFromObject(data);
+            } else {
+                this.inventory = new Inventory(data);
+            }
+
+            console.log(this.inventory._items);
         },
 
         lootedArmor: function(item) {
@@ -260,6 +271,10 @@ define(['character', 'exceptions'], function(Character, Exceptions) {
             this.setGridPosition(data.x, data.y);
             delete data.x;
             delete data.y;
+
+            // set inventory data
+            this.loadInventory(data.inventory);
+            delete data.inventory;
 
             $.extend(this, data);
         }

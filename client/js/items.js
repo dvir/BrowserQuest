@@ -84,6 +84,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.FLASK, "object");
                 this.lootMessage = "You drink a health potion";
+                this.isStackable = true;
             },
         }),
         

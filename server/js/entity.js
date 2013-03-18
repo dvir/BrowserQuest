@@ -1,21 +1,22 @@
 
 var cls = require("./lib/class"),
     Messages = require('./message'),
+    DBEntity = require('./db-entity'),
     Utils = require('./utils');
 
-module.exports = Entity = cls.Class.extend({
+module.exports = Entity = DBEntity.extend({
     init: function(id, type, kind, x, y) {
-        this.data = {
+        this._super(); 
+
+        Utils.Mixin(this.data, {
             name: "unknown",
             x: x,
             y: y
-        };
+        });
 
         this.id = parseInt(id);
         this.type = type;
         this.kind = kind;
-
-        this.dbEntity = null;
     },
 
     get x() {
@@ -95,47 +96,15 @@ module.exports = Entity = cls.Class.extend({
         return this.data.name;
     },
 
-    setDBEntity: function(dbEntity) {
-        this.dbEntity = dbEntity;
-
-        this.loadFromDB();
-    },
-
     loadFromDB: function() {
         if (!this.dbEntity) return;
 
-        Utils.Mixin(this.data, {
-            name: this.dbEntity.name,
-            level: this.dbEntity.level,
-            hp: this.dbEntity.hp,
-            xp: this.dbEntity.xp,
-            weapon: this.dbEntity.weapon,
-            armor: this.dbEntity.armor,
-            x: this.dbEntity.x,
-            y: this.dbEntity.y
-        });
-
-        log.debug("Loaded entity "+this.dbEntity._id+" from DB");
+        this._super();
     },
 
     save: function() {
         if (!this.dbEntity) return; 
-       
-//        Utils.Mixin(this.dbEntity, this.data);
-        this.dbEntity.xp = this.data.xp;
-        this.dbEntity.hp = this.data.hp;
-        this.dbEntity.level = this.data.level;
-        this.dbEntity.name = this.data.name;
-        this.dbEntity.weapon = this.data.weapon;
-        this.dbEntity.armor = this.data.armor;
-        this.dbEntity.x = this.data.x;
-        this.dbEntity.y = this.data.y;
-
-        this.dbEntity.save(function (err) {
-            if (err) {
-                log.debug("error saving: " + err);
-            }
-        });
-        log.debug("Saved entity "+this.dbEntity._id);
+        
+        this._super();
     }
 });

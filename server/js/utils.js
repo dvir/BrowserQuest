@@ -87,3 +87,7 @@ Utils.distanceTo = function(x, y, x2, y2) {
 
     return (distX > distY) ? distX : distY;
 };
+
+Utils.isNumber = function(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+};

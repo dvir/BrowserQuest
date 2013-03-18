@@ -51,6 +51,10 @@ define(['jquery', 'app'], function($, App) {
                 $(this).removeClass('blink');
         	});
 	
+        	$('#inventorybutton').click(function() {
+                app.toggleInventory();
+        	});
+
         	$('#instructions').click(function() {
                 app.hideWindows();
         	});
@@ -371,6 +375,9 @@ define(['jquery', 'app'], function($, App) {
                             game.makePlayerAttackNext();
                             break;
                         case Types.Keys.I:
+                            $('#inventorybutton').click();
+                            break;
+                        case Types.Keys.K:
                             $('#achievementsbutton').click();
                             break;
                         case Types.Keys.H:

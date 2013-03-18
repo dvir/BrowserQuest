@@ -34,6 +34,8 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.XP] = this.receiveXP;
             this.handlers[Types.Messages.LEVEL] = this.receiveLevel;
             this.handlers[Types.Messages.DATA] = this.receiveData;
+            this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
+            this.handlers[Types.Messages.LOOT] = this.receiveLoot;
             
             this.useBison = false;
             this.enable();
@@ -192,6 +194,14 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         
             if(this.lootmove_callback) {
                 this.lootmove_callback(id, item);
+            }
+        },
+    
+        receiveLoot: function(data) {
+            var item = data[1];
+        
+            if(this.loot_callback) {
+                this.loot_callback(item);
             }
         },
     
@@ -401,6 +411,14 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             }
         },
         
+        receiveInventory: function(data) {
+            var dataObject = data[1];
+
+            if (this.inventory_callback) {
+                this.inventory_callback(dataObject);
+            }
+        },
+
         onDispatched: function(callback) {
             this.dispatched_callback = callback;
         },
@@ -460,6 +478,10 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         onChatMessage: function(callback) {
             this.chat_callback = callback;
         },
+
+        onLootItem: function(callback) {
+            this.loot_callback = callback;
+        },
     
         onDropItem: function(callback) {
             this.drop_callback = callback;
@@ -499,6 +521,10 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
 
         onDataUpdate: function(callback) {
             this.data_callback = callback;
+        },
+
+        onInventoryUpdate: function(callback) {
+            this.inventory_callback = callback;
         },
     
         onItemBlink: function(callback) {
