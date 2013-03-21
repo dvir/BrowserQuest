@@ -906,7 +906,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
             
                 self.player.onStopPathing(function(x, y) {
-                    if(self.player.hasTarget()) {
+                    if (self.player.hasTarget()) {
                         self.player.lookAtTarget();
                     }
                 
@@ -996,6 +996,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.player.onDeath(function() {
                     log.info(self.player.id + " is dead");
                 
+                    self.player.isDying = true;
+                    self.player.setSprite(globalSprites["death"]);
                     self.player.stopBlinking();
                     self.player.animate("death", 120, 1, function() {
                         log.info(self.player.id + " was removed");
@@ -1160,7 +1162,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                         }
 
                                         entity.isDying = true;
-                                        entity.setSprite(self.sprites[entity instanceof Mobs.Rat ? "rat" : "death"]);
+                                        entity.setSprite(self.sprites["death"]);
                                         entity.animate("death", 120, 1, function() {
                                             log.info(entity.id + " was removed");
 
@@ -1311,6 +1313,14 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     var mob = self.getEntityById(mobId);
                     if(mob && points) {
                         self.infoManager.addDamageInfo(points, mob.x, mob.y - 15, "inflicted");
+                    }
+                });
+
+                self.client.onMobHealth(function(mobId, hp, maxHP) {
+                    var mob = self.getEntityById(mobId);
+                    if (mob) {
+                        mob.maxHP = maxHP;
+                        mob.hp = hp;
                     }
                 });
             
@@ -1555,12 +1565,12 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          * @param {Entity} target The target entity
          */
         createAttackLink: function(attacker, target) {
-            if(attacker.hasTarget()) {
+            if (attacker.hasTarget()) {
                 attacker.removeTarget();
             }
             attacker.engage(target);
             
-            if(this.player && attacker.id !== this.player.id) {
+            if (this.player && attacker.id !== this.player.id) {
                 target.addAttacker(attacker);
             }
         },
@@ -1706,6 +1716,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          */
         makePlayerAttack: function(mob) {
             this.createAttackLink(this.player, mob);
+            this.app.updateTarget();
             this.client.sendAttack(mob);
         },
     
@@ -2439,6 +2450,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     this.playerxp_callback(this.player);
                 }
 
+                this.app.updateTarget();
                 this.app.updateSkillbar();
             }
         },

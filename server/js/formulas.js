@@ -34,10 +34,14 @@ Formulas.xp = function(attacker, victim) {
 };
 
 /**
- * Regenerate 20% HP per tick.
+ * Regenerate 20% HP per tick for players, 5% for mobs.
  */
 Formulas.regenHP = function(character) {
-    return Math.floor(character.maxHP / 5);
+    if (character instanceof Player) {
+        return Math.floor(character.maxHP / 5);
+    }
+
+    return Math.floor(character.maxHP / 20);
 };
 
 if(!(typeof exports === 'undefined')) {

@@ -1,5 +1,5 @@
 
-define(['jquery', 'storage'], function($, Storage) {
+define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
 
     var App = Class.extend({
         init: function() {
@@ -141,14 +141,12 @@ define(['jquery', 'storage'], function($, Storage) {
         },
 
         initHealthBar: function() {
-            var scale = this.game.renderer.getScaleFactor(),
-                healthMaxWidth = $("#healthbar").width() - (12 * scale);
+            var scale = this.game.renderer.getScaleFactor();
 
+            var healthbar = new Healthbar($("#player"), this.game.player, scale);
             
             var playerhp_callback = function(player) {
-        	    var barWidth = Math.round((healthMaxWidth / player.maxHP) * (player.hp > 0 ? player.hp : 0));
-        	    $("#hitpoints").css('width', barWidth + "px");
-                $("#healthbar").html(player.hp + "/" + player.maxHP);
+                healthbar.update();
         	};
 
         	this.game.onPlayerHealthChange(playerhp_callback);
@@ -156,7 +154,7 @@ define(['jquery', 'storage'], function($, Storage) {
         },
 
         blinkHealthBar: function() {
-            var $hitpoints = $('#hitpoints');
+            var $hitpoints = $('#player > .hitpoints');
 
             $hitpoints.addClass('white');
             setTimeout(function() {
@@ -281,6 +279,24 @@ define(['jquery', 'storage'], function($, Storage) {
             for (var i = Math.min(inventory.size, Object.keys(items).length); i < inventory.size; i++) {
                 $list.append($("<li/>"));
             }
+        },
+
+        updateTarget: function() {
+            var scale = this.game.renderer.getScaleFactor();
+            
+            var target = this.game.player.target;
+            var $target = $("#target");
+
+            if (!target) {
+                $target.hide();
+                return;
+            }
+
+            $target.show();
+            var healthbar = new Healthbar($target, target, scale);
+            target.onChange(function() {
+                healthbar.update();
+            });
         },
 
         updateSkillbar: function() {

@@ -165,6 +165,18 @@ Messages.Damage = Message.extend({
     }
 });
 
+Messages.MobHealth = Message.extend({
+    init: function(entity) {
+        this.entity = entity;
+    },
+    serialize: function() {
+        return [Types.Messages.MOBHEALTH,
+                this.entity.id,
+                this.entity.hp,
+                this.entity.maxHP];
+    }
+});
+
 Messages.Population = Message.extend({
     init: function(world, total) {
         this.world = world;

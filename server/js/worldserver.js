@@ -546,7 +546,9 @@ module.exports = World = cls.Class.extend({
     
     handleHurtEntity: function(entity, attacker, damage) {
         var self = this;
-        
+       
+        this.pushBroadcast(new Messages.MobHealth(entity));
+
         if(entity.type === 'player') {
             // A player is only aware of his own hitpoints
             this.pushToPlayer(entity, entity.health());

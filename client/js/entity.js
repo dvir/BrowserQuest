@@ -115,10 +115,11 @@ define(function() {
     	},
 	
     	getAnimationByName: function(name) {
+            var animations = this.animations;
             var animation = null;
         
-            if(name in this.animations) {
-                animation = this.animations[name];
+            if (name in animations) {
+                animation = animations[name];
             }
             else {
                 log.error("No animation called "+ name);

@@ -31,7 +31,10 @@ Types = {
         XP: 27,
         LEVEL: 28,
         DATA: 29,
-        INVENTORY: 30
+        INVENTORY: 30,
+        MOBHEALTH: 31,
+
+        PLACEHOLDER: 10000
     },
     
     Entities: {
@@ -102,7 +105,7 @@ Types = {
 
 
         // using this so I won't have to mess with ending commas
-        UNUSED: 999
+        DEATH: 999
     },
     
     Orientations: {

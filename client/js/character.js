@@ -52,7 +52,20 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             this.isDead = false;
             this.attackingMode = false;
             this.followingMode = false;
+
+            // onChange callbacks
+            this.change_callbacks = [];
     	},
+
+        onChange: function(callback) {
+            this.change_callbacks.push(callback);
+        },
+
+        changed: function() {
+            for (var i in this.change_callbacks) {
+                this.change_callbacks[i]();
+            }
+        },
 	
     	clean: function() {
     	    this.forEachAttacker(function(attacker) {
@@ -67,6 +80,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         set hp(hp) {
             this._hp = hp;
+            this.changed();
         },
 
         get maxHP() {
@@ -75,6 +89,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         set maxHP(maxHP) {
             this._maxHP = maxHP;
+            this.changed();
         },
         
         get level() {
@@ -83,6 +98,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         set level(level) {
             this._level = level;
+            this.changed();
         },
    
         get armor() {
@@ -99,6 +115,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         set armor(armor) {
             this._armor = armor;
+            this.changed();
         },
 
         get weapon() {
@@ -107,6 +124,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
 
         set weapon(weapon) {
             this._weapon = weapon;
+            this.changed();
         },
 
         equipArmor: function(kind) {

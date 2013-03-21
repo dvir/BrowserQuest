@@ -9,12 +9,13 @@ module.exports = Mob = Character.extend({
     init: function(id, kind, x, y) {
         this._super(id, "mob", kind, x, y);
         
-        this.updateHitPoints();
         this.spawningX = x;
         this.spawningY = y;
 
         this.armor = Properties[Types.getKindAsString(this.kind)].armor;
         this.weapon = Properties[Types.getKindAsString(this.kind)].weapon;
+
+        this.baseHP = Properties[Types.getKindAsString(this.kind)].hp;
 
         this.hatelist = [];
         this.respawnTimeout = null;

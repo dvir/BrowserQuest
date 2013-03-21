@@ -17,7 +17,8 @@ module.exports = Character = Entity.extend({
             level: 1,
             hp: 0,
             armor: null,
-            weapon: null
+            weapon: null,
+            baseHP: 100
         });
 
         this.hp = this.maxHP;
@@ -32,8 +33,16 @@ module.exports = Character = Entity.extend({
         return this.data.level;
     },
 
+    get baseHP() {
+        return this.data.baseHP;
+    },
+
+    set baseHP(hp) {
+        this.data.baseHP = hp;
+    },
+
     set hp(hp) {
-        this.data.hp = Math.min(this.maxHP, hp);
+        this.data.hp = Math.max(0, Math.min(this.maxHP, hp));
         this.save();
     },
 
@@ -42,7 +51,7 @@ module.exports = Character = Entity.extend({
     },
 
     get maxHP() {
-        return 80 + this.level*20;
+        return this.baseHP + ((this.level - 1) * 20);
     },
 
     get armor() {

@@ -185,6 +185,9 @@ define(['jquery', 'app'], function($, App) {
 	
     		game.onGameStart(function() {
                 app.initEquipmentIcons();
+                app.initHealthBar();                  
+                app.initXPBar();
+                log.debug("initiated bars");
     		});
     		
     		game.onDisconnect(function(message) {
@@ -204,7 +207,7 @@ define(['jquery', 'app'], function($, App) {
     		});
 	
     		game.onPlayerInvincible(function() {
-    		    $('#hitpoints').toggleClass('invincible');
+    		    $('#player > .hitpoints').toggleClass('invincible');
     		});
 
     		game.onNbPlayersChange(function(worldPlayers, totalPlayers) {
@@ -241,10 +244,6 @@ define(['jquery', 'app'], function($, App) {
     		    app.showMessage(message);
     		});
 
-            app.initHealthBar();                  
-            app.initXPBar();
-            log.debug("initiated bars");
-	
             $('#nameinput').attr('value', '');
     		$('#chatbox').attr('value', '');
     		

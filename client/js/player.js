@@ -83,6 +83,10 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
         },
     
         get skin() {
+            if (this.isDying) {
+                return Types.Entities.DEATH;
+            }
+
             if (this.invincible) {
                 return Types.Entities.FIREFOX;
             }

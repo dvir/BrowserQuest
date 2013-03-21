@@ -36,6 +36,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.DATA] = this.receiveData;
             this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
             this.handlers[Types.Messages.LOOT] = this.receiveLoot;
+            this.handlers[Types.Messages.MOBHEALTH] = this.receiveMobHealth;
             
             this.useBison = false;
             this.enable();
@@ -417,6 +418,16 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             if (this.inventory_callback) {
                 this.inventory_callback(dataObject);
             }
+        },
+
+        receiveMobHealth: function(data) {
+            if (this.mob_health_callback) {
+                this.mob_health_callback(data[1], data[2], data[3]);
+            }
+        },
+
+        onMobHealth: function(callback) {
+            this.mob_health_callback = callback;
         },
 
         onDispatched: function(callback) {
