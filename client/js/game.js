@@ -1,8 +1,8 @@
 globalSprites = {};
-define(['infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
+define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
         'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
         'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', '../../shared/js/gametypes'],
-function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedTile,
+function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedTile,
          Warrior, GameClient, AudioManager, Updater, Transition, Pathfinder,
          Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config) {
     
@@ -23,6 +23,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         
             // Player
             this.player = new Warrior("player", "");
+            this.skillbar = new Skillbar();
+            this.skillbar.add(49, Types.Entities.FROSTNOVA);
     
             // Game state
             this.entities = {};
@@ -457,7 +459,7 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
     
         addItem: function(item, x, y) {
             var kindString = "item-" + Types.getKindAsString(item.skin);
-            item.setSprite(this.sprites[kindString]);
+            item.setSprite(this.sprites[kindString], kindString);
             item.setGridPosition(x, y);
             item.setAnimation("idle", 150);
             this.addEntity(item);
@@ -807,7 +809,6 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 } else {
                     self.player.setStorage(self.storage);
                     self.player.loadFromStorage();
-                    self.player.name = name;
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
         
@@ -2437,6 +2438,8 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                 if (this.playerxp_callback) {
                     this.playerxp_callback(this.player);
                 }
+
+                this.app.updateSkillbar();
             }
         },
     

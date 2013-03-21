@@ -283,6 +283,41 @@ define(['jquery', 'storage'], function($, Storage) {
             }
         },
 
+        updateSkillbar: function() {
+            var scale = this.game.renderer.getScaleFactor();
+            var skillbar = this.game.skillbar;
+            var $skillbar = $("#skillbar"),
+                $list = $skillbar.children("ul");
+
+            $list.html("");
+            var skills = skillbar.toArray();
+            var skillsCount = 0;
+            for (var skillId in skills) {
+                if (skillsCount >= skillbar.size) break;
+
+                var skillSlot = skills[skillId];
+                var $div = $("<div/>");
+                if (skillSlot.isStackable && skillSlot.amount > 0) {
+                    $div.append($("<span/>").addClass("amount").html(skillSlot.amount));
+                }
+                if (skillSlot.keyBind) {
+                    $div.append($("<span/>").addClass("keybind").html(skillSlot.keyBind - 48));
+                }
+                
+                var $skillSlot = $("<li/>").append($div);
+                skillSlot.$htmlElement = $skillSlot;
+                $list.append($skillSlot); 
+                $div.css("background-image", "url('/img/"+scale+"/"+skillSlot.skill.getSpriteName()+".png')");
+
+                skillsCount++;
+            }
+
+            // fill skillbar with empty slots
+            for (var i = Math.min(skillbar.size, Object.keys(skills).length); i < skillbar.size; i++) {
+                $list.append($("<li/>"));
+            }
+        },
+
         initEquipmentIcons: function() {
             var scale = this.game.renderer.getScaleFactor();
             var getIconPath = function(spriteName) {

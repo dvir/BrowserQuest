@@ -8,6 +8,22 @@ define(['entity'], function(Entity) {
     	    this.wasDropped = false;
 
             this.amount = 1;
+            
+            this._cooldown = 1;
+            this._castTime = 1;
+            this._tooltip = "N/A";
+        },
+        
+        get cooldown() {
+            return this._cooldown;
+        },
+
+        get castTime() {
+            return this._castTime;
+        },
+
+        get tooltip() {
+            return this._tooltip;
         },
 
         get itemKind() {
@@ -17,7 +33,7 @@ define(['entity'], function(Entity) {
         get type() {
             return Types.getType(this.kind);
         },
-
+       
         get isStackable() {
             return Types.isStackable(this.kind);
         },
@@ -32,6 +48,13 @@ define(['entity'], function(Entity) {
             }
             else if(this.type === "armor") {
                 player.lootedArmor(this);
+            }
+        },
+
+        use: function(target) {
+            console.log("Used %s", this.itemKind);
+            if (target) {
+                console(" on %s", target.name);
             }
         },
 

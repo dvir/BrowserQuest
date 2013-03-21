@@ -315,22 +315,18 @@ define(['jquery', 'app'], function($, App) {
                     switch(key) {
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
-                        case Types.Keys.KEYPAD_4:
                             game.player.moveLeft = false;
                             break;
                         case Types.Keys.RIGHT:
                         case Types.Keys.D:
-                        case Types.Keys.KEYPAD_6:
                             game.player.moveRight = false;
                             break;
                         case Types.Keys.UP:
                         case Types.Keys.W:
-                        case Types.Keys.KEYPAD_8:
                             game.player.moveUp = false;
                             break;
                         case Types.Keys.DOWN:
                         case Types.Keys.S:
-                        case Types.Keys.KEYPAD_2:
                             game.player.moveDown = false;
                             break;
                     }
@@ -353,22 +349,18 @@ define(['jquery', 'app'], function($, App) {
                     switch(key) {
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
-                        case Types.Keys.KEYPAD_4:
                             game.player.moveLeft = true;
                             break;
                         case Types.Keys.RIGHT:
                         case Types.Keys.D:
-                        case Types.Keys.KEYPAD_6:
                             game.player.moveRight = true;
                             break;
                         case Types.Keys.UP:
                         case Types.Keys.W:
-                        case Types.Keys.KEYPAD_8:
                             game.player.moveUp = true;
                             break;
                         case Types.Keys.DOWN:
                         case Types.Keys.S:
-                        case Types.Keys.KEYPAD_2:
                             game.player.moveDown = true;
                             break;
                         case Types.Keys.SPACE:
@@ -393,6 +385,10 @@ define(['jquery', 'app'], function($, App) {
                             game.activateTownPortal();
                             break;
                         default:
+                            if (!game.skillbar.click(key, game.player)) {
+                                // not even a skillbar action
+
+                            }
                             break;
                     }
                 }

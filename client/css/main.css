@@ -168,6 +168,15 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       left: 16px;
     }
 
+    #skillbar {
+      bottom: 1px;
+      z-index: 999999;
+      height: 32px;
+      position: absolute;
+      width: 320px;
+      left: 275px;
+    }
+
     #notifications {position:absolute;left:50%;text-align:center;font-family:'GraphicPixel';overflow:hidden;}
     #notifications div {position:absolute;-moz-transition:none;-webkit-transition:none;top:0;width:100%;}
     #notifications div.top {-moz-transition:0.5s top ease;-webkit-transition:0.5s top ease;-o-transition:0.5s top ease;-ms-transition:0.5s top ease;transition:0.5s top ease;}
@@ -188,18 +197,22 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
     #instructions {position:absolute;top:50%;left:50%;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
     #instructions.active, #achievements.active {opacity:1;pointer-events:auto;}
 
+    #skillbar > ul.slotbar {
+      width: 320px;
+    }
+
     #inventory {position:absolute;bottom:46px;right:10px;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
     #inventory.active, #inventory.active {opacity:1;pointer-events:auto;}
-    #inventory > ul {
+    #inventory > ul.slotbar {
       width: 128px;
     }
-    #inventory > ul > li {
+    ul.slotbar > li {
       display: inline-block;
       width: 32px;
       height: 32px;
       float: left;
     }
-    #inventory > ul > li > div {
+    ul.slotbar > li > div {
       display: inline-block;
     }
 
@@ -862,23 +875,29 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
       #level {font-size:100%;top:14px;left:16px;}
 
-      .barSlot, #inventory > ul > li {
+      .barSlot, ul.slotbar > li {
         background-image: url('../img/2/barsheet.png');
         background-position:-208px -1px;
       }
 
-      .barSlot, #inventory > ul > li, #inventory > ul > li > div {
+      .barSlot, ul.slotbar > li, ul.slotbar > li > div {
         width: 32px;
         height: 32px;
       }
 
-      #inventory > ul > li > div {
+      ul.slotbar > li > div {
         position: absolute;
       }
-      #inventory > ul > li > div > span.amount {
+      ul.slotbar > li > div > span.amount {
         position: absolute;
         left: 3px;
         bottom: 1px;
+        font-weight: bold;
+      }
+      #skillbar > ul.slotbar > li > div > span.keybind {
+        position: absolute;
+        right: 3px;
+        top: 1px;
         font-weight: bold;
       }
 

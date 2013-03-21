@@ -35,7 +35,7 @@ Types = {
     },
     
     Entities: {
-        UNKNOWN: 0,
+        UNKNOWN: 999,
 
         WARRIOR: 1,
         
@@ -95,7 +95,14 @@ Types = {
         GOLDENSWORD: 63,
         MORNINGSTAR: 64,
         AXE: 65,
-        BLUESWORD: 66
+        BLUESWORD: 66,
+
+        // Spells
+        FROSTNOVA: 100,
+
+
+        // using this so I won't have to mess with ending commas
+        UNUSED: 999
     },
     
     Orientations: {
@@ -186,12 +193,10 @@ var kinds = {
     forestnpc: [Types.Entities.FORESTNPC, "npc"],
     desertnpc: [Types.Entities.DESERTNPC, "npc"],
     lavanpc: [Types.Entities.LAVANPC, "npc"],
-    
-    getType: function(kind) {
-        return kinds[Types.getKindAsString(kind)][1];
-    }
-};
 
+    frostnova: [Types.Entities.FROSTNOVA, "spell"] 
+};
+    
 Types.rankedWeapons = [
     Types.Entities.SWORD1,
     Types.Entities.SWORD2,
@@ -232,15 +237,15 @@ Types.itemRankCompare = function(item1, item2) {
 };
 
 Types.isPlayer = function(kind) {
-    return kinds.getType(kind) === "player";
+    return Types.getType(kind) === "player";
 };
 
 Types.isMob = function(kind) {
-    return kinds.getType(kind) === "mob";
+    return Types.getType(kind) === "mob";
 };
 
 Types.isNpc = function(kind) {
-    return kinds.getType(kind) === "npc";
+    return Types.getType(kind) === "npc";
 };
 
 Types.isCharacter = function(kind) {
@@ -248,11 +253,11 @@ Types.isCharacter = function(kind) {
 };
 
 Types.isArmor = function(kind) {
-    return kinds.getType(kind) === "armor";
+    return Types.getType(kind) === "armor";
 };
 
 Types.isWeapon = function(kind) {
-    return kinds.getType(kind) === "weapon";
+    return Types.getType(kind) === "weapon";
 };
 
 Types.isStackable = function(kind) {
@@ -264,7 +269,7 @@ Types.isUseOnPickup = function(kind) {
 };
 
 Types.isObject = function(kind) {
-    return kinds.getType(kind) === "object";
+    return Types.getType(kind) === "object";
 };
 
 Types.isChest = function(kind) {
@@ -289,7 +294,15 @@ Types.isExpendableItem = function(kind) {
 };
 
 Types.getType = function(kind) {
-    return kinds.getType(kind);
+    if (!kind) {
+        throw "Undefiend kind given to Types.getType";
+    }
+
+    if (kinds[Types.getKindAsString(kind)]) {
+        return kinds[Types.getKindAsString(kind)][1];
+    }
+
+    throw "Inexistant kind given to Types.getType ("+kind+")";
 };
 
 Types.getKindFromString = function(kind) {
@@ -299,11 +312,17 @@ Types.getKindFromString = function(kind) {
 };
 
 Types.getKindAsString = function(kind) {
+    if (!kind) {
+        return "unknown";
+    }
+
     for(var k in kinds) {
-        if(kinds[k][0] === kind) {
+        if(k != "getType" && kinds[k][0] === kind) {
             return k;
         }
     }
+
+    return "unknown";
 };
 
 Types.forEachKind = function(callback) {

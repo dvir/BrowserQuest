@@ -19,6 +19,7 @@ define(function() {
             this.gridY = 0;
 	    
             this.id = id;
+
             this.kind = kind;
 
             // Renderer
@@ -63,24 +64,8 @@ define(function() {
         set name(name) {
             this._name = name;
         },
-/*
-        get gridX() {
-            return Math.floor(this.x / 16);
-        },
-
-        get gridY() {
-            return Math.floor(this.y / 16);
-        },
-
-        set gridX(x) {
-            this.x = x * 16;
-        },
-
-        set gridY(y) {
-            this.y = y * 16;
-        },
-*/
-    	setPosition: function(x, y) {
+    	
+        setPosition: function(x, y) {
     		this.x = x;
     		this.y = y;
     	},
@@ -94,9 +79,8 @@ define(function() {
     	},
 
     	setSprite: function(sprite) {
-    	    if(!sprite) {
-    	        log.error(this.id + " : sprite is null", true);
-    	        throw "Error";
+    	    if (!sprite) {
+    	        throw "Error: "+this.id+" sprite is null";
     	    }
 
     	    if(this.sprite && this.sprite.name === sprite.name) {
@@ -105,7 +89,7 @@ define(function() {
 
     	    this.sprite = sprite;
             this.normalSprite = this.sprite;
-       
+
             if(Types.isMob(this.kind) || Types.isPlayer(this.kind)) {
             	this.hurtSprite = sprite.getHurtSprite();
             }
