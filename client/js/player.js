@@ -36,8 +36,6 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
             } else {
                 this.inventory = new Inventory(data);
             }
-
-            console.log(this.inventory._items);
         },
 
         lootedArmor: function(item) {

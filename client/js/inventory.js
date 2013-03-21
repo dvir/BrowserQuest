@@ -33,9 +33,15 @@ define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
         },
 
         loadFromObject: function(data) {
+            if ($.isEmptyObject(data)) {
+                return;
+            }
+
             var self = this;
+
+            self._size = data[0];
             self._items = [];
-            $.each(data, function(id, item) {
+            $.each(data[1], function(id, item) {
                 self._items[id] = new InventoryItem(item.kind, item);
             });
         }

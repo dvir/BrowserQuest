@@ -175,6 +175,6 @@ module.exports = Inventory = DBEntity.extend({
             items[itemId] = this.items[itemId].data;
         }
 
-        return items;
+        return [this.size, items];
     },
 });
