@@ -449,12 +449,9 @@ define(['jquery', 'app'], function($, App) {
                             return false;
                         }
                     }
-                    if(key === 32) { // Space
-                        // game.togglePathingGrid();
-                        return false;
-                    }
                     if(key === 70) { // F
-                        // game.toggleDebugInfo();
+                        game.toggleDebugInfo();
+                        game.togglePathingGrid();
                         return false;
                     }
                     if(key === 27) { // ESC
