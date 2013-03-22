@@ -1,4 +1,4 @@
-
+$dragSrc = null;
 define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
 
     var App = Class.extend({
@@ -265,11 +265,49 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
                 if (itemsCount >= inventory.size) break;
 
                 var item = items[itemId];
-                var $div = $("<div/>");
+                var $div = $("<div/>").attr("draggable", true);
+
+                //$("ul.slotbar > li > div").on("dragstart", function(e){
+                $div.on("dragstart", function(e){
+                    $(this).css("opacity", 0.4);
+    console.log("started drag");
+                    $dragSrc = $(this);
+                    e.originalEvent.dataTransfer.effectAllowed = 'move';
+                }).on("dragend", function(e){
+                    $(this).css("opacity", 1);
+                });
+
+                var $listItem = $("<li/>").append($div);
+                
+                $listItem.on("dragover", function(e){
+                    if (e.originalEvent.preventDefault) {
+                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
+                    }
+
+                    // See the section on the DataTransfer object.
+                    e.originalEvent.dataTransfer.dropEffect = 'move';
+                    return false;
+                }).on("dragenter", function(e){
+                    $(this).addClass("over");   
+                }).on("dragleave", function(e){
+                    $(this).removeClass("over");   
+                }).on("drop", function(e){
+                    if (e.originalEvent.stopPropagation) {
+                        // stops the browser from redirecting.
+                        e.originalEvent.stopPropagation(); 
+                    }
+
+                    var $currentDiv = $(this).find("div");
+                    if ($currentDiv) {
+                        $dragSrc.parent().append($currentDiv);
+                    }
+                    $(this).append($dragSrc);
+                });
+
                 if (item.isStackable && item.amount > 0) {
                     $div.append($("<span/>").addClass("amount").html(item.amount));
                 }
-                $list.append($("<li/>").append($div));
+                $list.append($listItem);
                 $div.css("background-image", "url('/img/"+scale+"/item-"+Types.getKindAsString(item.kind)+".png')");
 
                 itemsCount++;
@@ -277,7 +315,32 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
 
             // fill inventory with empty slots
             for (var i = Math.min(inventory.size, Object.keys(items).length); i < inventory.size; i++) {
-                $list.append($("<li/>"));
+                var $listItem = $("<li/>");
+                $listItem.on("dragover", function(e){
+                    if (e.originalEvent.preventDefault) {
+                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
+                    }
+
+                    // See the section on the DataTransfer object.
+                    e.originalEvent.dataTransfer.dropEffect = 'move';
+                    return false;
+                }).on("dragenter", function(e){
+                    $(this).addClass("over");   
+                }).on("dragleave", function(e){
+                    $(this).removeClass("over");   
+                }).on("drop", function(e){
+                    if (e.originalEvent.stopPropagation) {
+                        // stops the browser from redirecting.
+                        e.originalEvent.stopPropagation(); 
+                    }
+
+                    var $currentDiv = $(this).find("div");
+                    if ($currentDiv) {
+                        $dragSrc.parent().append($currentDiv);
+                    }
+                    $(this).append($dragSrc);
+                });
+                $list.append($listItem);
             }
         },
 
@@ -321,6 +384,28 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
                 }
                 
                 var $skillSlot = $("<li/>").append($div);
+                $skillSlot.on("dragover", function(e){
+                    if (e.originalEvent.preventDefault) {
+                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
+                    }
+
+                    // See the section on the DataTransfer object.
+                    e.originalEvent.dataTransfer.dropEffect = 'move';
+                    return false;
+                }).on("dragenter", function(e){
+                    $(this).addClass("over");   
+                }).on("dragleave", function(e){
+                    $(this).removeClass("over");   
+                }).on("drop", function(e){
+                    if (e.originalEvent.stopPropagation) {
+                        // stops the browser from redirecting.
+                        e.originalEvent.stopPropagation(); 
+                    }
+                    
+                    $(this).html("");
+                    $(this).append($dragSrc);
+                });
+
                 skillSlot.$htmlElement = $skillSlot;
                 $list.append($skillSlot); 
                 $div.css("background-image", "url('/img/"+scale+"/"+skillSlot.skill.getSpriteName()+".png')");
@@ -330,7 +415,29 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
 
             // fill skillbar with empty slots
             for (var i = Math.min(skillbar.size, Object.keys(skills).length); i < skillbar.size; i++) {
-                $list.append($("<li/>"));
+                var $listItem = $("<li/>");
+                $listItem.on("dragover", function(e){
+                    if (e.originalEvent.preventDefault) {
+                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
+                    }
+
+                    // See the section on the DataTransfer object.
+                    e.originalEvent.dataTransfer.dropEffect = 'move';
+                    return false;
+                }).on("dragenter", function(e){
+                    $(this).addClass("over");   
+                }).on("dragleave", function(e){
+                    $(this).removeClass("over");   
+                }).on("drop", function(e){
+                    if (e.originalEvent.stopPropagation) {
+                        // stops the browser from redirecting.
+                        e.originalEvent.stopPropagation(); 
+                    }
+
+                    $(this).html("");
+                    $(this).append($dragSrc);
+                });
+                $list.append($listItem);
             }
         },
 
