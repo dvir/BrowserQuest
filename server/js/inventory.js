@@ -150,7 +150,6 @@ module.exports = Inventory = DBEntity.extend({
 
             items.forEach(function(item) {
                 self.items[item._id] = new InventoryItem(item);
-                log.debug("inventory-item, id: "+item._id+" -- kind:"+item.kind+" -- amount:"+item.amount);
             });
 
             if (callback) {

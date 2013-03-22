@@ -64,9 +64,6 @@ module.exports = Player = Character.extend({
                 self.kind = Types.Entities.WARRIOR;
                 self.orientation = Utils.randomOrientation();
                 
-                self.server.addPlayer(self);
-                self.server.enter_callback(self);
-
                 // find previous player with this id
                 Players.findOne({name: self.name}, function(err, dbPlayer){
                     if (dbPlayer) {
@@ -91,6 +88,10 @@ module.exports = Player = Character.extend({
                         self.send([Types.Messages.WELCOME, self.getData()]);
                         self.hasEnteredGame = true;
                         self.isDead = false;
+
+                        self.server.addPlayer(self, function(){
+                            self.server.enter_callback(self);
+                        });
                     });
                 });
             }
@@ -155,7 +156,7 @@ module.exports = Player = Character.extend({
                 if(mob) {
                     var dmg = Formulas.dmg(self.weaponLevel, mob.armorLevel);
                     
-                    if(dmg > 0) {
+                    if (dmg > 0) {
                         mob.receiveDamage(dmg, self.id);
                         self.server.handleMobHate(mob.id, self.id, dmg);
                         self.server.handleHurtEntity(mob, self, dmg);
@@ -165,8 +166,9 @@ module.exports = Player = Character.extend({
             else if(action === Types.Messages.HURT) {
                 var mob = self.server.getEntityById(message[1]);
                 if(mob && self.hp > 0) {
-                    self.hp -= Formulas.dmg(mob.weaponLevel, self.armorLevel);
-                    self.server.handleHurtEntity(self);
+                    var damage = Formulas.dmg(mob.weaponLevel, self.armorLevel);
+                    self.hp -= damage;
+                    self.server.handleHurtEntity(self, mob, damage);
                     
                     if(self.hp <= 0) {
                         self.isDead = true;
@@ -336,7 +338,6 @@ module.exports = Player = Character.extend({
                 self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
                 self.firepotionTimeout = null;
             }, 15000);
-            self.send(new Messages.HitPoints(self.maxHP).serialize());
         } else if (Types.isHealingItem(item.kind)) {
             var amount;
             
@@ -351,7 +352,7 @@ module.exports = Player = Character.extend({
             
             if (!self.hasFullHealth()) {
                 self.regenHealthBy(amount);
-                self.server.pushToPlayer(self, self.health());
+                self.broadcast(self.health());
             }
         }
 

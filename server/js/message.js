@@ -75,22 +75,6 @@ Messages.Attack = Message.extend({
     }
 });
 
-Messages.Health = Message.extend({
-    init: function(points, isRegen) {
-        this.points = points;
-        this.isRegen = isRegen;
-    },
-    serialize: function() {
-        var health = [Types.Messages.HEALTH,
-                      this.points];
-        
-        if(this.isRegen) {
-            health.push(1);
-        }
-        return health;
-    }
-});
-
 Messages.HitPoints = Message.extend({
     init: function(maxHitPoints) {
         this.maxHitPoints = maxHitPoints;
@@ -154,29 +138,36 @@ Messages.Teleport = Message.extend({
 });
 
 Messages.Damage = Message.extend({
-    init: function(entity, points) {
+    init: function(entity, points, attacker) {
         this.entity = entity;
         this.points = points;
+        this.attacker = attacker;
     },
     serialize: function() {
         return [Types.Messages.DAMAGE,
                 this.entity.id,
-                this.points];
+                this.points,
+                this.attacker.id];
     }
 });
 
-Messages.MobHealth = Message.extend({
-    init: function(entity) {
+Messages.Health = Message.extend({
+    init: function(entity, isRegen) {
         this.entity = entity;
+        this.isRegen = isRegen;
     },
     serialize: function() {
-        return [Types.Messages.MOBHEALTH,
-                this.entity.id,
-                this.entity.hp,
-                this.entity.maxHP];
+        var health = [Types.Messages.HEALTH,
+                      this.entity.id,
+                      this.entity.hp,
+                      this.entity.maxHP];
+        
+        if (this.isRegen) {
+            health.push(1);
+        }
+        return health;
     }
 });
-
 Messages.Population = Message.extend({
     init: function(world, total) {
         this.world = world;

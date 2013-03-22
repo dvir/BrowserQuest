@@ -32,7 +32,6 @@ Types = {
         LEVEL: 28,
         DATA: 29,
         INVENTORY: 30,
-        MOBHEALTH: 31,
 
         PLACEHOLDER: 10000
     },

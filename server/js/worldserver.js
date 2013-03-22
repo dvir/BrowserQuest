@@ -84,11 +84,12 @@ module.exports = World = cls.Class.extend({
         this.onPlayerEnter(function(player) {
             log.info(player.name + " has joined "+ self.id);
             
-            if(!player.hasEnteredGame) {
+            if (!player.hasEnteredGame) {
                 self.incrementPlayerCount();
             }
             
             // Number of players in this world
+
             self.pushToPlayer(player, new Messages.Population(self.playerCount));
             self.pushRelevantEntityListTo(player);
     
@@ -116,7 +117,7 @@ module.exports = World = cls.Class.extend({
             player.onZone(function() {
                 var hasChangedGroups = self.handleEntityGroupMembership(player);
                 
-                if(hasChangedGroups) {
+                if (hasChangedGroups) {
                     self.pushToPreviousGroups(player, new Messages.Destroy(player));
                     self.pushRelevantEntityListTo(player);
                 }
@@ -161,7 +162,7 @@ module.exports = World = cls.Class.extend({
                     character.regenHealthBy(Formulas.regenHP(character));
             
                     if(character.type === 'player') {
-                        self.pushToPlayer(character, character.regen());
+                        character.broadcast(character.regen(), false);
                     }
                 }
             });
@@ -258,12 +259,11 @@ module.exports = World = cls.Class.extend({
     
     pushRelevantEntityListTo: function(player) {
         var entities;
-        
-        if(player && (player.group in this.groups)) {
+        if (player && (player.group in this.groups)) {
             entities = _.keys(this.groups[player.group].entities);
             entities = _.reject(entities, function(id) { return id == player.id; });
             entities = _.map(entities, function(id) { return parseInt(id); });
-            if(entities) {
+            if (entities) {
                 this.pushToPlayer(player, new Messages.List(entities));
             }
         }
@@ -283,11 +283,14 @@ module.exports = World = cls.Class.extend({
     },
     
     pushToPlayer: function(player, message) {
-        if(player && player.id in this.outgoingQueues) {
-            this.outgoingQueues[player.id].push(message.serialize());
-        } else {
+        if (!player) {
             log.error("pushToPlayer: player was undefined");
+            return;
         }
+
+        if (player && player.id in this.outgoingQueues) {
+            this.outgoingQueues[player.id].push(message.serialize());
+        } 
     },
     
     pushToGroup: function(groupId, message, ignoredPlayer) {
@@ -324,8 +327,8 @@ module.exports = World = cls.Class.extend({
     },
     
     pushBroadcast: function(message, ignoredPlayer) {
-        for(var id in this.outgoingQueues) {
-            if(id != ignoredPlayer) {
+        for (var id in this.outgoingQueues) {
+            if (id != ignoredPlayer) {
                 this.outgoingQueues[id].push(message.serialize());
             }
         }
@@ -344,9 +347,9 @@ module.exports = World = cls.Class.extend({
         }
     },
     
-    addEntity: function(entity) {
+    addEntity: function(entity, callback) {
         this.entities[entity.id] = entity;
-        this.handleEntityGroupMembership(entity);
+        this.handleEntityGroupMembership(entity, callback);
     },
     
     removeEntity: function(entity) {
@@ -370,10 +373,10 @@ module.exports = World = cls.Class.extend({
         log.debug("Removed "+ Types.getKindAsString(entity.kind) +" : "+ entity.id);
     },
     
-    addPlayer: function(player) {
-        this.addEntity(player);
+    addPlayer: function(player, callback) {
         this.players[player.id] = player;
         this.outgoingQueues[player.id] = [];
+        this.addEntity(player, callback);
     },
     
     removePlayer: function(player) {
@@ -546,18 +549,10 @@ module.exports = World = cls.Class.extend({
     
     handleHurtEntity: function(entity, attacker, damage) {
         var self = this;
-       
-        this.pushBroadcast(new Messages.MobHealth(entity));
-
-        if(entity.type === 'player') {
-            // A player is only aware of his own hitpoints
-            this.pushToPlayer(entity, entity.health());
-        }
-        
-        if(entity.type === 'mob') {
-            // Let the mob's attacker (player) know how much damage was inflicted
-            this.pushToPlayer(attacker, new Messages.Damage(entity, damage));
-        }
+      
+        // @TODO: broadcast only to relevant groups
+        this.pushBroadcast(new Messages.Health(entity));
+        this.pushBroadcast(new Messages.Damage(entity, damage, attacker));
 
         // If the entity is about to die
         if(entity.hp <= 0) {
@@ -755,7 +750,7 @@ module.exports = World = cls.Class.extend({
         }
     },
     
-    addToGroup: function(entity, groupId) {
+    addToGroup: function(entity, groupId, callback) {
         var self = this,
             newGroups = [];
         
@@ -770,6 +765,10 @@ module.exports = World = cls.Class.extend({
                 this.groups[groupId].players.push(entity.id);
             }
         }
+
+        if (callback) {
+            callback();
+        }
         return newGroups;
     },
     
@@ -780,15 +779,15 @@ module.exports = World = cls.Class.extend({
         });
     },
     
-    handleEntityGroupMembership: function(entity) {
+    handleEntityGroupMembership: function(entity, callback) {
         var hasChangedGroups = false;
-        if(entity) {
+        if (entity) {
             var groupId = this.map.getGroupIdFromPosition(entity.x, entity.y);
-            if(!entity.group || (entity.group && entity.group !== groupId)) {
+            if (!entity.group || (entity.group && entity.group !== groupId)) {
                 hasChangedGroups = true;
                 this.addAsIncomingToGroup(entity, groupId);
                 var oldGroups = this.removeFromGroups(entity);
-                var newGroups = this.addToGroup(entity, groupId);
+                var newGroups = this.addToGroup(entity, groupId, callback);
                 
                 if(_.size(oldGroups) > 0) {
                     entity.recentlyLeftGroups = _.difference(oldGroups, newGroups);

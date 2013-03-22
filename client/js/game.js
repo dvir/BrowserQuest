@@ -1309,18 +1309,52 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     }
                 });
             
-                self.client.onPlayerDamageMob(function(mobId, points) {
-                    var mob = self.getEntityById(mobId);
-                    if(mob && points) {
-                        self.infoManager.addDamageInfo(points, mob.x, mob.y - 15, "inflicted");
+                self.client.onDamage(function(entityId, points, attackerId) {
+                    var entity = self.getEntityById(entityId);
+
+                    if (self.player) {
+                        if (attackerId == self.player.id) {
+                            if (entity) {
+                                self.infoManager.addDamageInfo(points, entity.x, entity.y - 15, "inflicted");
+                            }
+                        } else if (entityId == self.player.id) {
+                            self.infoManager.addDamageInfo(-points, self.player.x, self.player.y - 15, "received");
+                        }   
                     }
                 });
 
-                self.client.onMobHealth(function(mobId, hp, maxHP) {
+                self.client.onHealth(function(mobId, hp, maxHP, isRegen) {
                     var mob = self.getEntityById(mobId);
                     if (mob) {
+                        var diff = hp - mob.hp;
+
                         mob.maxHP = maxHP;
                         mob.hp = hp;
+
+                        if (mobId == self.player.id) {
+                            var player = self.player,
+                                isHurt = diff < 0;
+                        
+                            if (player && !player.isDead && !player.invincible) {
+                                if (player.hp <= 0) {
+                                    player.die();
+                                }
+                                if (isHurt) {
+                                    player.hurt();
+                                    self.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
+                                    self.audioManager.playSound("hurt");
+                                    self.storage.addDamage(-diff);
+                                    self.tryUnlockingAchievement("MEATSHIELD");
+                                    if (self.playerhurt_callback) {
+                                        self.playerhurt_callback();
+                                    }
+                                } else if (!isRegen) {
+                                    self.infoManager.addDamageInfo("+"+diff, player.x, player.y - 15, "healed");
+                                }
+
+                                self.updateBars();
+                            }
+                        }
                     }
                 });
             
@@ -1367,42 +1401,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     }
                 });
             
-                self.client.onPlayerChangeHealth(function(points, isRegen) {
-                    var player = self.player,
-                        diff,
-                        isHurt;
-                
-                    if(player && !player.isDead && !player.invincible) {
-                        isHurt = (points <= player.hp);
-                        diff = points - player.hp;
-                        player.hp = points;
-
-                        if(player.hp <= 0) {
-                            player.die();
-                        }
-                        if(isHurt) {
-                            player.hurt();
-                            self.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
-                            self.audioManager.playSound("hurt");
-                            self.storage.addDamage(-diff);
-                            self.tryUnlockingAchievement("MEATSHIELD");
-                            if(self.playerhurt_callback) {
-                                self.playerhurt_callback();
-                            }
-                        } else if(!isRegen){
-                            self.infoManager.addDamageInfo("+"+diff, player.x, player.y - 15, "healed");
-                        }
-                        self.updateBars();
-                    }
-                });
-
-                self.client.onPlayerChangeMaxHitPoints(function(hp) {
-                    self.player.maxHP = hp;
-                    self.player.hp = Math.min(self.player.hp, hp);
-
-                    self.updateBars();
-                });
-
                 self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
                     self.player.xp = xp;
 

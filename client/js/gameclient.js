@@ -36,7 +36,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.handlers[Types.Messages.DATA] = this.receiveData;
             this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
             this.handlers[Types.Messages.LOOT] = this.receiveLoot;
-            this.handlers[Types.Messages.MOBHEALTH] = this.receiveMobHealth;
             
             this.useBison = false;
             this.enable();
@@ -274,15 +273,13 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         },
     
         receiveHealth: function(data) {
-            var points = data[1],
-                isRegen = false;
+            var entityId = data[1],
+                hp = data[2],
+                maxHP = data[3],
+                isRegen = data[4] ? true : false;
         
-            if(data[2]) {
-                isRegen = true;
-            }
-        
-            if(this.health_callback) {
-                this.health_callback(points, isRegen);
+            if (this.health_callback) {
+                this.health_callback(entityId, hp, maxHP, isRegen);
             }
         },
     
@@ -329,11 +326,12 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         },
     
         receiveDamage: function(data) {
-            var id = data[1],
-                dmg = data[2];
+            var entityId = data[1],
+                dmg = data[2],
+                attackerId = data[3];
         
             if(this.dmg_callback) {
-                this.dmg_callback(id, dmg);
+                this.dmg_callback(entityId, dmg, attackerId);
             }
         },
     
@@ -420,14 +418,8 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             }
         },
 
-        receiveMobHealth: function(data) {
-            if (this.mob_health_callback) {
-                this.mob_health_callback(data[1], data[2], data[3]);
-            }
-        },
-
-        onMobHealth: function(callback) {
-            this.mob_health_callback = callback;
+        onHealth: function(callback) {
+            this.health_callback = callback;
         },
 
         onDispatched: function(callback) {
@@ -470,10 +462,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.attack_callback = callback;
         },
     
-        onPlayerChangeHealth: function(callback) {
-            this.health_callback = callback;
-        },
-    
         onPlayerEquipItem: function(callback) {
             this.equip_callback = callback;
         },
@@ -498,7 +486,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.drop_callback = callback;
         },
     
-        onPlayerDamageMob: function(callback) {
+        onDamage: function(callback) {
             this.dmg_callback = callback;
         },
     
@@ -518,10 +506,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.destroy_callback = callback;
         },
     
-        onPlayerChangeMaxHitPoints: function(callback) {
-            this.hp_callback = callback;
-        },
-
         onPlayerChangeXP: function(callback) {
             this.xp_callback = callback;
         },

@@ -125,11 +125,11 @@ module.exports = Character = Entity.extend({
     },
     
     health: function() {
-        return new Messages.Health(this.hp, false);
+        return new Messages.Health(this, false);
     },
     
     regen: function() {
-        return new Messages.Health(this.hp, true);
+        return new Messages.Health(this, true);
     },
     
     addAttacker: function(entity) {
