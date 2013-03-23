@@ -27,7 +27,9 @@ Inventories = mongoose.model('Inventory', inventorySchema);
 itemSchema = mongoose.Schema({
    kind: Number,
    amount: Number,
-   inventoryId: String
+   inventoryId: String,
+   slot: Number,
+   barSlot: Number
 });
 Items = mongoose.model('Item', itemSchema);
 
@@ -36,6 +38,12 @@ DB = cls.Class.extend({
         mongoose.connect("mongodb://localhost/browserquest");
         this.connection = mongoose.connection;
         this.connection.on('error', console.error.bind(console, 'connection error:'));
+
+        this.defaultCallback = function(err) {
+            if (err) {
+                log.debug("Failed executing query. Error: "+err);
+            }
+        };
     }
 });
 

@@ -253,28 +253,29 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
             $('#inventory').toggleClass('active');
         },
 
-        updateInventory: function(inventory) {
+        updateInventory: function() {
+            var self = this;
             var scale = this.game.renderer.getScaleFactor();
+            var inventory = this.game.player.inventory;
             var $inventory = $("#inventory"),
                 $list = $inventory.children("ul");
 
             $list.html("");
             var items = inventory.toArray();
-            var itemsCount = 0;
-            for (var itemId in items) {
-                if (itemsCount >= inventory.size) break;
+            for (var slot in items) {
+                var item = items[slot];
+                var $div = $("<div/>").attr("draggable", true).data("slot", slot).data("item", item).data("source", "inventory");
 
-                var item = items[itemId];
-                var $div = $("<div/>").attr("draggable", true);
-
-                //$("ul.slotbar > li > div").on("dragstart", function(e){
                 $div.on("dragstart", function(e){
                     $(this).css("opacity", 0.4);
-    console.log("started drag");
                     $dragSrc = $(this);
                     e.originalEvent.dataTransfer.effectAllowed = 'move';
                 }).on("dragend", function(e){
                     $(this).css("opacity", 1);
+                }).on("mousedown", function(e){
+                    if (e.which == 3) { // right mouse button
+                        $(this).data("item").use();
+                    }
                 });
 
                 var $listItem = $("<li/>").append($div);
@@ -297,50 +298,30 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
                         e.originalEvent.stopPropagation(); 
                     }
 
-                    var $currentDiv = $(this).find("div");
-                    if ($currentDiv) {
-                        $dragSrc.parent().append($currentDiv);
+                    if ($dragSrc.data("source") != "inventory") {
+                        console.log("Drag and drop denied for source "+$dragSrc.data("source"));
+                        return false;
                     }
-                    $(this).append($dragSrc);
+
+                    var $currentDiv = $(this).find("div");
+                    inventory.swap($dragSrc.data("slot").toInt(), $currentDiv.data("slot").toInt());
+
+                    self.updateInventory(); 
                 });
 
-                if (item.isStackable && item.amount > 0) {
-                    $div.append($("<span/>").addClass("amount").html(item.amount));
+                if (item) { // might be an empty slot
+                    if (item.isStackable && item.amount > 0) {
+                        $div.append($("<span/>").addClass("amount").html(item.amount));
+                    }
                 }
+
                 $list.append($listItem);
-                $div.css("background-image", "url('/img/"+scale+"/item-"+Types.getKindAsString(item.kind)+".png')");
 
-                itemsCount++;
-            }
-
-            // fill inventory with empty slots
-            for (var i = Math.min(inventory.size, Object.keys(items).length); i < inventory.size; i++) {
-                var $listItem = $("<li/>");
-                $listItem.on("dragover", function(e){
-                    if (e.originalEvent.preventDefault) {
-                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
-                    }
-
-                    // See the section on the DataTransfer object.
-                    e.originalEvent.dataTransfer.dropEffect = 'move';
-                    return false;
-                }).on("dragenter", function(e){
-                    $(this).addClass("over");   
-                }).on("dragleave", function(e){
-                    $(this).removeClass("over");   
-                }).on("drop", function(e){
-                    if (e.originalEvent.stopPropagation) {
-                        // stops the browser from redirecting.
-                        e.originalEvent.stopPropagation(); 
-                    }
-
-                    var $currentDiv = $(this).find("div");
-                    if ($currentDiv) {
-                        $dragSrc.parent().append($currentDiv);
-                    }
-                    $(this).append($dragSrc);
-                });
-                $list.append($listItem);
+                if (item) { // this check is split into two blocks
+                            // because background-image's from URL
+                            // MUST be set -after- the element is in the DOM.
+                    $div.css("background-image", "url('/img/"+scale+"/item-"+Types.getKindAsString(item.kind)+".png')");
+                }
             }
         },
 
@@ -363,24 +344,76 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
         },
 
         updateSkillbar: function() {
+            var self = this;
             var scale = this.game.renderer.getScaleFactor();
-            var skillbar = this.game.skillbar;
+            var skillbar = this.game.player.skillbar;
             var $skillbar = $("#skillbar"),
                 $list = $skillbar.children("ul");
+                
+            //$("canvas").on("dragover", function(e){
+                //if (e.originalEvent.preventDefault) {
+                    //e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
+                //}
+
+                //// See the section on the DataTransfer object.
+                //e.originalEvent.dataTransfer.dropEffect = 'move';
+                //return false;
+            //}).on("drop", function(e){
+                //if (e.originalEvent.stopPropagation) {
+                    //// stops the browser from redirecting.
+                    //e.originalEvent.stopPropagation(); 
+                //}
+                
+                //if ($dragSrc.data("source") == "skillbar") {
+                    //// let it "fall" off skillbar
+                    //skillbar.remove($dragSrc.data("slot").toInt());
+                //} else if ($dragSrc.data("source") == "inventory") {
+                    //// drop item on the floor?
+                //} else if ($dragSrc.data("source") == "spellbook") {
+                    //// do nothing
+                //}
+
+                //self.updateSkillbar(); 
+            //});
 
             $list.html("");
             var skills = skillbar.toArray();
-            var skillsCount = 0;
-            for (var skillId in skills) {
-                if (skillsCount >= skillbar.size) break;
+            for (var slot in skills) {
+                var skillSlot = skills[slot];
+                var $div = $("<div/>").attr("draggable", true).data("slot", slot).data("source", "skillbar");
+                $div.on("dragstart", function(e){
+                    $(this).css("opacity", 0.4);
+                    $dragSrc = $(this);
+                    e.originalEvent.dataTransfer.effectAllowed = 'move';
+                }).on("dragend", function(e){
+                    $(this).css("opacity", 1);
+                    // if $dragSrc is still set on the end of the drag,
+                    // that means that drag failed. (never reached the drop event)
+                    if ($dragSrc) {
+                        $dragSrc = null;
 
-                var skillSlot = skills[skillId];
-                var $div = $("<div/>");
-                if (skillSlot.isStackable && skillSlot.amount > 0) {
-                    $div.append($("<span/>").addClass("amount").html(skillSlot.amount));
-                }
-                if (skillSlot.keyBind) {
-                    $div.append($("<span/>").addClass("keybind").html(skillSlot.keyBind - 48));
+                        // @TODO: find a way to stop the default "bounce back"
+                        // drag failed animation
+
+                        // let it "fall" off skillbar
+                        skillbar.remove($(this).data("slot").toInt());
+                        self.updateInventory();
+                        self.updateSkillbar(); 
+                    }
+                });
+
+                if (skillSlot) {
+                    $div.data("skill", skillSlot.skill);
+                    if (skillSlot.skill.isStackable && skillSlot.skill.amount > 0) {
+                        $div.append($("<span/>").addClass("amount").html(skillSlot.skill.amount));
+                    }
+
+                    var key = slot;
+                    if (skillSlot.keyBind) {
+                        key = skillSlot.keyBind - 48;
+                    }
+
+                    $div.append($("<span/>").addClass("keybind").html(key));
                 }
                 
                 var $skillSlot = $("<li/>").append($div);
@@ -402,42 +435,25 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
                         e.originalEvent.stopPropagation(); 
                     }
                     
-                    $(this).html("");
-                    $(this).append($dragSrc);
+                    var $currentDiv = $(this).find("div");
+                    if ($dragSrc.data("source") == "skillbar") {
+                        skillbar.swap($currentDiv.data("slot").toInt(), $dragSrc.data("slot").toInt());
+                    } else if ($dragSrc.data("source") == "inventory") {
+                        skillbar.set($currentDiv.data("slot").toInt(), $dragSrc.data("item"));
+                    } else if ($dragSrc.data("source") == "spellbook") {
+                        skillbar.set($currentDiv.data("slot").toInt(), $currentDiv.data("spell"));
+                    }
+
+                    $dragSrc = null;
+                    self.updateSkillbar(); 
                 });
 
-                skillSlot.$htmlElement = $skillSlot;
                 $list.append($skillSlot); 
-                $div.css("background-image", "url('/img/"+scale+"/"+skillSlot.skill.getSpriteName()+".png')");
 
-                skillsCount++;
-            }
-
-            // fill skillbar with empty slots
-            for (var i = Math.min(skillbar.size, Object.keys(skills).length); i < skillbar.size; i++) {
-                var $listItem = $("<li/>");
-                $listItem.on("dragover", function(e){
-                    if (e.originalEvent.preventDefault) {
-                        e.originalEvent.preventDefault(); // Necessary. Allows us to drop.
-                    }
-
-                    // See the section on the DataTransfer object.
-                    e.originalEvent.dataTransfer.dropEffect = 'move';
-                    return false;
-                }).on("dragenter", function(e){
-                    $(this).addClass("over");   
-                }).on("dragleave", function(e){
-                    $(this).removeClass("over");   
-                }).on("drop", function(e){
-                    if (e.originalEvent.stopPropagation) {
-                        // stops the browser from redirecting.
-                        e.originalEvent.stopPropagation(); 
-                    }
-
-                    $(this).html("");
-                    $(this).append($dragSrc);
-                });
-                $list.append($listItem);
+                if (skillSlot) {
+                    skillSlot.$htmlElement = $skillSlot;
+                    $div.css("background-image", "url('/img/"+scale+"/"+skillSlot.skill.getSpriteName()+".png')");
+                }
             }
         },
 

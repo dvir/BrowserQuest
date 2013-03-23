@@ -1,5 +1,5 @@
 
-define(['character', 'exceptions', 'inventory'], function(Character, Exceptions, Inventory) {
+define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character, Exceptions, Inventory, Skillbar) {
 
     var Player = Character.extend({
         MAX_LEVEL: 10,
@@ -15,7 +15,6 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
 
             this._xp = 0;
             this._maxXP = 0;
-            this._inventory = null;
 
             this.name = name;
         
@@ -28,6 +27,9 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
 
             // storage
             this.storage = null;
+            
+            this.inventory = new Inventory();
+            this.skillbar = new Skillbar();
         },
 
         loadInventory: function(data) {
@@ -36,6 +38,8 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
             } else {
                 this.inventory = new Inventory(data);
             }
+            
+            this.skillbar.update();
         },
 
         lootedArmor: function(item) {
@@ -278,7 +282,7 @@ define(['character', 'exceptions', 'inventory'], function(Character, Exceptions,
             this.loadInventory(data.inventory);
             delete data.inventory;
 
-            $.extend(this, data);
+            $.extend(this, data);        
         }
     });
 

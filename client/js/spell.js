@@ -38,6 +38,8 @@ define(function() {
         },
 
         use: function(target) {
+            globalGame.client.sendUseSpell(this);
+
             if (target) {
                 console.log("Used %s on %s", this.spellKind, target.name);
             } else {

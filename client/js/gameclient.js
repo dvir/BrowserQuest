@@ -121,6 +121,8 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                     data = JSON.stringify(json);
                 }
                 this.connection.send(data);
+
+                console.debug("dataOut: "+data);
             }
         },
 
@@ -134,7 +136,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                     data = JSON.parse(message);
                 }
 
-                log.debug("data: " + message);
+                console.debug("dataIn: " + message);
 
                 if(data instanceof Array) {
                     if(data[0] instanceof Array) {
@@ -524,6 +526,32 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
     
         onItemBlink: function(callback) {
             this.blink_callback = callback;
+        },
+
+        sendInventory: function(inventory) {
+            this.sendMessage([Types.Messages.INVENTORY,
+                              inventory.serialize()]);
+        },
+
+        sendInventoryItem: function(inventoryItem) {
+            this.sendMessage([Types.Messages.INVENTORYITEM,
+                              inventoryItem.serialize()]);
+        },
+
+        sendInventorySwap: function(first, second) {
+            this.sendMessage([Types.Messages.INVENTORYSWAP,
+                              first,
+                              second]);
+        },
+
+        sendUseItem: function(item) {
+            this.sendMessage([Types.Messages.USEITEM,
+                              item.id]);
+        },
+
+        sendUseSpell: function(spell) {
+            this.sendMessage([Types.Messages.USESPELL,
+                              spell.id]);
         },
 
         sendHello: function(player) {

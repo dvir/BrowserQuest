@@ -18,7 +18,12 @@ var _ = require('underscore'),
             this.formats[Types.Messages.TELEPORT] = ['n', 'n'],
             this.formats[Types.Messages.ZONE] = [],
             this.formats[Types.Messages.OPEN] = ['n'],
-            this.formats[Types.Messages.CHECK] = ['n']
+            this.formats[Types.Messages.CHECK] = ['n'],
+            this.formats[Types.Messages.INVENTORY] = [],
+            this.formats[Types.Messages.INVENTORYITEM] = [],
+            this.formats[Types.Messages.INVENTORYSWAP] = ['n', 'n'],
+            this.formats[Types.Messages.USEITEM] = ['s'],
+            this.formats[Types.Messages.USESPELL] = ['s']
         },
         
         check: function(msg) {
@@ -28,7 +33,11 @@ var _ = require('underscore'),
             
             message.shift();
             
-            if(format) {    
+            if(format) {   
+                if (format.length == 0) {
+                    return true;
+                }
+
                 if(message.length !== format.length) {
                     return false;
                 }

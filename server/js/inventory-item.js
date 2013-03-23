@@ -14,13 +14,21 @@ module.exports = InventoryItem = Entity.extend({
             amount: 1,
             kind: Types.Entities.UNKNOWN,
             inventoryId: 0,
-            x: 0,
-            y: 0
+            slot: -1,
+            barSlot: -1
         });
 
         if (dbEntity) {
             this.setDBEntity(dbEntity);
         }
+    },
+
+    use: function() {
+        
+    },
+
+    get id() {
+        return this.data.id;
     },
 
     get kind() {
@@ -40,17 +48,33 @@ module.exports = InventoryItem = Entity.extend({
         return this.data.inventoryId;
     },
 
+    get slot() {
+        return this.data.slot;
+    },
+
+    set slot(slot) {
+        this.data.slot = slot;
+        this.save();
+    },
+
+    getData: function() {
+        var data = this.data;
+    //    delete data.inventoryId;
+        return data;
+    },
+
     loadFromDB: function() {
         if (!this.dbEntity) return;
         
         this._super();
         
         Utils.Mixin(this.data, {
+            id: this.dbEntity._id,
             kind: this.dbEntity.kind,
             amount: this.dbEntity.amount,
             inventoryId: this.dbEntity.inventoryId,
-            x: this.dbEntity.x,
-            y: this.dbEntity.y
+            slot: this.dbEntity.slot,
+            barSlot: this.dbEntity.barSlot
         });
     },
 
@@ -61,8 +85,8 @@ module.exports = InventoryItem = Entity.extend({
         this.dbEntity.kind = this.data.kind;
         this.dbEntity.amount = this.data.amount;
         this.dbEntity.inventoryId = this.data.inventoryId;
-        this.dbEntity.x = this.data.x;
-        this.dbEntity.y = this.data.y;
+        this.dbEntity.slot = this.data.slot;
+        this.dbEntity.barSlot = this.data.barSlot;
 
         this._super();
     }

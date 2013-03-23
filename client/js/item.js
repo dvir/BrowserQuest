@@ -51,13 +51,6 @@ define(['entity'], function(Entity) {
             }
         },
 
-        use: function(target) {
-            console.log("Used %s", this.itemKind);
-            if (target) {
-                console(" on %s", target.name);
-            }
-        },
-
         getSpriteName: function() {
             return "item-"+ this.itemKind;
         },

@@ -1,4 +1,6 @@
 globalSprites = {};
+globalInventoryItems = {};
+
 define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
         'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
         'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', '../../shared/js/gametypes'],
@@ -23,8 +25,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         
             // Player
             this.player = new Warrior("player", "");
-            this.skillbar = new Skillbar();
-            this.skillbar.add(49, Types.Entities.FROSTNOVA);
+            this.player.skillbar.add(Types.Entities.FROSTNOVA);
     
             // Game state
             this.entities = {};
@@ -80,7 +81,11 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
 
         updateInventory: function() {
-            this.app.updateInventory(this.player.inventory);
+            this.app.updateInventory();
+        },
+
+        updateSkillbar: function() {
+            this.app.updateSkillbar();
         },
 
         activateTownPortal: function() {
@@ -762,7 +767,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 
                 self.player.name = self.username;
                 self.started = true;
-            
+           
                 self.sendHello(self.player);
             });
         
@@ -1424,15 +1429,14 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
                 self.client.onInventoryUpdate(function(data) {
                     self.player.loadInventory(data);
-
-                    self.updateInventory();
+                    
+                    self.updateBars();
                 });
             
                 self.client.onDataUpdate(function(data) {
                     self.player.loadFromObject(data);
 
                     self.updateBars();
-                    self.updateInventory();
                 });
 
                 self.client.onLootItem(function(itemId) {
@@ -2439,7 +2443,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         updateBars: function() {
-            if(this.player) {
+            if (this.player) {
                 if (this.playerhp_callback) {
                     this.playerhp_callback(this.player);
                 }
@@ -2449,6 +2453,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 }
 
                 this.app.updateTarget();
+                this.app.updateInventory();
                 this.app.updateSkillbar();
             }
         },

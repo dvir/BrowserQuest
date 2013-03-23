@@ -2,8 +2,8 @@
 define(function() {
     
     var SkillSlot = Class.extend({
-        init: function(keyBind, skill) {
-            this.keyBind = keyBind;
+        init: function(skill) {
+            this.keyBind = null;
             this.skill = skill;
             this.$htmlElement = null;
         }, 

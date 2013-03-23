@@ -32,6 +32,11 @@ Types = {
         LEVEL: 28,
         DATA: 29,
         INVENTORY: 30,
+        INVENTORYITEM: 31,
+        INVENTORYSWAP: 32,
+        USE: 33,
+        USEITEM: 34,
+        USESPELL: 35,
 
         PLACEHOLDER: 10000
     },

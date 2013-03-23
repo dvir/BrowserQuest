@@ -149,10 +149,10 @@ define(['jquery', 'app'], function($, App) {
     		}
     		
     		$('.play div').click(function(event) {
-                var nameFromInput = $('#nameinput').attr('value'),
+                var nameFromInput = $('#nameinput').val(),
                     nameFromStorage = $('#playername').html(),
                     name = nameFromInput || nameFromStorage;
-                
+               
                 app.tryStartingGame(name);
             });
         
@@ -175,6 +175,7 @@ define(['jquery', 'app'], function($, App) {
         	    foreground = document.getElementById("foreground"),
         	    input = document.getElementById("chatinput");
     		game = new Game(app);
+            globalGame = game;
     		game.setup('#bubbles', canvas, background, foreground, input);
     		game.setStorage(app.storage);
     		app.setGame(game);
@@ -384,9 +385,8 @@ define(['jquery', 'app'], function($, App) {
                             game.activateTownPortal();
                             break;
                         default:
-                            if (!game.skillbar.click(key, game.player)) {
+                            if (!game.player.skillbar.click(key, game.player)) {
                                 // not even a skillbar action
-
                             }
                             break;
                     }

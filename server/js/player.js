@@ -153,7 +153,7 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.HIT) {
                 var mob = self.server.getEntityById(message[1]);
-                if(mob) {
+                if (mob) {
                     var dmg = Formulas.dmg(self.weaponLevel, mob.armorLevel);
                     
                     if (dmg > 0) {
@@ -165,7 +165,7 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.HURT) {
                 var mob = self.server.getEntityById(message[1]);
-                if(mob && self.hp > 0) {
+                if (mob && self.hp > 0) {
                     var damage = Formulas.dmg(mob.weaponLevel, self.armorLevel);
                     self.hp -= damage;
                     self.server.handleHurtEntity(self, mob, damage);
@@ -211,6 +211,36 @@ module.exports = Player = Character.extend({
                 if(checkpoint) {
                     self.lastCheckpoint = checkpoint;
                 }
+            }
+            else if(action === Types.Messages.INVENTORY) {
+
+            }
+            else if(action === Types.Messages.INVENTORYITEM) {
+                var data = message[1];
+                var inventoryItemId = data.id;
+                delete data.id;
+
+//                Items.update({_id: inventoryItemId}, {$set: data});
+                data._id = inventoryItemId;
+                Items.save(data, function(){
+                    self.inventory.loadFromDB();
+                });
+            }
+            else if(action === Types.Messages.INVENTORYSWAP) {
+                var first = message[1],
+                    second = message[2];
+                self.inventory.swap(first, second);
+            }
+            else if(action === Types.Messages.USEITEM) {
+                var id = message[1];
+                var item = self.inventory.find(id);
+                if (item) {
+                    self.useItem(item);
+                }
+            }
+            else if(action === Types.Messages.USESPELL) {
+                var id = message[1];
+                self.spellbook.use(id);
             }
             else {
                 if(self.message_callback) {
@@ -329,6 +359,14 @@ module.exports = Player = Character.extend({
         });
     },
 
+    sync: function() {
+        this.send(new Messages.Data(this.getData()).serialize());
+    },
+
+    syncInventory: function() {
+        this.send(new Messages.Inventory(this.inventory).serialize());
+    },
+
     useItem: function(item) {
         var self = this;
 
@@ -341,7 +379,7 @@ module.exports = Player = Character.extend({
         } else if (Types.isHealingItem(item.kind)) {
             var amount;
             
-            switch (kind) {
+            switch (item.kind) {
                 case Types.Entities.FLASK: 
                     amount = 40;
                     break;
@@ -352,12 +390,11 @@ module.exports = Player = Character.extend({
             
             if (!self.hasFullHealth()) {
                 self.regenHealthBy(amount);
-                self.broadcast(self.health());
+                self.broadcast(self.health(), false);
             }
         }
 
-        self.broadcast(item.despawn());
-        self.server.removeEntity(item);
+        self.inventory.decrease(item);
     },
   
     lootedItem: function(item) {
@@ -365,10 +402,7 @@ module.exports = Player = Character.extend({
 
         if (item.useOnPickup) {
             self.useItem(item);
-            return;
-        }
-
-        if (this.inventory.add(item)) {
+        } else if (this.inventory.add(item)) {
             log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
             self.server.pushToPlayer(self, self.loot(item));
             self.broadcast(item.despawn());
@@ -389,6 +423,9 @@ module.exports = Player = Character.extend({
             // do not pick it up.
             return;
         }
+
+        self.broadcast(item.despawn());
+        self.server.removeEntity(item);
     },
 
     equipItem: function(item) {

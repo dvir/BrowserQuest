@@ -13,7 +13,7 @@ module.exports = Inventory = DBEntity.extend({
     init: function(player, callback) {
         this.player = null;
         this.dbEntity = null;
-        this.items = {};
+        this.items = new Array();
 
         if (player) {
             this.player = player;
@@ -27,6 +27,40 @@ module.exports = Inventory = DBEntity.extend({
 
     get size() {
         return this.data.size;
+    },
+
+    swap: function(first, second) {
+       var temp = this.items[first];
+       this.items[first] = this.items[second];
+       this.items[second] = temp;
+
+       if (this.items[first]) {
+            this.items[first].slot = first;
+       }
+       if (this.items[second]) {
+            this.items[second].slot = second;
+       }
+    },
+
+    use: function(itemId) {
+        // find item with itemId and use it
+        for (var i in this.items) {
+            var item = this.items[i];
+            if (item.id == itemId) {
+                item.use();
+            }
+        }
+    },
+
+    find: function(itemId) {
+        for (var i in this.items) {
+            var item = this.items[i];
+            if (item.id == itemId) {
+                return item;
+            }
+        }
+
+        return null;
     },
 
     add: function(item) {
@@ -46,16 +80,27 @@ module.exports = Inventory = DBEntity.extend({
         // create a new inventory item for it
         //
         // but first, check if we have room for it in the inventory
-        log.debug("size: "+this.size);
         if (Object.keys(this.items).length >= this.size) {
             // not enough room!
             return false;
         }
 
+        // find a slot to place the new item at
+        var slot = -1;
+        //for  (var i in this.items) {
+        for  (var i = 0; i < this.size; i++) {
+            if (!this.items[i]) {
+                slot = i;
+                break;
+            }
+        }
+
         var newItem = new Items({
             kind: item.kind,
             amount: item.amount,
-            inventoryId: this.id
+            inventoryId: this.id,
+            slot: slot,
+            barSlot: -1
         });
         newItem.save(function(err) {
             if (err) {
@@ -67,21 +112,44 @@ module.exports = Inventory = DBEntity.extend({
         });
 
         // place it in the inventory
-        this.items[newItem._id] = new InventoryItem(newItem);
+        this.items[slot] = new InventoryItem(newItem);
 
         return true;
     },
 
+    decrease: function(item, amount) {
+        var self = this;
+
+        if (!amount) {
+            amount = 1;
+        }
+
+        // find item in the list 
+        for (var i in self.items) {
+           var curItem = self.items[i]; 
+           if (item.kind == curItem.kind) {
+               curItem.amount -= amount;
+               if (curItem.amount <= 0) {
+                   Items.remove({_id: curItem._id}, DB.defaultCallback);
+                   self.items[i] = null;
+                   log.debug("Removed item from player's inventory");
+               }
+
+               self.player.syncInventory();
+               return;
+           }
+        }
+    },
+
     remove: function(item) {
-        // find item in the list so we can set it to a different
-        // inventory id.
+        // find item in the list 
         for (var i in this.items) {
            var curItem = this.items[i]; 
            if (item.kind == curItem.kind) {
                curItem.amount -= item.amount;
                if (curItem.amount <= 0) {
-                   Items.remove({_id: curItem._id});
-                   delete this.items[i];
+                   Items.remove({_id: curItem._id}, DB.defaultCallback);
+                   self.items[i] = null;
                    log.debug("Removed item from player's inventory");
                } else {
                    curItem.save(function(err) {
@@ -141,15 +209,17 @@ module.exports = Inventory = DBEntity.extend({
             id: self.dbEntity._id
         });
 
+        self.items = {};
+
         // load items
-        Items.find({inventoryId: self.id}, function(err, items){
+        Items.find({inventoryId: self.id, amount: {$gte: 1}}, function(err, items){
             if (err) {
                 log.debug("Error loading items for inventory '"+self.id+"'");
                 return;
             }
-
+            
             items.forEach(function(item) {
-                self.items[item._id] = new InventoryItem(item);
+                self.items[item.slot] = new InventoryItem(item);
             });
 
             if (callback) {
@@ -162,16 +232,22 @@ module.exports = Inventory = DBEntity.extend({
         if (!this.dbEntity) return;
 
 //        Utils.Mixin(this.dbEntity, this.data);
-        this.dbEntity.playerId = this.data.playerId;
         this.dbEntity.size = this.data.size;
+        for (var i in this.items) {
+            if (this.items[i]) {
+                this.items[i].save();
+            }
+        }
 
         this._super();
     },
 
     serialize: function() {
-        var items = {};
-        for (var itemId in this.items) {
-            items[itemId] = this.items[itemId].data;
+        var items = {}; 
+        for (var i in this.items) {
+            if (this.items[i]) {
+                items[i] = this.items[i].getData();
+            }
         }
 
         return [this.size, items];

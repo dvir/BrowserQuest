@@ -1,3 +1,7 @@
+String.prototype.toInt = function() {
+    return parseInt(this.valueOf());
+};
+
 
 /** vim: et:ts=4:sw=4:sts=4
  * @license RequireJS 0.26.0 Copyright (c) 2010-2011, The Dojo Foundation All Rights Reserved.
