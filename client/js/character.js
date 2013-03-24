@@ -203,7 +203,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             this.destination = { gridX: x, gridY: y };
             this.adjacentTiles = {};
         
-            if(this.isMoving()) {
+            if (this.isMoving()) {
                 this.continueTo(x, y);
             }
             else {

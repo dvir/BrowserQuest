@@ -259,7 +259,7 @@ define(['jquery', 'app'], function($, App) {
                 $('#foreground').click(function(event) {
                     app.center();
                     app.setMouseCoordinates(event);
-                    if(game) {
+                    if (game) {
                 	    game.click();
                 	}
                 	app.hideWindows();

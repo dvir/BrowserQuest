@@ -251,6 +251,8 @@ define(['character', 'timer'], function(Character, Timer) {
 
         updateKeyboardMovement: function() {
             if (!this.game.player || this.game.player.isMoving()) return;
+                    
+            this.game.selectedCellVisible = false;
 
             var game = this.game;
             var player = this.game.player;

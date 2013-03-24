@@ -833,7 +833,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     // Target cursor position
                     self.selectedX = x;
                     self.selectedY = y;
-                    self.selectedCellVisible = true;
 
                     if(self.renderer.mobile || self.renderer.tablet) {
         	            self.drawTarget = true;
@@ -2024,6 +2023,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
         click: function()
         {
+            this.selectedCellVisible = true;
+            
             var pos = this.getMouseGridPosition();
 
             if(pos.x === this.previousClickPosition.x
