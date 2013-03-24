@@ -22,27 +22,28 @@ define(['exceptions',
             this._skills = [];
             this.reset();
             
+            this.keyMap = [49, 50, 51, 52, 53, 54, 81, 69, 90, 88, 67, 86];
+                       //  1,  2,  3,  4,  5,  6,  q,  e,  z,  x,  c,  v
+            this.actualKeyMap = ["1", "2", "3", "4", "5", "6", "Q", "E", "Z", "X", "C", "V"];
+            
             if (data) {
                 this.loadFromObject(data);
             }
         },
 
         key: function(i) {
-            if (i < 10) {
-                return (i+1) % 10; // [ 1 2 .. 9 0 ] sequence
-            }
+            return this.keyMap[i];
+        },
 
-            switch (i) {
-                case 10: 
-                    return "-";
-                    break;
+        actualKey: function(i) {
+            return this.actualKeyMap[i];
+        },
 
-                case 11:
-                    return "=";
-                    break;
-
-                default:
-                    throw "No such key '"+i+"'";
+        keySlot: function(key) {
+            for (var k in this.keyMap) {
+                if (this.keyMap[k] == key) {
+                    return k;
+                }
             }
         },
 
@@ -83,33 +84,8 @@ define(['exceptions',
         },
 
         click: function(key, target) {
-            $.each(this._skills, function(idx, skill) {
-                if (skill && skill.keyBind == key) {
-                    skill.use(target);
-                    return;
-                }
-            });
-
-            // no skill was bounded to the key.
-            // execute default
-            switch (key) {
-                case 187:
-                    key = 59;
-                    break;
-                case 189:
-                    key = 58;
-                    break;
-            }
-            key -= 48;
-            if (key < 10) {
-                if (key == 0) {
-                    key = 9;
-                } else {
-                    key--;
-                }
-            }
-            if (this._skills[key]) {
-                this._skills[key].use(target);
+            if (this._skills[this.keySlot(key)]) {
+                this._skills[this.keySlot(key)].use(target);
             }
         },
 

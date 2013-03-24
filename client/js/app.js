@@ -396,18 +396,14 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
                     }
                 });
 
-                var key = skillbar.key(slot.toInt());
                 if (skillSlot) {
                     $div.data("skill", skillSlot.skill);
                     if (skillSlot.skill.isStackable && skillSlot.skill.amount > 0) {
                         $div.append($("<span/>").addClass("amount").html(skillSlot.skill.amount));
                     }
-
-                    if (skillSlot.keyBind) {
-                        key = String.fromCharCode(skillSlot.keyBind);
-                    }
                 }
 
+                var key = skillbar.actualKey(slot.toInt());
                 $div.append($("<span/>").addClass("keybind").html(key));
                 
                 var $skillSlot = $("<li/>").append($div);
