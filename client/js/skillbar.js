@@ -194,9 +194,6 @@ define(['exceptions',
                 }
             });
             
-            console.log(data);
-            console.log(self._skills);
-
             this.update();
         },
 

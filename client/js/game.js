@@ -1081,7 +1081,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     if(!self.entityIdExists(entity.id)) {
                         try {
                             if(entity.id !== self.player.id) {
-                                entity.setSprite(self.sprites[entity.getSpriteName()]);
+                                var kindString = Types.getKindAsString(entity.skin);
+                                entity.setSprite(self.sprites[kindString]);
                                 entity.setGridPosition(x, y);
                                 entity.setOrientation(orientation);
                                 entity.idle();

@@ -600,6 +600,10 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       #achievementsbutton:hover, #achievementsbutton.blink:hover {background-position:-474px -51px;}
       #achievementsbutton.blink {background-position:-864px -51px;}
       #achievementsbutton.active {background-position:-516px -51px;}
+      #inventorybutton {background-position:-432px -51px;top:3px;left:1305px;}
+      #inventorybutton:hover, #inventorybutton.blink:hover {background-position:-474px -51px;}
+      #inventorybutton.blink {background-position:-864px -51px;}
+      #inventorybutton.active {background-position:-516px -51px;}
       #helpbutton {background-position:-558px -51px;top:3px;left:1350px;}
       #helpbutton:hover {background-position:-600px -51px;}
       #helpbutton.active {background-position:-642px -51px;}
@@ -960,7 +964,7 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       #notifications span {line-height:30px;height:30px;}
       .windows #notifications span {line-height:34px;}
 
-      #playercount {font-size:16px;left:717px;top:10px;width:114px;text-align:center;}
+      #playercount {font-size:16px;left:690px;top:10px;width:114px;text-align:center;}
       #population {background-size:960px;right:70px;bottom:44px;width:262px;background-position:-480px -96px;font-size:14px;line-height:20px;}
       #population.visible {height:64px;}
       #instance-population {padding-top:12px;}

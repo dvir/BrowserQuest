@@ -78,9 +78,9 @@ define(function() {
             this.y = y * 16;
     	},
 
-    	setSprite: function(sprite) {
+    	setSprite: function(sprite, kindString) {
     	    if (!sprite) {
-    	        throw "Error: "+this.id+" sprite is null";
+    	        throw "Error: "+this.id+" sprite is null ("+kindString+")";
     	    }
 
     	    if(this.sprite && this.sprite.name === sprite.name) {

@@ -84,13 +84,7 @@ module.exports = World = cls.Class.extend({
         this.onPlayerEnter(function(player) {
             log.info(player.name + " has joined "+ self.id);
             
-            if (!player.hasEnteredGame) {
-                self.incrementPlayerCount();
-            }
-            
-            // Number of players in this world
-
-            self.pushToPlayer(player, new Messages.Population(self.playerCount));
+            self.incrementPlayerCount();
             self.pushRelevantEntityListTo(player);
     
             var move_callback = function(x, y) {
@@ -644,6 +638,7 @@ module.exports = World = cls.Class.extend({
     
     setPlayerCount: function(count) {
         this.playerCount = count;
+        this.updatePopulation();
     },
     
     incrementPlayerCount: function() {
