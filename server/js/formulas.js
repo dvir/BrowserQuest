@@ -38,10 +38,10 @@ Formulas.xp = function(attacker, victim) {
  */
 Formulas.regenHP = function(character) {
     if (character instanceof Player) {
-        return Math.floor(character.maxHP / 100);
+        return Math.floor((character.maxHP / 100) * (character.isInCombat ? 0 : 15));
     }
 
-    return Math.floor(character.maxHP / 100);
+    return Math.floor((character.maxHP / 100) * (character.isInCombat ? 0 : 20));
 };
 
 if(!(typeof exports === 'undefined')) {

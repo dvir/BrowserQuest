@@ -543,7 +543,9 @@ module.exports = World = cls.Class.extend({
     
     handleHurtEntity: function(entity, attacker, damage) {
         var self = this;
-      
+    
+        entity.combat();
+
         // @TODO: broadcast only to relevant groups
         this.pushBroadcast(new Messages.Health(entity));
         this.pushBroadcast(new Messages.Damage(entity, damage, attacker));

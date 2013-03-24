@@ -13,6 +13,8 @@ module.exports = Character = Entity.extend({
         this.attackers = {};
         this.target = null;
 
+        this._lastCombat = 0;
+
         Utils.Mixin(this.data, {
             level: 1,
             hp: 0,
@@ -22,6 +24,15 @@ module.exports = Character = Entity.extend({
         });
 
         this.hp = this.maxHP;
+    },
+
+    get isInCombat() {
+        var COMBAT_COOLDOWN = 5; // 5 seconds
+        return ((Date.now() - COMBAT_COOLDOWN*1000) < this._lastCombat);
+    },
+
+    combat: function() {
+        this._lastCombat = Date.now();
     },
    
     set level(level) {
