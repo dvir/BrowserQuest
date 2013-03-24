@@ -2016,7 +2016,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.hoveringCollidingTile = false;
 
             this.processInput(pos);
-            this.player.turnTo(orientation);
 
             this.hoveringCollidingTile = oldHoveringCollidingValue;
         },
