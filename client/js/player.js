@@ -32,6 +32,12 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
             this.skillbar = new Skillbar();
         },
 
+        get areaName() {
+            if (globalGame.audioManager.getSurroundingMusic(this)) {
+                return globalGame.audioManager.getSurroundingMusic(this).name;
+            }
+        },
+
         loadInventory: function(data) {
             if (this.inventory) {
                 this.inventory.loadFromObject(data);

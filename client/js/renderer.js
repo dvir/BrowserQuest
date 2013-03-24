@@ -649,6 +649,11 @@ function(Camera, Item, Character, Player, Timer) {
                 this.drawText("H: " + this.highTileCount, 140, 30, false);
             }
         },
+
+        drawMapInfo: function() {
+            var player = this.game.player;
+            this.drawText(player.areaName + " ("+player.x+","+player.y+")", 800, 20, false);
+        },
     
         drawCombatInfo: function() {
             var self = this;
@@ -755,6 +760,7 @@ function(Camera, Item, Character, Player, Timer) {
             this.context.restore();
         
             // Overlay UI elements
+            this.drawMapInfo();
             this.drawCursor();
             this.drawDebugInfo();
         },
