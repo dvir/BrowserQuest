@@ -236,6 +236,9 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       height: 32px;
       float: left;
     }
+    ul.slotbar > li.over {
+      opacity: 0.5;
+    }
     ul.slotbar > li > div {
       display: inline-block;
     }
