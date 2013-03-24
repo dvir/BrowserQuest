@@ -26,6 +26,7 @@ module.exports = Character = Entity.extend({
    
     set level(level) {
         this.data.level = level;
+        this.isDirty = true;
         this.save();
     },
 
@@ -43,6 +44,7 @@ module.exports = Character = Entity.extend({
 
     set hp(hp) {
         this.data.hp = Math.max(0, Math.min(this.maxHP, hp));
+        this.isDirty = true;
         this.save();
     },
 
@@ -60,6 +62,7 @@ module.exports = Character = Entity.extend({
 
     set armor(armor) {
         this.data.armor = armor;
+        this.isDirty = true;
         this.save();
     },
 
@@ -69,6 +72,7 @@ module.exports = Character = Entity.extend({
 
     set weapon(weapon) {
         this.data.weapon = weapon;
+        this.isDirty = true;
         this.save();
     },
 

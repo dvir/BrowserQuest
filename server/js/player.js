@@ -236,7 +236,7 @@ module.exports = Player = Character.extend({
                 var id = message[1];
                 var item = self.inventory.find(id);
                 if (item) {
-                    self.useItem(item);
+                    item.use();
                 }
             }
             else if(action === Types.Messages.USESPELL) {
@@ -263,8 +263,13 @@ module.exports = Player = Character.extend({
                     targetId = message[2]; 
                 }
                 var item = self.inventory.find(id);
+                var target = self;
+                if (targetId) {
+                    self.server.getEntityById(targetId);
+                }
+
                 if (item) {
-                    self.throwItem(item, targetId);
+                    self.throwItem(item, target);
                 }
             }
             else {
@@ -396,84 +401,31 @@ module.exports = Player = Character.extend({
         this.send(new Messages.Inventory(this.inventory).serialize());
     },
 
-    useItem: function(item) {
-        var self = this;
-
-        if (item.kind === Types.Entities.FIREPOTION) {
-            self.broadcast(self.equip(Types.Entities.FIREFOX));
-            self.inventory.decrease(item);
-            self.firepotionTimeout = setTimeout(function() {
-                self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
-                self.firepotionTimeout = null;
-            }, 15000);
-        } else if (Types.isHealingItem(item.kind)) {
-            var amount;
-            
-            switch (item.kind) {
-                case Types.Entities.FLASK: 
-                    amount = 40;
-                    break;
-                case Types.Entities.BURGER: 
-                    amount = 100;
-                    break;
-            }
-            
-            if (!self.hasFullHealth()) {
-                self.inventory.decrease(item);
-
-                self.regenHealthBy(amount);
-                self.broadcast(self.health());
-            }
-        } else if (Types.isArmor(item.kind) || Types.isWeapon(item.kind)) {
-            var oldKind = self.equipItem(item);
-            self.inventory.remove(item);
-
-            self.inventory.add(self.server.createItem(oldKind, 0, 0));
-        }
-    },
-
     throwItem: function(item, target) {
-        this.inventory.remove(item);
-        this.server.pushToAdjacentGroups(this.group, this.drop(item));
+        item.remove();
+        var thrownItem = this.server.addItem(this.server.createItem(item.kind, target.x, target.y));
+        this.server.pushToAdjacentGroups(this.group, this.drop(thrownItem));
     },
   
     lootedItem: function(item) {
         var self = this;
-
-        if (this.inventory.add(item)) {
+        var newItem = this.inventory.add(item);
+        if (newItem) {
             log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
             this.server.pushToPlayer(this, this.loot(item));
             this.broadcast(item.despawn());
             this.server.removeEntity(item);
 
             if (item.useOnPickup) {
-                this.useItem(item);
+                newItem.use();
             }
-
-            this.send(new Messages.Inventory(this.inventory).serialize());
         } else {
             // no room for this item in the inventory!
             // do not pick it up.
             return;
         }
     },
-
-    equipItem: function(item) {
-        log.debug(this.name + " equips " + Types.getKindAsString(item.kind));
-    
-        var oldKind = null;
-        if(Types.isArmor(item.kind)) {
-            oldKind = this.armor;
-            this.armor = item.kind;
-        } else if(Types.isWeapon(item.kind)) {
-            oldKind = this.weapon;
-            this.weapon = item.kind;
-        }
-
-        this.broadcast(this.equip(item.kind));
-        return oldKind;
-    },
-  
+ 
     killed: function(victim) {
         this.send(new Messages.Kill(victim).serialize());
 
@@ -490,6 +442,8 @@ module.exports = Player = Character.extend({
     },
 
     set xp(xp) {
+        this.isDirty = true;
+
         var diff = xp - this.xp;
 
         if (xp > this.maxXP) {
@@ -501,6 +455,7 @@ module.exports = Player = Character.extend({
         }
        
         this.send(new Messages.XP(this.xp, this.maxXP, diff).serialize());
+        this.save();
     },
 
     get xp() {
@@ -569,7 +524,7 @@ module.exports = Player = Character.extend({
     },
 
     save: function() {
-        if (!this.dbEntity) return;
+        if (!this.dbEntity || !this.isDirty) return;
 
 //        Utils.Mixin(this.dbEntity, this.data);
         this.dbEntity.xp = this.data.xp;

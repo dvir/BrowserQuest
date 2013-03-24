@@ -245,8 +245,8 @@ define(['jquery', 'app'], function($, App) {
     		    app.showMessage(message);
     		});
 
-            $('#nameinput').attr('value', '');
-    		$('#chatbox').attr('value', '');
+            $('#nameinput').val('');
+    		$('#chatbox').val('');
     		
         	if(game.renderer.mobile || game.renderer.tablet) {
                 $('#foreground').bind('touchstart', function(event) {
@@ -398,11 +398,11 @@ define(['jquery', 'app'], function($, App) {
                     $chat = $('#chatinput');
 
                 if(key === 13) {
-                    if($chat.attr('value') !== '') {
-                        if(game.player) {
-                            game.say($chat.attr('value'));
+                    if($chat.val() !== '') {
+                        if (game.player) {
+                            game.say($chat.val());
                         }
-                        $chat.attr('value', '');
+                        $chat.val('');
                         app.hideChat();
                         $('#foreground').focus();
                         return false;
@@ -420,7 +420,7 @@ define(['jquery', 'app'], function($, App) {
 
             $('#nameinput').keypress(function(event) {
                 var $name = $('#nameinput'),
-                    name = $name.attr('value');
+                    name = $name.val();
 
                 if(event.keyCode === 13) {
                     if(name !== '') {

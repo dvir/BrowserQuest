@@ -7,6 +7,7 @@ module.exports = DBEntity = cls.Class.extend({
         this.data = {};
 
         this.dbEntity = null;
+        this.isDirty = false;
 
         if (dbEntity) {
             this.setDBEntity(dbEntity);
@@ -25,20 +26,20 @@ module.exports = DBEntity = cls.Class.extend({
         if (callback) {
             callback();
         }
-
-        log.debug("Loaded entity "+this.dbEntity._id+" from DB");
     },
 
-    save: function() {
-        if (!this.dbEntity) return; 
+    save: function(callback) {
+        if (!this.dbEntity || !this.isDirty) return; 
         
         var self = this;
-      
         self.dbEntity.save(function (err) {
             if (err) {
                 log.debug("error saving: " + err);
             } else {
-                log.debug("Saved entity "+self.dbEntity._id);
+                self.isDirty = false;
+                if (callback) {
+                    callback();
+                }
             }
         });
 

@@ -112,7 +112,7 @@ module.exports = World = cls.Class.extend({
             };
 
             player.onMove(move_callback);
-            //player.onLootMove(move_callback);
+            player.onLootMove(move_callback);
             
             player.onZone(function() {
                 var hasChangedGroups = self.handleEntityGroupMembership(player);

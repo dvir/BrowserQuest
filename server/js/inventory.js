@@ -71,7 +71,7 @@ module.exports = Inventory = DBEntity.extend({
                 if (curItem && item.kind == curItem.kind) {
                     curItem.amount += item.amount;
                     curItem.save();
-                    return true;
+                    return curItem;
                 }
             }
         }
@@ -95,75 +95,27 @@ module.exports = Inventory = DBEntity.extend({
             }
         }
 
-        var newItem = new Items({
-            kind: item.kind,
-            amount: item.amount,
-            inventoryId: this.id,
-            slot: slot,
-            barSlot: -1
-        });
-        newItem.save(function(err) {
-            if (err) {
-                // failed saving new item in inventory
-                log.debug("failed saving new item in inventory. Error: "+err);
-            } else {
-                log.debug("Saved new item in inventory.");
-            }
-        });
+        var newItem = null;
+       
+        if (item.type == "inventory-item") {
+            newItem = item;
+        } else {
+            var dbEntity = new Items({
+                kind: item.kind,
+                amount: item.amount,
+                inventoryId: this.id,
+                slot: slot,
+                barSlot: -1
+            });
+
+            dbEntity.save(DB.defaultCallback);
+            newItem = new InventoryItem(this, dbEntity);
+        }
 
         // place it in the inventory
-        this.items[slot] = new InventoryItem(newItem);
+        this.items[slot] = newItem; 
         this.player.syncInventory();
-        return true;
-    },
-
-    decrease: function(item, amount) {
-        var self = this;
-
-        if (!amount) {
-            amount = 1;
-        }
-
-        // find item in the list 
-        for (var i in self.items) {
-            var curItem = self.items[i]; 
-            if (curItem && item.kind == curItem.kind) {
-                curItem.amount -= amount;
-                if (curItem.amount <= 0) {
-                    Items.remove({_id: curItem._id}, DB.defaultCallback);
-                    self.items[i] = null;
-                    log.debug("Removed item from player's inventory");
-                }
-
-                self.player.syncInventory();
-                return;
-            }
-        }
-    },
-
-    remove: function(item) {
-        // find item in the list 
-        for (var i in this.items) {
-            var curItem = this.items[i]; 
-            if (curItem && item.kind == curItem.kind) {
-                curItem.amount -= item.amount;
-                if (curItem.amount <= 0) {
-                    Items.remove({_id: curItem._id}, DB.defaultCallback);
-                    this.items[i] = null;
-                    this.player.syncInventory();
-                    log.debug("Removed item from player's inventory");
-                } else {
-                    curItem.save(function(err) {
-                        if (err) {
-                            log.debug("Error saving item in player's inventory after removal from stack of items. Error: "+err);
-                        } else {
-                            log.debug("Decreased item stack in player's inventory");
-                        }
-                    });
-                }
-                return;
-            }
-        }
+        return newItem;
     },
 
     load: function(player, callback) {
@@ -220,7 +172,7 @@ module.exports = Inventory = DBEntity.extend({
             }
 
             items.forEach(function(item) {
-                self.items[item.slot] = new InventoryItem(item);
+                self.items[item.slot] = new InventoryItem(self, item);
             });
 
             if (callback) {

@@ -29,10 +29,12 @@ module.exports = Entity = DBEntity.extend({
 
     set x(x) {
         this.data.x = x;
+        this.isDirty = true;
     },
 
     set y(y) {
         this.data.y = y;
+        this.isDirty = true;
     },
     
     destroy: function() {
@@ -102,9 +104,9 @@ module.exports = Entity = DBEntity.extend({
         this._super();
     },
 
-    save: function() {
+    save: function(callback) {
         if (!this.dbEntity) return; 
         
-        this._super();
+        this._super(callback);
     }
 });

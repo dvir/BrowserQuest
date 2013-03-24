@@ -99,7 +99,7 @@ module.exports = Mob = Character.extend({
     },
     
     drop: function(item) {
-        if(item) {
+        if (item) {
             return new Messages.Drop(this, item);
         }
     },
