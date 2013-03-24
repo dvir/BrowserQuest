@@ -8,6 +8,7 @@ var cls = require("./lib/class"),
     check = require("./format").check,
     DB = require("./db"),
     Inventory = require("./inventory"),
+    Skillbar = require("./skillbar"),
     Types = require("../../shared/js/gametypes");
 
 module.exports = Player = Character.extend({
@@ -29,6 +30,7 @@ module.exports = Player = Character.extend({
         this.isDead = false;
         this.isAutoEquip = true;
         this.haters = {};
+        this.hatelist = [];
         this.lastCheckpoint = null;
         this.formatChecker = new FormatChecker();
         this.disconnectTimeout = null;
@@ -120,20 +122,20 @@ module.exports = Player = Character.extend({
                         self.setPosition(x, y);
                         self.clearTarget();
                         
-                        self.broadcast(new Messages.Move(self));
+                        self.broadcast(new Messages.Move(self), true);
                         self.move_callback(self.x, self.y);
                     }
                 }
             }
             else if(action === Types.Messages.LOOTMOVE) {
-                if(self.lootmove_callback) {
+                if (self.lootmove_callback) {
                     self.setPosition(message[1], message[2]);
                     
                     var item = self.server.getEntityById(message[3]);
-                    if(item) {
+                    if (item) {
                         self.clearTarget();
 
-                        self.broadcast(new Messages.LootMove(self, item));
+                        self.broadcast(new Messages.LootMove(self, item), true);
                         self.lootmove_callback(self.x, self.y);
                     }
                 }
@@ -194,7 +196,6 @@ module.exports = Player = Character.extend({
                     self.clearTarget();
                     
                     self.broadcast(new Messages.Teleport(self));
-                    self.send(new Messages.Teleport(self).serialize());
                     
                     self.server.handlePlayerVanish(self);
                     self.server.pushRelevantEntityListTo(self);
@@ -241,6 +242,30 @@ module.exports = Player = Character.extend({
             else if(action === Types.Messages.USESPELL) {
                 var id = message[1];
                 self.spellbook.use(id);
+            }
+            else if(action === Types.Messages.SKILLBAR) {
+                var slots = message[1];
+
+                if (slots) {
+                    data = {
+                        slots: slots,
+                        playerId: self.getId(),
+                        size: 12
+                    };
+
+                    Skillbars.findOneAndUpdate({playerId: self.getId()}, data, {upsert: true}, DB.defaultCallback); 
+                }
+            }
+            else if(action === Types.Messages.THROWITEM) {
+                var id = message[1];
+                var targetId = null;
+                if (message[2]) {
+                    targetId = message[2]; 
+                }
+                var item = self.inventory.find(id);
+                if (item) {
+                    self.throwItem(item, targetId);
+                }
             }
             else {
                 if(self.message_callback) {
@@ -293,13 +318,13 @@ module.exports = Player = Character.extend({
     
     broadcast: function(message, ignoreSelf) {
         if(this.broadcast_callback) {
-            this.broadcast_callback(message, ignoreSelf === undefined ? true : ignoreSelf);
+            this.broadcast_callback(message, ignoreSelf === undefined ? false : ignoreSelf);
         }
     },
     
     broadcastToZone: function(message, ignoreSelf) {
         if(this.broadcastzone_callback) {
-            this.broadcastzone_callback(message, ignoreSelf === undefined ? true : ignoreSelf);
+            this.broadcastzone_callback(message, ignoreSelf === undefined ? false : ignoreSelf);
         }
     },
     
@@ -339,6 +364,10 @@ module.exports = Player = Character.extend({
         return new Messages.EquipItem(this, item);
     },
     
+    drop: function(item) {
+        return new Messages.Drop(this, item);
+    },
+    
     addHater: function(mob) {
         if(mob) {
             if(!(mob.id in this.haters)) {
@@ -372,6 +401,7 @@ module.exports = Player = Character.extend({
 
         if (item.kind === Types.Entities.FIREPOTION) {
             self.broadcast(self.equip(Types.Entities.FIREFOX));
+            self.inventory.decrease(item);
             self.firepotionTimeout = setTimeout(function() {
                 self.broadcast(self.equip(self.armor)); // return to normal after 15 sec
                 self.firepotionTimeout = null;
@@ -389,32 +419,35 @@ module.exports = Player = Character.extend({
             }
             
             if (!self.hasFullHealth()) {
-                self.regenHealthBy(amount);
-                self.broadcast(self.health(), false);
-            }
-        }
+                self.inventory.decrease(item);
 
-        self.inventory.decrease(item);
+                self.regenHealthBy(amount);
+                self.broadcast(self.health());
+            }
+        } else if (Types.isArmor(item.kind) || Types.isWeapon(item.kind)) {
+            var oldKind = self.equipItem(item);
+            self.inventory.remove(item);
+
+            self.inventory.add(self.server.createItem(oldKind, 0, 0));
+        }
+    },
+
+    throwItem: function(item, target) {
+        this.inventory.remove(item);
+        this.server.pushToAdjacentGroups(this.group, this.drop(item));
     },
   
     lootedItem: function(item) {
         var self = this;
 
-        if (item.useOnPickup) {
-            self.useItem(item);
-        } else if (this.inventory.add(item)) {
+        if (this.inventory.add(item)) {
             log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
-            self.server.pushToPlayer(self, self.loot(item));
-            self.broadcast(item.despawn());
-            self.server.removeEntity(item);
-            if (this.isAutoEquip) {
-                if ((Types.isArmor(item.kind) && Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) ||
-                    (Types.isWeapon(item.kind) && Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)))
-                {
-                    this.equipItem(item);
-                    this.inventory.remove(item);
-                    return;
-                }
+            this.server.pushToPlayer(this, this.loot(item));
+            this.broadcast(item.despawn());
+            this.server.removeEntity(item);
+
+            if (item.useOnPickup) {
+                this.useItem(item);
             }
 
             this.send(new Messages.Inventory(this.inventory).serialize());
@@ -423,21 +456,22 @@ module.exports = Player = Character.extend({
             // do not pick it up.
             return;
         }
-
-        self.broadcast(item.despawn());
-        self.server.removeEntity(item);
     },
 
     equipItem: function(item) {
         log.debug(this.name + " equips " + Types.getKindAsString(item.kind));
-        
+    
+        var oldKind = null;
         if(Types.isArmor(item.kind)) {
+            oldKind = this.armor;
             this.armor = item.kind;
         } else if(Types.isWeapon(item.kind)) {
+            oldKind = this.weapon;
             this.weapon = item.kind;
         }
 
         this.broadcast(this.equip(item.kind));
+        return oldKind;
     },
   
     killed: function(victim) {
@@ -513,6 +547,8 @@ module.exports = Player = Character.extend({
 
     loadFromDB: function(callback) {
         if (!this.dbEntity) return;
+
+        var self = this;
         
         this._super();
         
@@ -527,7 +563,9 @@ module.exports = Player = Character.extend({
             y: this.dbEntity.y
         });
 
-        this.inventory = new Inventory(this, callback);
+        this.inventory = new Inventory(this, function(){                       
+            self.skillbar = new Skillbar(self, callback);
+        });
     },
 
     save: function() {
@@ -553,7 +591,8 @@ module.exports = Player = Character.extend({
             maxXP: this.maxXP,
             maxHP: this.maxHP,
             id: this.id,
-            inventory: this.inventory.serialize() 
+            inventory: this.inventory.serialize(),
+            skillbar: this.skillbar.serialize()
         });
 
         return dataObject;

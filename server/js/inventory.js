@@ -1,13 +1,13 @@
 var cls = require("./lib/class"),
-    _ = require("underscore"),
-    Messages = require("./message"),
-    Utils = require("./utils"),
-    Properties = require("./properties"),
-    Formulas = require("./formulas"),
-    DB = require("./db"),
-    DBEntity = require("./db-entity"),
-    InventoryItem = require("./inventory-item"),
-    Types = require("../../shared/js/gametypes");
+_ = require("underscore"),
+Messages = require("./message"),
+Utils = require("./utils"),
+Properties = require("./properties"),
+Formulas = require("./formulas"),
+DB = require("./db"),
+DBEntity = require("./db-entity"),
+InventoryItem = require("./inventory-item"),
+Types = require("../../shared/js/gametypes");
 
 module.exports = Inventory = DBEntity.extend({
     init: function(player, callback) {
@@ -30,23 +30,23 @@ module.exports = Inventory = DBEntity.extend({
     },
 
     swap: function(first, second) {
-       var temp = this.items[first];
-       this.items[first] = this.items[second];
-       this.items[second] = temp;
+        var temp = this.items[first];
+        this.items[first] = this.items[second];
+        this.items[second] = temp;
 
-       if (this.items[first]) {
+        if (this.items[first]) {
             this.items[first].slot = first;
-       }
-       if (this.items[second]) {
+        }
+        if (this.items[second]) {
             this.items[second].slot = second;
-       }
+        }
     },
 
     use: function(itemId) {
         // find item with itemId and use it
         for (var i in this.items) {
             var item = this.items[i];
-            if (item.id == itemId) {
+            if (item && item.id == itemId) {
                 item.use();
             }
         }
@@ -55,7 +55,7 @@ module.exports = Inventory = DBEntity.extend({
     find: function(itemId) {
         for (var i in this.items) {
             var item = this.items[i];
-            if (item.id == itemId) {
+            if (item && item.id == itemId) {
                 return item;
             }
         }
@@ -67,12 +67,12 @@ module.exports = Inventory = DBEntity.extend({
         if (item.isStackable) {
             // find item in the list so we can just increase its amount
             for (var i in this.items) {
-               var curItem = this.items[i]; 
-               if (item.kind == curItem.kind) {
-                   curItem.amount += item.amount;
-                   curItem.save();
-                   return true;
-               }
+                var curItem = this.items[i]; 
+                if (curItem && item.kind == curItem.kind) {
+                    curItem.amount += item.amount;
+                    curItem.save();
+                    return true;
+                }
             }
         }
 
@@ -113,7 +113,7 @@ module.exports = Inventory = DBEntity.extend({
 
         // place it in the inventory
         this.items[slot] = new InventoryItem(newItem);
-
+        this.player.syncInventory();
         return true;
     },
 
@@ -126,42 +126,43 @@ module.exports = Inventory = DBEntity.extend({
 
         // find item in the list 
         for (var i in self.items) {
-           var curItem = self.items[i]; 
-           if (item.kind == curItem.kind) {
-               curItem.amount -= amount;
-               if (curItem.amount <= 0) {
-                   Items.remove({_id: curItem._id}, DB.defaultCallback);
-                   self.items[i] = null;
-                   log.debug("Removed item from player's inventory");
-               }
+            var curItem = self.items[i]; 
+            if (curItem && item.kind == curItem.kind) {
+                curItem.amount -= amount;
+                if (curItem.amount <= 0) {
+                    Items.remove({_id: curItem._id}, DB.defaultCallback);
+                    self.items[i] = null;
+                    log.debug("Removed item from player's inventory");
+                }
 
-               self.player.syncInventory();
-               return;
-           }
+                self.player.syncInventory();
+                return;
+            }
         }
     },
 
     remove: function(item) {
         // find item in the list 
         for (var i in this.items) {
-           var curItem = this.items[i]; 
-           if (item.kind == curItem.kind) {
-               curItem.amount -= item.amount;
-               if (curItem.amount <= 0) {
-                   Items.remove({_id: curItem._id}, DB.defaultCallback);
-                   self.items[i] = null;
-                   log.debug("Removed item from player's inventory");
-               } else {
-                   curItem.save(function(err) {
+            var curItem = this.items[i]; 
+            if (curItem && item.kind == curItem.kind) {
+                curItem.amount -= item.amount;
+                if (curItem.amount <= 0) {
+                    Items.remove({_id: curItem._id}, DB.defaultCallback);
+                    this.items[i] = null;
+                    this.player.syncInventory();
+                    log.debug("Removed item from player's inventory");
+                } else {
+                    curItem.save(function(err) {
                         if (err) {
                             log.debug("Error saving item in player's inventory after removal from stack of items. Error: "+err);
                         } else {
                             log.debug("Decreased item stack in player's inventory");
                         }
-                   });
-               }
-               return;
-           }
+                    });
+                }
+                return;
+            }
         }
     },
 
@@ -196,11 +197,11 @@ module.exports = Inventory = DBEntity.extend({
 
     loadFromDB: function(callback) {
         if (!this.dbEntity) return;
-        
+
         var self = this;
 
         this._super();
-       
+
         if (!self.data) self.data = {};
 
         Utils.Mixin(self.data, {
@@ -217,7 +218,7 @@ module.exports = Inventory = DBEntity.extend({
                 log.debug("Error loading items for inventory '"+self.id+"'");
                 return;
             }
-            
+
             items.forEach(function(item) {
                 self.items[item.slot] = new InventoryItem(item);
             });
@@ -227,11 +228,11 @@ module.exports = Inventory = DBEntity.extend({
             }
         });
     },
-    
+
     save: function() {
         if (!this.dbEntity) return;
 
-//        Utils.Mixin(this.dbEntity, this.data);
+        //        Utils.Mixin(this.dbEntity, this.data);
         this.dbEntity.size = this.data.size;
         for (var i in this.items) {
             if (this.items[i]) {

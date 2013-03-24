@@ -304,16 +304,18 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         },
     
         receiveDrop: function(data) {
-            var mobId = data[1],
+            var entityId = data[1],
                 id = data[2],
                 kind = data[3];
         
             var item = EntityFactory.createEntity(kind, id);
             item.wasDropped = true;
             item.playersInvolved = data[4];
+
+            var pos = data[5];
         
-            if(this.drop_callback) {
-                this.drop_callback(item, mobId);
+            if (this.drop_callback) {
+                this.drop_callback(item, entityId, pos);
             }
         },
     
@@ -544,14 +546,39 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                               second]);
         },
 
-        sendUseItem: function(item) {
-            this.sendMessage([Types.Messages.USEITEM,
-                              item.id]);
+        sendUseItem: function(item, target) {
+            var message = [Types.Messages.USEITEM,
+                           item.id];
+            if (target) {
+                message.push(target.id);
+            }
+
+            this.sendMessage(message);
         },
 
-        sendUseSpell: function(spell) {
-            this.sendMessage([Types.Messages.USESPELL,
-                              spell.id]);
+        sendUseSpell: function(spell, target) {
+            var message = [Types.Messages.USESPELL,
+                           spell.id];
+            if (target) {
+                message.push(target.id);
+            }
+
+            this.sendMessage(message);
+        },
+
+        sendSkillbar: function(skillbar) {
+            this.sendMessage([Types.Messages.SKILLBAR,
+                              skillbar.serialize()]);
+        },
+
+        sendThrowItem: function(item, target) {
+            var message = [Types.Messages.THROWITEM,
+                           item.id];
+            if (target) {
+                message.push(target.id);
+            }
+
+            this.sendMessage(message);
         },
 
         sendHello: function(player) {

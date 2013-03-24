@@ -37,6 +37,8 @@ Types = {
         USE: 33,
         USEITEM: 34,
         USESPELL: 35,
+        SKILLBAR: 36,
+        THROWITEM: 37,
 
         PLACEHOLDER: 10000
     },

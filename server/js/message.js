@@ -98,16 +98,17 @@ Messages.EquipItem = Message.extend({
 });
 
 Messages.Drop = Message.extend({
-    init: function(mob, item) {
-        this.mob = mob;
+    init: function(entity, item) {
+        this.entity = entity;
         this.item = item;
     },
     serialize: function() {
         var drop = [Types.Messages.DROP,
-                    this.mob.id,
+                    this.entity.id,
                     this.item.id,
                     this.item.kind,
-                    _.pluck(this.mob.hatelist, "id")];
+                    _.pluck(this.entity.hatelist, "id"),
+                    {x: this.entity.x, y: this.entity.y}];
 
         return drop;
     }

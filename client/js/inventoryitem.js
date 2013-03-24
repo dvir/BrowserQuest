@@ -20,7 +20,7 @@ define(['item'], function(Item){
                 console.log(" on %s", target.name);
             }
         },
-
+        
         loadFromObject: function(data) {
             $.extend(this, data);
         },

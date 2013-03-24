@@ -25,7 +25,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         
             // Player
             this.player = new Warrior("player", "");
-            this.player.skillbar.add(Types.Entities.FROSTNOVA);
     
             // Game state
             this.entities = {};
@@ -794,6 +793,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
                 log.info("Received player ID from server : "+ self.player.id);
 
+//                self.player.skillbar.add(Types.Entities.FROSTNOVA, false);
+
                 self.updateBars();
                 self.resetCamera();
                 self.updatePlateauMode();
@@ -822,10 +823,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                         x =  path[i][0],
                         y =  path[i][1];
                 
-                    if(self.player.isMovingToLoot()) {
+                    if (self.player.isMovingToLoot()) {
                         self.player.isLootMoving = false;
                     }
-                    else if(!self.player.isAttacking()) {
+                    else if (!self.player.isAttacking()) {
                         self.client.sendMove(x, y);
                     }
                 
@@ -1222,7 +1223,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.client.onDespawnEntity(function(entityId) {
                     var entity = self.getEntityById(entityId);
             
-                    if(entity) {
+                    if (entity) {
                         log.info("Despawning " + Types.getKindAsString(entity.kind) + " (" + entity.id+ ")");
                         
                         if(entity.gridX === self.previousClickPosition.x
@@ -1445,7 +1446,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
                     try {
                         self.player.loot(item);
-                        self.removeItem(item);
                         self.showNotification(item.getLootMessage());
                     
                         if(item.type === "armor") {
@@ -1489,11 +1489,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                         itemName = Types.getKindAsString(itemKind);
                 
                     if (player) {
-                        if(Types.isArmor(itemKind)) {
-                            player.equipArmor(itemKind);
-                        } else if(Types.isWeapon(itemKind)) {
-                            player.equipWeapon(itemKind);
-                        }
+                        player.equip(itemKind);
                     }
                 });
             
@@ -1519,13 +1515,9 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     }
                 });
             
-                self.client.onDropItem(function(item, mobId) {
-                    var pos = self.getDeadMobPosition(mobId);
-                
-                    if(pos) {
-                        self.addItem(item, pos.x, pos.y);
-                        self.updateCursor();
-                    }
+                self.client.onDropItem(function(item, mobId, pos) {
+                    self.addItem(item, pos.x, pos.y);
+                    self.updateCursor();
                 });
             
                 self.client.onChatMessage(function(entityId, message) {
@@ -1692,7 +1684,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(item) {
                 this.player.isLootMoving = true;
                 this.makePlayerGoTo(item.gridX, item.gridY);
-                this.client.sendLootMove(item, item.gridX, item.gridY);
+                this.client.sendMove(item.x, item.y);
             }
         },
     

@@ -38,8 +38,14 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
             } else {
                 this.inventory = new Inventory(data);
             }
-            
-            this.skillbar.update();
+        },
+
+        loadSkillbar: function(data) {
+            if (this.skillbar) {
+                this.skillbar.loadFromObject(data);
+            } else {
+                this.skillbar = new Skillbar(data);
+            }
         },
 
         lootedArmor: function(item) {
@@ -237,6 +243,15 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
             }
         },
 
+        equip: function(itemKind) {
+            if(Types.isArmor(itemKind)) {
+                this.equipArmor(itemKind);
+            } else if(Types.isWeapon(itemKind)) {
+                this.equipWeapon(itemKind);
+            }
+            globalGame.app.initEquipmentIcons();
+        },
+
         setStorage: function(storage) {
             this.storage = storage;
         },
@@ -281,6 +296,10 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
             // set inventory data
             this.loadInventory(data.inventory);
             delete data.inventory;
+
+            // set skillbar data
+            this.loadSkillbar(data.skillbar);
+            delete data.skillbar;
 
             $.extend(this, data);        
         }

@@ -4,6 +4,7 @@ define(['exceptions',
         'item',
         'inventory',
         'inventoryitem',
+        'inventoryitemfactory',
         'skillslot'], 
         function(
             Exceptions, 
@@ -11,20 +12,44 @@ define(['exceptions',
             Item,
             Inventory,
             InventoryItem,
+            InventoryItemFactory,
             SkillSlot) 
     {
+
     var Skillbar = Class.extend({ 
         init: function(data) {
-            var self = this;
-
-            self._size = 10;
-            self._skills = [];
-            for (var i = 0; i < self.size; i++) {
-                self._skills[i] = null;
-            }
+            this._size = 12;
+            this._skills = [];
+            this.reset();
             
             if (data) {
-                self.loadFromObject(data);
+                this.loadFromObject(data);
+            }
+        },
+
+        key: function(i) {
+            if (i < 10) {
+                return (i+1) % 10; // [ 1 2 .. 9 0 ] sequence
+            }
+
+            switch (i) {
+                case 10: 
+                    return "-";
+                    break;
+
+                case 11:
+                    return "=";
+                    break;
+
+                default:
+                    throw "No such key '"+i+"'";
+            }
+        },
+
+        reset: function() {
+            this._skills = [];
+            for (var i = 0; i < this.size; i++) {
+                this._skills[i] = null;
             }
         },
 
@@ -33,10 +58,8 @@ define(['exceptions',
         },
 
         update: function() {
-            var self = this;
-
-            for (var i in self._skills) {
-                var skillSlot = self._skills[i];
+            for (var i in this._skills) {
+                var skillSlot = this._skills[i];
                 if (skillSlot) {
                     var skill = skillSlot.skill;
                     if (skill instanceof InventoryItem) {
@@ -52,7 +75,7 @@ define(['exceptions',
                         if (!item || item.isDeleted) {
                             // it is not in the inventory anymore!
                             // remove it from the skillbar
-                            self._skills[i] = null;
+                            this.set(i, null);
                         }
                     }
                 }
@@ -60,8 +83,7 @@ define(['exceptions',
         },
 
         click: function(key, target) {
-            var self = this;
-            $.each(self._skills, function(idx, skill) {
+            $.each(this._skills, function(idx, skill) {
                 if (skill && skill.keyBind == key) {
                     skill.use(target);
                     return;
@@ -70,8 +92,24 @@ define(['exceptions',
 
             // no skill was bounded to the key.
             // execute default
-            if (self._skills[key-48]) {
-                self._skills[key-48].use(target);
+            switch (key) {
+                case 187:
+                    key = 59;
+                    break;
+                case 189:
+                    key = 58;
+                    break;
+            }
+            key -= 48;
+            if (key < 10) {
+                if (key == 0) {
+                    key = 9;
+                } else {
+                    key--;
+                }
+            }
+            if (this._skills[key]) {
+                this._skills[key].use(target);
             }
         },
 
@@ -86,10 +124,18 @@ define(['exceptions',
            if (this._skills[second]) {
                 this._skills[second].slot = second;
            }
+
+           this.sync();
         },
 
         set: function(idx, skill) {
-            this._skills[idx] = new SkillSlot(skill);
+            var skillSlot = null;
+            if (skill) {
+                skillSlot = new SkillSlot(skill);
+            }
+            this._skills[idx] = skillSlot; 
+
+            this.sync();
         },
 
         add: function(skillKind) {
@@ -103,9 +149,9 @@ define(['exceptions',
             // find the first available slot and place
             // the skill in it
             var self = this;
-            for (var i = 0; i < self.size; i++) {
-                if (!self._skills[i]) {
-                    self._skills[i] = new SkillSlot(skill);
+            for (var key in self._skills) {
+                if (!self._skills[key]) {
+                    this.set(key, skill);
                     return;
                 }
             }
@@ -113,6 +159,8 @@ define(['exceptions',
 
         remove: function(idx) {
             this._skills[idx] = null;
+
+            this.sync();
         },
 
         toArray: function() {
@@ -120,27 +168,55 @@ define(['exceptions',
         },
 
         loadFromObject: function(data) {
-            if ($.isEmptyObject(data)) {
-                return;
+            if (Object.keys(data).length != 2) {
+                console.error("Bad data given to Skillbar.loadFromObject");
+                console.error(data);
             }
+
+            this._size = data[0];
+            if (data[1]) {
+                data = data[1];
+            }
+
+            this.reset();
 
             var self = this;
-
-            self._skills = [];
-            for (var i = 0; i < self.size; i++) {
-                self._skills[i] = null;
-            }
-            var idx = 0;
             $.each(data, function(id, slot) {
                 var skill;
                 if (Types.getType(slot.kind) == "spell") {
                     skill = new Spell(slot.kind);
-                } else if (Types.getType(slot.kind) == "object") {
-                    skill = new Item(slot.kind);
+                } else {
+                    skill = InventoryItemFactory.get(slot.id);
                 }
-                self._skills[skill.barSlot] = new SkillSlot(skill);
+
+                if (skill) {
+                    self._skills[slot.slot] = new SkillSlot(skill);
+                }
             });
-        }
+            
+            console.log(data);
+            console.log(self._skills);
+
+            this.update();
+        },
+
+        serialize: function() {
+            var data = [];
+            for (var key in this._skills) {
+                var skillSlot = this._skills[key];
+                if (skillSlot) {
+                    data.push({slot: key,
+                               id: skillSlot.skill.id,
+                               kind: skillSlot.skill.kind});
+                }
+            }
+
+            return data;
+        },
+
+        sync: function() {
+           globalGame.client.sendSkillbar(this);
+        },
     });
 
     return Skillbar;

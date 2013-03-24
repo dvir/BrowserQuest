@@ -33,6 +33,15 @@ itemSchema = mongoose.Schema({
 });
 Items = mongoose.model('Item', itemSchema);
 
+skillbarSchema = mongoose.Schema({
+   playerId: String,
+   size: Number,
+   slots: [{kind: Number,
+           slot: Number,
+           id: String}]
+});
+Skillbars = mongoose.model('Skillbar', skillbarSchema);
+
 DB = cls.Class.extend({
     init: function() {
         mongoose.connect("mongodb://localhost/browserquest");

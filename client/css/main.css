@@ -196,11 +196,12 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
     }
 
     #skillbar {
+      font-family: 'GraphicPixel';
       bottom: 1px;
       z-index: 999999;
       height: 32px;
       position: absolute;
-      width: 320px;
+      width: 384px;
       left: 275px;
     }
 
@@ -223,10 +224,6 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
     #instructions {position:absolute;top:50%;left:50%;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
     #instructions.active, #achievements.active {opacity:1;pointer-events:auto;}
-
-    #skillbar > ul.slotbar {
-      width: 320px;
-    }
 
     #inventory {position:absolute;bottom:46px;right:10px;z-index:1000;font-family:'GraphicPixel';pointer-events:none;opacity:0;-moz-transition:0.25s opacity linear;-webkit-transition:0.4s top ease, 0.4s opacity linear;-o-transition:0.4s top ease, 0.4s opacity linear;-ms-transition:0.4s top ease, 0.4s opacity linear;transition:0.4s top ease, 0.4s opacity linear;}
     #inventory.active, #inventory.active {opacity:1;pointer-events:auto;}
@@ -947,13 +944,11 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
         position: absolute;
         left: 3px;
         bottom: 1px;
-        font-weight: bold;
       }
       #skillbar > ul.slotbar > li > div > span.keybind {
         position: absolute;
         right: 3px;
         top: 1px;
-        font-weight: bold;
       }
 
       #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}

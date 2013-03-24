@@ -1,5 +1,6 @@
 
-define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
+define(['exceptions', 'inventoryitem', 'inventoryitemfactory'], function(Exceptions, InventoryItem, InventoryItemFactory) {
+
     var Inventory = Class.extend({ 
         init: function(data) {
             var self = this;
@@ -24,8 +25,19 @@ define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
         
         },
 
-        remove: function(item) {
+        remove: function(idx) {
+            if (this._items[idx]) {
+                InventoryItemFactory.remove(this._items[idx].id);
+                this._items[idx] = null;
+            }
+        },
 
+        throwItem: function(idx) {
+            var item = this._items[idx];
+            if (item) {
+                this.remove(idx);
+                globalGame.client.sendThrowItem(item);
+            }
         },
 
         find: function(itemId) {
@@ -63,18 +75,14 @@ define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
                 return;
             }
 
-            var self = this;
-
-            self._size = data[0];
-            self._items = [];
-            for (var i = 0; i < self.size; i++) {
-                self._items[i] = null;
-            }
+            this._size = data[0];
+            this.reset();
 
             var ids = {};
+            var self = this;
             $.each(data[1], function(id, item) {
                 if (item) {
-                    self._items[item.slot] = self.inventoryItem(item.kind, item);
+                    self._items[item.slot] = InventoryItemFactory.getCreate(item.id, item);
                     ids[item.id] = true;
                 }
             });
@@ -90,6 +98,13 @@ define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
             this.update();
         },
 
+        reset: function() {
+            this._items = [];
+            for (var i = 0; i < this.size; i++) {
+                this._items[i] = null;
+            }
+        },
+
         serialize: function() {
             var items = []; 
             for (var i in this.items) {
@@ -101,18 +116,6 @@ define(['exceptions', 'inventoryitem'], function(Exceptions, InventoryItem) {
             }
 
             return [this.size, items];
-        },
-
-        inventoryItem: function(kind, item) {
-            for (var i in globalInventoryItems) {
-                var curItem = globalInventoryItems[i];
-                if (curItem && curItem.id == item.id) {
-                   curItem.loadFromObject(item);
-                   return curItem; 
-                }
-            }
-
-            return new InventoryItem(kind, item);
         },
 
         update: function() {

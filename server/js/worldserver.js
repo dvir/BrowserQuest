@@ -100,7 +100,7 @@ module.exports = World = cls.Class.extend({
                     var target = self.getEntityById(mob.target);
                     if(target) {
                         var pos = self.findPositionNextTo(mob, target);
-                        if(mob.distanceToSpawningPoint(pos.x, pos.y) > 50) {
+                        if (mob.distanceToSpawningPoint(pos.x, pos.y) > 50) {
                             mob.clearTarget();
                             mob.forgetEveryone();
                             player.removeAttacker(mob);
@@ -112,7 +112,7 @@ module.exports = World = cls.Class.extend({
             };
 
             player.onMove(move_callback);
-            player.onLootMove(move_callback);
+            //player.onLootMove(move_callback);
             
             player.onZone(function() {
                 var hasChangedGroups = self.handleEntityGroupMembership(player);
@@ -563,7 +563,7 @@ module.exports = World = cls.Class.extend({
                 attacker.killed(mob);
 
                 this.pushToAdjacentGroups(mob.group, mob.despawn()); // Despawn must be enqueued before the item drop
-                if(item) {
+                if (item) {
                     this.pushToAdjacentGroups(mob.group, mob.drop(item));
                     this.handleItemDespawn(item);
                 }
