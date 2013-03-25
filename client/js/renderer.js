@@ -130,7 +130,7 @@ function(Camera, Item, Character, Player, Timer) {
             this.background.font = font;
         },
 
-        drawText: function(text, x, y, centered, color, strokeColor) {
+        drawText: function(text, x, y, centered, color, strokeColor, align) {
             var ctx = this.context;
             
             var strokeSize;
@@ -148,6 +148,9 @@ function(Camera, Item, Character, Player, Timer) {
                 ctx.save();
                 if(centered) {
                     ctx.textAlign = "center";
+                }
+                if (align) {
+                    ctx.textAlign = align;
                 }
                 ctx.strokeStyle = strokeColor || "#373737";
                 ctx.lineWidth = strokeSize;
@@ -652,7 +655,7 @@ function(Camera, Item, Character, Player, Timer) {
 
         drawMapInfo: function() {
             var player = this.game.player;
-            this.drawText(player.areaName + " ("+player.x+","+player.y+")", 800, 20, false);
+            this.drawText(player.areaName + " ("+player.gridX+","+player.gridY+")", 950, 20, false, false, false, "right");
         },
     
         drawCombatInfo: function() {
