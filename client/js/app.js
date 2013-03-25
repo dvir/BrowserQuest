@@ -1,5 +1,5 @@
 $dragSrc = null;
-define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
+define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function($, Storage, Healthbar) {
 
     var App = Class.extend({
         init: function() {
@@ -398,6 +398,8 @@ define(['jquery', 'storage', 'healthbar'], function($, Storage, Healthbar) {
 
                 if (skillSlot) {
                     $div.data("skill", skillSlot.skill);
+                    $div.addClass("type-"+Types.getType(skillSlot.skill.kind)); 
+                    $div.attr("title", Types.getKindAsString(skillSlot.skill.kind));
                     if (skillSlot.skill.isStackable && skillSlot.skill.amount > 0) {
                         $div.append($("<span/>").addClass("amount").html(skillSlot.skill.amount));
                     }

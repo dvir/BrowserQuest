@@ -21,7 +21,7 @@ define(['exceptions',
             this._size = 12;
             this._skills = [];
             this.reset();
-            
+ 
             this.keyMap = [49, 50, 51, 52, 53, 54, 81, 69, 90, 88, 67, 86];
                        //  1,  2,  3,  4,  5,  6,  q,  e,  z,  x,  c,  v
             this.actualKeyMap = ["1", "2", "3", "4", "5", "6", "Q", "E", "Z", "X", "C", "V"];
@@ -84,6 +84,13 @@ define(['exceptions',
         },
 
         click: function(key, target) {
+            this.reset();
+            //this.add(Types.Entities.FROSTNOVA);
+            //this.add(Types.Entities.FROSTBOLT);
+            //this.add(Types.Entities.ICEBARRIER);
+            //this.add(Types.Entities.FIREBALL);
+            //this.add(Types.Entities.BLINK);
+            //this.add(Types.Entities.POLYMORPH);
             if (this._skills[this.keySlot(key)]) {
                 this._skills[this.keySlot(key)].use(target);
             }

@@ -205,6 +205,18 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       left: 275px;
     }
 
+    #skillbar > ul.slotbar > li > div.type-spell {
+      background-size: 95% auto;
+      margin-left: 2px;
+      margin-top: 5px;
+      height: 26px;
+      width: 28px;
+      border-radius: 7px;
+    }
+    #skillbar > ul.slotbar > li > div.type-spell > span.keybind {
+      top: -2px;
+    }
+
     #notifications {position:absolute;left:50%;text-align:center;font-family:'GraphicPixel';overflow:hidden;}
     #notifications div {position:absolute;-moz-transition:none;-webkit-transition:none;top:0;width:100%;}
     #notifications div.top {-moz-transition:0.5s top ease;-webkit-transition:0.5s top ease;-o-transition:0.5s top ease;-ms-transition:0.5s top ease;transition:0.5s top ease;}
@@ -954,8 +966,8 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       }
       #skillbar > ul.slotbar > li > div > span.keybind {
         position: absolute;
-        right: 3px;
-        top: 1px;
+        right: 2px;
+        top: 2px;
       }
 
       #armor, #weapon {width:32px;height:32px;position:absolute;background-size:192px;background-position:-64px;}

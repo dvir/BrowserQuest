@@ -558,7 +558,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
 
         sendUseSpell: function(spell, target) {
             var message = [Types.Messages.USESPELL,
-                           spell.id];
+                           spell.kind];
             if (target) {
                 message.push(target.id);
             }

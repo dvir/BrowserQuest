@@ -108,6 +108,11 @@ Types = {
 
         // Spells
         FROSTNOVA: 100,
+        FROSTBOLT: 101,
+        ICEBARRIER: 102,
+        FIREBALL: 103,
+        BLINK: 104,
+        POLYMORPH: 105,
 
 
         // using this so I won't have to mess with ending commas
@@ -203,7 +208,12 @@ var kinds = {
     desertnpc: [Types.Entities.DESERTNPC, "npc"],
     lavanpc: [Types.Entities.LAVANPC, "npc"],
 
-    frostnova: [Types.Entities.FROSTNOVA, "spell"] 
+    frostnova: [Types.Entities.FROSTNOVA, "spell"],
+    frostbolt: [Types.Entities.FROSTBOLT, "spell"],
+    icebarrier: [Types.Entities.ICEBARRIER, "spell"],
+    fireball: [Types.Entities.FIREBALL, "spell"],
+    blink: [Types.Entities.BLINK, "spell"],
+    polymorph: [Types.Entities.POLYMORPH, "spell"] 
 };
     
 Types.rankedWeapons = [

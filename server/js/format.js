@@ -23,7 +23,7 @@ var _ = require('underscore'),
             this.formats[Types.Messages.INVENTORYITEM] = [],
             this.formats[Types.Messages.INVENTORYSWAP] = ['n', 'n'],
             this.formats[Types.Messages.USEITEM] = ['s'],
-            this.formats[Types.Messages.USESPELL] = ['s'],
+            this.formats[Types.Messages.USESPELL] = ['n'],
             this.formats[Types.Messages.SKILLBAR] = ['o'],
             this.formats[Types.Messages.THROWITEM] = []
         },
