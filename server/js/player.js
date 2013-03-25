@@ -401,6 +401,7 @@ module.exports = Player = Character.extend({
         item.remove();
         var thrownItem = this.server.addItem(this.server.createItem(item.kind, target.x, target.y));
         this.server.pushToAdjacentGroups(this.group, this.drop(thrownItem));
+        this.server.handleItemDespawn(thrownItem);
     },
   
     lootedItem: function(item) {
