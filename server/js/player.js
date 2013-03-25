@@ -307,12 +307,8 @@ module.exports = Player = Character.extend({
     },
     
     getState: function() {
-        var basestate = this._getBaseState(),
-            state = [this.name, this.orientation, this.armor, this.weapon];
-
-        if(this.target) {
-            state.push(this.target);
-        }
+        var basestate = this._super(),
+            state = [this.name, this.armor, this.weapon];
         
         return basestate.concat(state);
     },

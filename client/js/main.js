@@ -382,6 +382,9 @@ define(['jquery', 'app'], function($, App) {
                             $('#playercount').click();
                             break;
                         case Types.Keys.T:
+                            game.makePlayerAttackTarget();
+                            break;
+                        case Types.Keys.Y:
                             game.activateTownPortal();
                             break;
                         default:
@@ -455,6 +458,8 @@ define(['jquery', 'app'], function($, App) {
                         return false;
                     }
                     if(key === 27) { // ESC
+                        game.player.target = null;
+                        app.updateTarget();
                         app.hideWindows();
                         _.each(game.player.attackers, function(attacker) {
                             attacker.stop();

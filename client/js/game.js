@@ -912,7 +912,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             
                 self.player.onStopPathing(function(x, y) {
                     if (self.player.hasTarget()) {
-                        self.player.lookAtTarget();
+//                        self.player.lookAtTarget();
                     }
                 
                     self.selectedCellVisible = false;
@@ -1713,6 +1713,12 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.app.updateTarget();
             this.client.sendAttack(mob);
         },
+
+        makePlayerAttackTarget: function() {
+            if (this.player.target) {
+                this.makePlayerAttack(this.player.target);
+            }
+        },
     
         /**
          *
@@ -2052,7 +2058,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         	    entity = this.getEntityAt(pos.x, pos.y);
     	    
         	    if(entity instanceof Mob) {
-        	        this.makePlayerAttack(entity);
+                    this.player.target = entity;
+                    this.app.updateTarget();
         	    }
         	    else if(entity instanceof Item) {
         	        this.makePlayerGoToItem(entity);

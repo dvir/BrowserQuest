@@ -17,6 +17,8 @@ module.exports = Mob = Character.extend({
 
         this.baseHP = Properties[Types.getKindAsString(this.kind)].hp;
 
+        this.hp = this.maxHP;
+
         this.hatelist = [];
         this.respawnTimeout = null;
         this.returnTimeout = null;

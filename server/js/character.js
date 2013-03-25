@@ -96,13 +96,8 @@ module.exports = Character = Entity.extend({
     },
 
     getState: function() {
-        var basestate = this._getBaseState(),
-            state = [];
-        
-        state.push(this.orientation);
-        if(this.target) {
-            state.push(this.target);
-        }
+        var basestate = this._super(),
+            state = [this.hp, this.maxHP, this.orientation, this.target];
         
         return basestate.concat(state);
     },

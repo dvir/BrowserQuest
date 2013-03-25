@@ -41,17 +41,13 @@ module.exports = Entity = DBEntity.extend({
 
     },
     
-    _getBaseState: function() {
+    getState: function() {
         return [
             parseInt(this.id),
             this.kind,
             this.x,
             this.y
         ];
-    },
-    
-    getState: function() {
-        return this._getBaseState();
     },
     
     spawn: function() {

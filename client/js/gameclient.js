@@ -235,27 +235,26 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                     this.spawn_chest_callback(item, x, y);
                 }
             } else {
-                var name, orientation, target, weapon, armor;
+                var name, orientation, target, weapon, armor, hp, maxHP;
             
-                if(Types.isPlayer(kind)) {
-                    name = data[5];
-                    orientation = data[6];
-                    armor = data[7];
-                    weapon = data[8];
-                    if(data.length > 9) {
-                        target = data[9];
-                    }
-                }
-                else if(Types.isMob(kind)) {
-                    orientation = data[5];
-                    if(data.length > 6) {
-                        target = data[6];
-                    }
+                hp = data[5];
+                maxHP = data[6];
+                orientation = data[7];
+                target = data[8];
+
+                if (Types.isPlayer(kind)) {
+                    name = data[9];
+                    armor = data[10];
+                    weapon = data[11];
+                } else if(Types.isMob(kind)) {
+
                 }
 
                 var character = EntityFactory.createEntity(kind, id, name);
+                character.hp = hp;
+                character.maxHP = maxHP;
             
-                if(character instanceof Player) {
+                if (character instanceof Player) {
                     character.equipWeapon(weapon);
                     character.equipArmor(armor);
                 }
