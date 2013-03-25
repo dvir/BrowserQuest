@@ -790,6 +790,10 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       #achievementsbutton:hover, #achievementsbutton.blink:hover {background-position:-316px -34px;}
       #achievementsbutton.blink {background-position:-576px -34px;}
       #achievementsbutton.active {background-position:-344px -34px;}
+      #inventorybutton {background-position:-288px -34px;top:2px;left:870px;}
+      #inventorybutton:hover, #inventorybutton.blink:hover {background-position:-316px -34px;}
+      #inventorybutton.blink {background-position:-576px -34px;}
+      #inventorybutton.active {background-position:-344px -34px;}
       #helpbutton {background-position:-372px -34px;top:2px;left:900px;}
       #helpbutton:hover {background-position:-400px -34px;}
       #helpbutton.active {background-position:-428px -34px;}
@@ -992,6 +996,10 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       #achievementsbutton:hover, #achievementsbutton.blink:hover {background-position:-316px -34px;}
       #achievementsbutton.blink {background-position:-576px -34px;}
       #achievementsbutton.active {background-position:-344px -34px;}
+      #inventorybutton {background-position:-288px -34px;top:2px;left:810px;}
+      #inventorybutton:hover, #inventorybutton.blink:hover {background-position:-316px -34px;}
+      #inventorybutton.blink {background-position:-576px -34px;}
+      #inventorybutton.active {background-position:-344px -34px;}
       #helpbutton {background-position:-372px -34px;top:2px;left:900px;}
       #helpbutton:hover {background-position:-400px -34px;}
       #helpbutton.active {background-position:-428px -34px;}
@@ -1161,6 +1169,10 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       #achievementsbutton:hover, #achievementsbutton.blink:hover {background-position:-158px -17px;}
       #achievementsbutton.blink {background-position:-288px -17px;}
       #achievementsbutton.active {background-position:-172px -17px;}
+      #inventorybutton {background-position:-144px -17px;top:1px;left:435px;}
+      #inventorybutton:hover, #inventorybutton.blink:hover {background-position:-158px -17px;}
+      #inventorybutton.blink {background-position:-288px -17px;}
+      #inventorybutton.active {background-position:-172px -17px;}
       #helpbutton {background-position:-186px -17px;top:1px;left:450px;}
       #helpbutton:hover {background-position:-200px -17px;}
       #helpbutton.active {background-position:-214px -17px;}
@@ -1328,6 +1340,9 @@ body {background:#000;}
 #achievementsbutton {background-position:-288px -34px;top:2px;left:390px;}
 #achievementsbutton:hover, #achievementsbutton.blink {background-position:-316px -34px;}
 #achievementsbutton.active {background-position:-344px -34px;}
+#inventorybutton {background-position:-288px -34px;top:2px;left:390px;}
+#inventorybutton:hover, #inventorybutton.blink {background-position:-316px -34px;}
+#inventorybutton.active {background-position:-344px -34px;}
 #helpbutton {background-position:-372px -34px;top:2px;left:420px;}
 #helpbutton:hover {background-position:-400px -34px;}
 #helpbutton.active {background-position:-428px -34px;}
