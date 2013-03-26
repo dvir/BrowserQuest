@@ -14,7 +14,11 @@ module.exports = Entity = DBEntity.extend({
             y: y
         });
 
-        this.id = parseInt(id);
+        if (id) {
+            this.id = parseInt(id);
+        } else {
+            this.id = Math.floor(Math.random()*100000+100000);
+        }
         this.type = type;
         this.kind = kind;
     },
@@ -35,6 +39,10 @@ module.exports = Entity = DBEntity.extend({
     set y(y) {
         this.data.y = y;
         this.isDirty = true;
+    },
+
+    distanceTo: function(entity) {
+        return Utils.distanceTo(this.x, this.y, entity.x, entity.y);
     },
     
     destroy: function() {

@@ -364,6 +364,8 @@ module.exports = World = cls.Class.extend({
         
         entity.destroy();
         this.removeFromGroups(entity);
+        this.pushToAdjacentGroups(entity.group, entity.despawn());
+        this.pushBroadcast(entity.despawn());
         log.debug("Removed "+ Types.getKindAsString(entity.kind) +" : "+ entity.id);
     },
     
@@ -374,7 +376,6 @@ module.exports = World = cls.Class.extend({
     },
     
     removePlayer: function(player) {
-        player.broadcast(player.despawn());
         this.removeEntity(player);
         delete this.players[player.id];
         delete this.outgoingQueues[player.id];
@@ -567,7 +568,6 @@ module.exports = World = cls.Class.extend({
     
             if(entity.type === "player") {
                 this.handlePlayerVanish(entity);
-                this.pushToAdjacentGroups(entity.group, entity.despawn());
             }
     
             this.removeEntity(entity);
@@ -833,7 +833,6 @@ module.exports = World = cls.Class.extend({
                 },
                 blinkingDuration: 4000,
                 despawnCallback: function() {
-                    self.pushToAdjacentGroups(item.group, new Messages.Destroy(item));
                     self.removeEntity(item);
                 }
             });
@@ -852,7 +851,6 @@ module.exports = World = cls.Class.extend({
     },
     
     handleOpenedChest: function(chest, player) {
-        this.pushToAdjacentGroups(chest.group, chest.despawn());
         this.removeEntity(chest);
         
         var kind = chest.getRandomItem();

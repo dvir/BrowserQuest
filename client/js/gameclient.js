@@ -555,12 +555,17 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.sendMessage(message);
         },
 
-        sendUseSpell: function(spell, target) {
+        sendUseSpell: function(spell, target, orientation, trackingId) {
             var message = [Types.Messages.USESPELL,
                            spell.kind];
+
+            var targetId = null;
             if (target) {
-                message.push(target.id);
+                targetId = target.id;
             }
+            message.push(targetId);
+            message.push(orientation);
+            message.push(trackingId);
 
             this.sendMessage(message);
         },

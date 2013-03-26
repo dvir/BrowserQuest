@@ -10,6 +10,8 @@ var cls = require("./lib/class"),
 
 module.exports = Skillbar = DBEntity.extend({
     init: function(player, callback) {
+        this._super();
+
         this.player = null;
         this.dbEntity = null;
 

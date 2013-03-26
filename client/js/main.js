@@ -311,7 +311,7 @@ define(['jquery', 'app'], function($, App) {
             	var key = e.which,
                     $chat = $('#chatinput');
 
-                if (game.started && !$('#chatbox').hasClass('active')) {
+                if (game.started && game.player && !$('#chatbox').hasClass('active')) {
                     switch(key) {
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
@@ -388,7 +388,7 @@ define(['jquery', 'app'], function($, App) {
                             game.activateTownPortal();
                             break;
                         default:
-                            if (!game.player.skillbar.click(key, game.player)) {
+                            if (game.player && !game.player.skillbar.click(key, game.player.target)) {
                                 // not even a skillbar action
                             }
                             break;
@@ -453,6 +453,14 @@ define(['jquery', 'app'], function($, App) {
                         }
                     }
                     if(key === 70) { // F
+            game.player.skillbar.reset();
+            game.player.skillbar.add(Types.Entities.FROSTNOVA);
+            game.player.skillbar.add(Types.Entities.FROSTBOLT);
+            game.player.skillbar.add(Types.Entities.ICEBARRIER);
+            game.player.skillbar.add(Types.Entities.FIREBALL);
+            game.player.skillbar.add(Types.Entities.BLINK);
+            game.player.skillbar.add(Types.Entities.POLYMORPH);
+            
                         game.toggleDebugInfo();
                         game.togglePathingGrid();
                         return false;

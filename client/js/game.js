@@ -471,6 +471,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     
         removeItem: function(item) {
             if(item) {
+                item.removed = true;
+
                 this.removeFromItemGrid(item, item.gridX, item.gridY);
                 this.removeFromRenderingGrid(item, item.gridX, item.gridY);
                 delete this.entities[item.id];
@@ -551,19 +553,19 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         removeFromRenderingGrid: function(entity, x, y) {
-            if(entity && this.renderingGrid[y][x] && entity.id in this.renderingGrid[y][x]) {
+            if(entity && this.renderingGrid[y] && this.renderingGrid[y][x] && entity.id in this.renderingGrid[y][x]) {
                 delete this.renderingGrid[y][x][entity.id];
             }
         },
     
         removeFromEntityGrid: function(entity, x, y) {
-            if(this.entityGrid[y][x][entity.id]) {
+            if(this.entityGrid && this.entityGrid[y] && this.entityGrid[y][x] && this.entityGrid[y][x][entity.id]) {
                 delete this.entityGrid[y][x][entity.id];
             }
         },
         
         removeFromItemGrid: function(item, x, y) {
-            if(item && this.itemGrid[y][x][item.id]) {
+            if(item && this.itemGrid && this.itemGrid[x] && this.itemGrid[x][y] && this.itemGrid[y][x][item.id]) {
                 delete this.itemGrid[y][x][item.id];
             }
         },
@@ -1224,6 +1226,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     var entity = self.getEntityById(entityId);
             
                     if (entity) {
+                        entity.removed = true;
+
                         log.info("Despawning " + Types.getKindAsString(entity.kind) + " (" + entity.id+ ")");
                         
                         if(entity.gridX === self.previousClickPosition.x
@@ -2056,24 +2060,26 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     	    && !this.hoveringCollidingTile
     	    && !this.hoveringPlateauTile) {
         	    entity = this.getEntityAt(pos.x, pos.y);
-    	    
-        	    if(entity instanceof Mob) {
-                    this.player.target = entity;
-                    this.app.updateTarget();
-        	    }
-        	    else if(entity instanceof Item) {
-        	        this.makePlayerGoToItem(entity);
-        	    }
-        	    else if(entity instanceof Npc) {
-        	        if(this.player.isAdjacentNonDiagonal(entity) === false) {
-                        this.makePlayerTalkTo(entity);
-        	        } else {
-                        this.makeNpcTalk(entity);
-        	        }
-        	    }
-        	    else if(entity instanceof Chest) {
-        	        this.makePlayerOpenChest(entity);
-        	    }
+    	   
+                if (entity && entity.interactable) {
+                    if(entity instanceof Mob) {
+                        this.player.target = entity;
+                        this.app.updateTarget();
+                    }
+                    else if(entity instanceof Item) {
+                        this.makePlayerGoToItem(entity);
+                    }
+                    else if(entity instanceof Npc) {
+                        if(this.player.isAdjacentNonDiagonal(entity) === false) {
+                            this.makePlayerTalkTo(entity);
+                        } else {
+                            this.makeNpcTalk(entity);
+                        }
+                    }
+                    else if(entity instanceof Chest) {
+                        this.makePlayerOpenChest(entity);
+                    }
+                }
         	    else {
         	        this.makePlayerGoTo(pos.x, pos.y);
         	    }

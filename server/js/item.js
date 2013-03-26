@@ -1,3 +1,4 @@
+var Messages = require('./message');
 
 module.exports = Item = Entity.extend({
     init: function(id, kind, x, y, amount) {
@@ -33,6 +34,10 @@ module.exports = Item = Entity.extend({
         if(this.isStatic) {
             this.scheduleRespawn(30000);
         }
+    },
+
+    despawn: function() {
+        return new Messages.Destroy(this);
     },
     
     scheduleRespawn: function(delay) {

@@ -11,14 +11,20 @@ define(function() {
         init: function(id, kind) {
     	    var self = this;
 
+            this.interactable = true;
+
             this._name = "unknown";
             this._x = 0;
             this._y = 0;
 
             this.gridX = 0;
             this.gridY = 0;
-	    
-            this.id = id;
+	   
+            if (id) {
+                this.id = id;
+            } else {
+                this.id = Math.floor(Math.random()*100000+100000);
+            }
 
             this.kind = kind;
 
@@ -77,6 +83,29 @@ define(function() {
             this.x = x * 16;
             this.y = y * 16;
     	},
+        
+        moveSteps: function(steps, orientation) {
+            var gridX = this.gridX,
+                gridY = this.gridY;
+
+            switch (orientation) {
+                case Types.Orientations.LEFT:
+                    gridX -= steps;
+                    break;
+                case Types.Orientations.UP:
+                    gridY -= steps;
+                    break;
+                case Types.Orientations.RIGHT:
+                    gridX += steps;
+                    break;
+                case Types.Orientations.DOWN:
+                    gridY += steps;
+                    break;
+            }
+
+            this.setGridPosition(gridX, gridY);
+        },
+
 
     	setSprite: function(sprite, kindString) {
     	    if (!sprite) {

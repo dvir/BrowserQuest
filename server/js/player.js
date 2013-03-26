@@ -9,6 +9,7 @@ var cls = require("./lib/class"),
     DB = require("./db"),
     Inventory = require("./inventory"),
     Skillbar = require("./skillbar"),
+    Spellbook = require("./spellbook"),
     Types = require("../../shared/js/gametypes");
 
 module.exports = Player = Character.extend({
@@ -240,8 +241,13 @@ module.exports = Player = Character.extend({
                 }
             }
             else if(action === Types.Messages.USESPELL) {
-                var id = message[1];
-                self.spellbook.use(id);
+                var spellId = message[1],
+                    targetId = message[2],
+                    orientation = message[3],
+                    trackingId = message[4];
+
+                var target = self.server.getEntityById(targetId);
+                self.spellbook.use(spellId, target, orientation, trackingId);
             }
             else if(action === Types.Messages.SKILLBAR) {
                 var slots = message[1];
@@ -515,6 +521,7 @@ module.exports = Player = Character.extend({
             y: this.dbEntity.y
         });
 
+        this.spellbook = new Spellbook(this);
         this.inventory = new Inventory(this, function(){                       
             self.skillbar = new Skillbar(self, callback);
         });

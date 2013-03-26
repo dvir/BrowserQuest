@@ -5,6 +5,7 @@ define(['exceptions',
         'inventory',
         'inventoryitem',
         'inventoryitemfactory',
+        'spells',
         'skillslot'], 
         function(
             Exceptions, 
@@ -13,6 +14,7 @@ define(['exceptions',
             Inventory,
             InventoryItem,
             InventoryItemFactory,
+            Spells,
             SkillSlot) 
     {
 
@@ -84,13 +86,9 @@ define(['exceptions',
         },
 
         click: function(key, target) {
-            this.reset();
-            //this.add(Types.Entities.FROSTNOVA);
-            //this.add(Types.Entities.FROSTBOLT);
-            //this.add(Types.Entities.ICEBARRIER);
-            //this.add(Types.Entities.FIREBALL);
-            //this.add(Types.Entities.BLINK);
-            //this.add(Types.Entities.POLYMORPH);
+            if (!target) {
+                target = this.player;
+            }
             if (this._skills[this.keySlot(key)]) {
                 this._skills[this.keySlot(key)].use(target);
             }
@@ -124,7 +122,7 @@ define(['exceptions',
         add: function(skillKind) {
             var skill;
             if (Types.getType(skillKind) == "spell") {
-                skill = new Spell(skillKind);
+                skill = Spells.getSpell(skillKind);
             } else if (Types.getType(skillKind) == "object") {
                 skill = new Item(skillKind);
             }
@@ -167,7 +165,7 @@ define(['exceptions',
             $.each(data, function(id, slot) {
                 var skill;
                 if (Types.getType(slot.kind) == "spell") {
-                    skill = new Spell(slot.kind);
+                    skill = Spells.getSpell(slot.kind);
                 } else {
                     skill = InventoryItemFactory.get(slot.id);
                 }
