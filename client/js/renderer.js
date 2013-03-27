@@ -60,6 +60,8 @@ define(['camera',
                },
 
                getScaleFactor: function() {
+                    return 2;
+
                    var w = window.innerWidth,
                    h = window.innerHeight,
                    scale;
