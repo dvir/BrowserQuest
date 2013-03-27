@@ -371,7 +371,7 @@ define(['camera',
                        dw = w * ds,
                        dh = h * ds;
 
-                       if (entity.removed) {
+                       if (entity instanceof Item && entity.removed) {
                             // @TODO: remove from grid?
                             return;
                        }

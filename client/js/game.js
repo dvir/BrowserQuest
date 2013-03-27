@@ -2025,6 +2025,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             oldHoveringCollidingValue = this.hoveringCollidingTile;
             this.hoveringCollidingTile = false;
 
+            this.player.orientation = orientation;
+            this.player.idle();
             this.processInput(pos);
 
             this.hoveringCollidingTile = oldHoveringCollidingValue;
