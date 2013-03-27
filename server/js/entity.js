@@ -45,6 +45,28 @@ module.exports = Entity = DBEntity.extend({
         return Utils.distanceTo(this.x, this.y, entity.x, entity.y);
     },
     
+    moveSteps: function(steps, orientation) {
+        var gridX = this.x,
+            gridY = this.y;
+
+        switch (orientation) {
+            case Types.Orientations.LEFT:
+                gridX -= steps;
+                break;
+            case Types.Orientations.UP:
+                gridY -= steps;
+                break;
+            case Types.Orientations.RIGHT:
+                gridX += steps;
+                break;
+            case Types.Orientations.DOWN:
+                gridY += steps;
+                break;
+        }
+
+        return {x: gridX, y: gridY};
+    },
+
     destroy: function() {
 
     },

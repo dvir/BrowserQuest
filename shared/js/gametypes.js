@@ -302,6 +302,10 @@ Types.isItem = function(kind) {
         || (Types.isObject(kind) && !Types.isChest(kind));
 };
 
+Types.isSpell = function(kind) {
+    return (Types.getType(kind) == "spell");
+};
+
 Types.isHealingItem = function(kind) {
     return kind === Types.Entities.FLASK 
         || kind === Types.Entities.BURGER;

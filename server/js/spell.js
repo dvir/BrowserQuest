@@ -34,28 +34,6 @@ module.exports = Spell = Entity.extend({
         return this._range;
     },
 
-    moveSteps: function(steps, orientation) {
-        var gridX = this.x,
-            gridY = this.y;
-
-        switch (orientation) {
-            case Types.Orientations.LEFT:
-                gridX -= steps;
-                break;
-            case Types.Orientations.UP:
-                gridY -= steps;
-                break;
-            case Types.Orientations.RIGHT:
-                gridX += steps;
-                break;
-            case Types.Orientations.DOWN:
-                gridY += steps;
-                break;
-        }
-
-        return {x: gridX, y: gridY};
-    },
-
     use: function(server, attacker, target, orientation) {
         if (this.spellType == "single") {
             if ((!(target instanceof Mob)) 
@@ -70,20 +48,23 @@ module.exports = Spell = Entity.extend({
             server.handleHurtEntity(target, attacker, dmg);
         } else if (this.spellType == "directional") {
             var self = this;
-            var radius = 0.5;
             server.addEntity(self);
             server.moveEntity(self, attacker.x, attacker.y);
+            self.travelDistance = 0;
             self.interval = setInterval(function(){
-                var pos = self.moveSteps(1, orientation);
-                server.moveEntity(self, pos.x, pos.y);
-                server.handleEntityGroupMembership(self);
+                if (self.travelDistance > self.range) {
+                    clearInterval(self.interval);
+                    clearTimeout(self.timeout);
+                    server.removeEntity(self);
+                    return;
+                }
 
                 if (server.groups[self.group]) {
                     var entities = server.groups[self.group].entities;
 
                     entities = _.reject(entities, function(entity) {
                         return (!(entity instanceof Mob)) 
-                               || self.distanceTo(entity) > radius;
+                               || self.distanceTo(entity) > self.radius;
                     });
 
                     if (_.size(entities) > 0) {
@@ -99,8 +80,13 @@ module.exports = Spell = Entity.extend({
                         clearInterval(self.interval);
                         clearTimeout(self.timeout);
                         server.removeEntity(self);
+                        return;
                     }
                 }
+                
+                var pos = self.moveSteps(1, orientation);
+                server.moveEntity(self, pos.x, pos.y);
+                self.travelDistance++;
             }, 80);
 
             self.timeout = setTimeout(function(){

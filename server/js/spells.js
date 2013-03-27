@@ -22,6 +22,7 @@ module.exports = Spells = {
             this._type = "frost";
             this._dmg = {low: 40, high: 60};
             this._range = 10;
+            this._radius = 0.5;
         },
    }),
 
@@ -33,6 +34,7 @@ module.exports = Spells = {
             this._type = "fire";
             this._dmg = {low: 45, high: 80};
             this._range = 10;
+            this._radius = 0.5;
         },
    }),
 

@@ -47,6 +47,19 @@ Utils.randomOrientation = function() {
     return o;
 };
 
+Utils.oppositeOrientation = function(orientation) {
+    switch (orientation) {
+        case Types.Orientations.LEFT:
+            return Types.Orientations.RIGHT;
+        case Types.Orientations.RIGHT:
+            return Types.Orientations.LEFT;
+        case Types.Orientations.UP:
+            return Types.Orientations.DOWN;
+        case Types.Orientations.DOWN:
+            return Types.Orientations.UP;
+    }
+};
+
 Utils.Mixin = function(target, source) {
     if (!source) return target;
 

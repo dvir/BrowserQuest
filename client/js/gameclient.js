@@ -222,7 +222,16 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                 x = data[3],
                 y = data[4];
         
-            if(Types.isItem(kind)) {
+            if (Types.isSpell(kind)) {
+                //@TODO: handle properly
+                return;
+
+                var spell = EntityFactory.createEntity(kind, id);
+            
+                if(this.spawn_spell_callback) {
+                    this.spawn_spell_callback(spell, x, y);
+                }
+            } else if(Types.isItem(kind)) {
                 var item = EntityFactory.createEntity(kind, id);
             
                 if(this.spawn_item_callback) {

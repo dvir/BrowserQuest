@@ -726,11 +726,11 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             return id in this.entities;
         },
 
-        getEntityById: function(id) {
+        getEntityById: function(id, noError) {
             if(id in this.entities) {
                 return this.entities[id];
             }
-            else {
+            else if (!noError) {
                 log.error("Unknown entity id : " + id, true);
             }
         },
@@ -1223,7 +1223,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
 
                 self.client.onDespawnEntity(function(entityId) {
-                    var entity = self.getEntityById(entityId);
+                    var entity = self.getEntityById(entityId, true);
             
                     if (entity) {
                         entity.removed = true;
