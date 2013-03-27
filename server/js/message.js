@@ -107,9 +107,13 @@ Messages.Drop = Message.extend({
                     this.entity.id,
                     this.item.id,
                     this.item.kind,
-                    _.pluck(this.entity.hatelist, "id"),
-                    {x: this.entity.x, y: this.entity.y}];
+                    _.pluck(this.entity.hatelist, "id")];
 
+        var pos = null;
+        if (this.entity instanceof Player) {
+            pos = {x: this.entity.x, y: this.entity.y};
+        }
+        drop.push(pos);
         return drop;
     }
 });

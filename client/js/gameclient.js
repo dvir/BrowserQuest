@@ -320,8 +320,7 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             item.wasDropped = true;
             item.playersInvolved = data[4];
 
-            var pos = data[5];
-        
+            var pos = data[5]; 
             if (this.drop_callback) {
                 this.drop_callback(item, entityId, pos);
             }

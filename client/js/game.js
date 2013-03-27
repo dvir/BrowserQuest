@@ -1490,6 +1490,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
             
                 self.client.onDropItem(function(item, mobId, pos) {
+                    if (!pos) {
+                        pos = self.getDeadMobPosition(mobId);
+                    }
+                    
                     self.addItem(item, pos.x, pos.y);
                     self.updateCursor();
                 });
