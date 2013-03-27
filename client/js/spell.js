@@ -1,9 +1,11 @@
 
 define(['spelleffect',
         'items',
+        'entity',
         'mob'], function(
          SpellEffect,
          Items,
+         Entity,
          Mob) {
 
     var Spell = Class.extend({
@@ -22,10 +24,8 @@ define(['spelleffect',
             this.target = target;
     	},
 
-        getEffect: function(x, y) { 
-            var effect = new SpellEffect(this.id+1, this.kind);
-            effect.setGridPosition(this.target.gridX, this.target.gridY);
-            return effect;
+        getEffect: function() { 
+            return (new SpellEffect(null, this.kind));
         },
 
         get cooldown() {
@@ -36,11 +36,10 @@ define(['spelleffect',
             return this._castTime;
         },
 
-/*
         get name() {
             return this._name;
         },
-*/
+
         get tooltip() {
             return this._tooltip;
         },
@@ -50,7 +49,7 @@ define(['spelleffect',
         },
 
         getSpriteName: function() {
-            return "spell-"+this.spellKind;
+            return "icon-spell-"+this.spellKind;
         },
 
         use: function(target) {
@@ -61,22 +60,17 @@ define(['spelleffect',
             if (this.spellType == "single") {
                 // maybe apply sparks to the target?
             } else if (this.spellType == "directional") {
-                var kind = Types.Entities.BURGER;
-                var item = new Items.Burger();
-                item.interactable = false;
-                
-                trackingId = item.id;
-
-                //globalGame.addEntity(effect);
-                globalGame.addItem(item, globalGame.player.gridX, globalGame.player.gridY);
-                item.interval = setInterval(function(){
-                    item.moveSteps(1, orientation);
+                var effect = this.getEffect(); 
+                effect.interactable = false;
+                trackingId = effect.id;
+                globalGame.addSpellEffect(effect, globalGame.player.gridX, globalGame.player.gridY);
+                effect.interval = setInterval(function(){
+                    effect.moveSteps(1, orientation);
                 }, 80);
 
-                item.timeout = setTimeout(function(){
-                    //globalGame.removeEntity(effect);
-                    clearInterval(item.interval);
-                    globalGame.removeItem(item);
+                effect.timeout = setTimeout(function(){
+                    clearInterval(effect.interval);
+                    globalGame.removeSpellEffect(effect);
                 }, 3000);
             } else if (this.spellType == "aoe") {
                 // get a big rounded(squared?) item to show

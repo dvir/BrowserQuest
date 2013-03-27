@@ -1,0 +1,1 @@
+{	"id": "spell-fireball",	"width": 49,	"height": 24,	"animations": {		"idle": {			"length": 6,			"row": 0		}	},	"offset_x": -22,	"offset_y": -6}

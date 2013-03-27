@@ -252,7 +252,7 @@ module.exports = Player = Character.extend({
                     orientation = message[3],
                     trackingId = message[4];
 
-                var target = self.server.getEntityById(targetId);
+                var target = self.server.getEntityById(targetId, true);
                 self.spellbook.use(spellId, target, orientation, trackingId);
             }
             else if(action === Types.Messages.SKILLBAR) {

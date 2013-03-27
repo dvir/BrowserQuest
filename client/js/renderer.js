@@ -347,6 +347,8 @@ define(['camera',
                    var kindString = Types.getKindAsString(entity.skin);
                    if (entity instanceof Item) {
                        kindString = "item-" + kindString;
+                   } else if (entity instanceof SpellEffect) {
+                        kindString = entity.getSpriteName();
                    }
 
                    var sprite = this.game.sprites[kindString],
@@ -354,6 +356,10 @@ define(['camera',
                    anim = entity.currentAnimation,
                    os = this.upscaledRendering ? 1 : this.scale,
                    ds = this.upscaledRendering ? this.scale : 1;
+
+                   if (!sprite) {
+                        console.log("kindString: " + kindString);
+                   }
 
                    if (entity.isDying) {
                        sprite = this.game.sprites["death"];
@@ -373,7 +379,7 @@ define(['camera',
                        dw = w * ds,
                        dh = h * ds;
 
-                       if (entity instanceof Item && entity.removed) {
+                       if (entity.removed) {
                             // @TODO: remove from grid?
                             return;
                        }

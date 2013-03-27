@@ -509,10 +509,10 @@ module.exports = World = cls.Class.extend({
         this.attack_callback = callback;
     },
     
-    getEntityById: function(id) {
+    getEntityById: function(id, noError) {
         if(id in this.entities) {
             return this.entities[id];
-        } else {
+        } else if (!noError) {
             log.error("Unknown entity : " + id);
         }
     },

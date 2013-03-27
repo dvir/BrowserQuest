@@ -3,10 +3,10 @@ globalInventoryItems = {};
 
 define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
         'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
-        'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', '../../shared/js/gametypes'],
+        'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', 'spelleffect', '../../shared/js/gametypes'],
 function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedTile,
          Warrior, GameClient, AudioManager, Updater, Transition, Pathfinder,
-         Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config) {
+         Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config, SpellEffect) {
     
     var Game = Class.extend({
         init: function(app) {
@@ -70,7 +70,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                 "sorcerer", "octocat", "beachnpc", "forestnpc", "desertnpc", "lavanpc", "clotharmor", "leatherarmor", "mailarmor", 
                                 "platearmor", "redarmor", "goldenarmor", "firefox", "death", "sword1", "axe", "chest",
                                 "sword2", "redsword", "bluesword", "goldensword", "item-sword2", "item-axe", "item-redsword", "item-bluesword", "item-goldensword", "item-leatherarmor", "item-mailarmor", 
-                                "item-platearmor", "item-redarmor", "item-goldenarmor", "item-flask", "item-cake", "item-burger", "morningstar", "item-morningstar", "item-firepotion"];
+                                "item-platearmor", "item-redarmor", "item-goldenarmor", "item-flask", "item-cake", "item-burger", "morningstar", "item-morningstar", "item-firepotion",
+                                "spell-fireball"];
         },
     
         setup: function($bubbleContainer, canvas, background, foreground, input) {
@@ -465,6 +466,24 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             }
         },
     
+        addSpellEffect: function(spellEffect, x, y) {
+            spellEffect.setSprite(this.sprites[spellEffect.getSpriteName()], spellEffect.getSpriteName());
+            spellEffect.setGridPosition(x, y);
+            spellEffect.setAnimation("idle", 150);
+            this.addEntity(spellEffect);
+        },
+
+        removeSpellEffect: function(spellEffect) {
+            if (spellEffect) {
+                spellEffect.removed = true;
+
+                this.removeFromRenderingGrid(spellEffect, spellEffect.gridX, spellEffect.gridY);
+                delete this.entities[spellEffect.id];
+            } else {
+                log.error("Cannot remove spell effect. Unknown ID : " + spellEffect.id);
+            }
+        },
+
         addItem: function(item, x, y) {
             var kindString = "item-" + Types.getKindAsString(item.skin);
             item.setSprite(this.sprites[kindString], kindString);
@@ -1204,8 +1223,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                         && entity.gridY === self.previousClickPosition.y) {
                             self.previousClickPosition = {};
                         }
-                        
-                        if(entity instanceof Item) {
+                      
+                        if (entity instanceof SpellEffect) {
+                            self.removeSpellEffect(entity);
+                        } else if(entity instanceof Item) {
                             self.removeItem(entity);
                         } else if(entity instanceof Character) {
                             entity.forEachAttacker(function(attacker) {

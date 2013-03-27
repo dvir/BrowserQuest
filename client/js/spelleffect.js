@@ -1,5 +1,5 @@
 
-define(['entity', 'item'], function(Entity, Item) {
+define(['entity'], function(Entity) {
 
     var SpellEffect = Entity.extend({
         init: function(id, kind) {
@@ -12,7 +12,7 @@ define(['entity', 'item'], function(Entity, Item) {
 
         getSpriteName: function() {
             return "spell-"+ this.spellEffectKind;
-        },
+        }
     });
     
     return SpellEffect;
