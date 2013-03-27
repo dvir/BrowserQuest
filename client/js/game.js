@@ -89,8 +89,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
         activateTownPortal: function() {
             if (this.player && !this.player.isDead) {
-                this.makeCharacterTeleportTo(this.player, 36, 210);
-                this.resetCamera();
+                var dest = {x: 36, y: 210, orientation: Types.Orientations.DOWN};
+                this.teleport(dest);
             }
         },
         
@@ -929,49 +929,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 
                     if(!self.player.hasTarget() && self.map.isDoor(x, y)) {
                         var dest = self.map.getDoorDestination(x, y);
-                    
-                        self.player.setGridPosition(dest.x, dest.y);
-                        self.player.nextGridX = dest.x;
-                        self.player.nextGridY = dest.y;
-                        self.player.turnTo(dest.orientation);
-                        self.client.sendTeleport(dest.x, dest.y);
-                        
-                        if(self.renderer.mobile && dest.cameraX && dest.cameraY) {
-                            self.camera.setGridPosition(dest.cameraX, dest.cameraY);
-                            self.resetZone();
-                        } else {
-                            if(dest.portal) {
-                                self.assignBubbleTo(self.player);
-                            } else {
-                                self.camera.focusEntity(self.player);
-                                self.resetZone();
-                            }
-                        }
-                        
-                        if(_.size(self.player.attackers) > 0) {
-                            setTimeout(function() { self.tryUnlockingAchievement("COWARD"); }, 500);
-                        }
-                        self.player.forEachAttacker(function(attacker) {
-                            attacker.disengage();
-                            attacker.idle();
-                        });
-                    
-                        self.updatePlateauMode();
-                        
-                        self.checkUndergroundAchievement();
-                        
-                        if(self.renderer.mobile || self.renderer.tablet) {
-                            // When rendering with dirty rects, clear the whole screen when entering a door.
-                            self.renderer.clearScreen(self.renderer.context);
-                        }
-                        
-                        if(dest.portal) {
-                            self.audioManager.playSound("teleport");
-                        }
-                        
-                        if(!self.player.isDead) {
-                            self.audioManager.updateMusic();
-                        }
+                        self.teleport(dest);
                     }
                 
                     if(self.player.target instanceof Npc) {
@@ -2448,6 +2406,53 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 this.camera.setPosition(x, y);
 
                 this.renderer.renderStaticCanvases();
+        },
+
+        teleport: function(dest) {
+            var self = this;
+
+            self.player.setGridPosition(dest.x, dest.y);
+            self.player.nextGridX = dest.x;
+            self.player.nextGridY = dest.y;
+            self.player.turnTo(dest.orientation);
+            self.client.sendTeleport(dest.x, dest.y);
+            
+            if(self.renderer.mobile && dest.cameraX && dest.cameraY) {
+                self.camera.setGridPosition(dest.cameraX, dest.cameraY);
+                self.resetZone();
+            } else {
+                if(dest.portal) {
+                    self.assignBubbleTo(self.player);
+                } else {
+                    self.camera.focusEntity(self.player);
+                    self.resetZone();
+                }
+            }
+            
+            if(_.size(self.player.attackers) > 0) {
+                setTimeout(function() { self.tryUnlockingAchievement("COWARD"); }, 500);
+            }
+            self.player.forEachAttacker(function(attacker) {
+                attacker.disengage();
+                attacker.idle();
+            });
+        
+            self.updatePlateauMode();
+            
+            self.checkUndergroundAchievement();
+            
+            if(self.renderer.mobile || self.renderer.tablet) {
+                // When rendering with dirty rects, clear the whole screen when entering a door.
+                self.renderer.clearScreen(self.renderer.context);
+            }
+            
+            if(dest.portal) {
+                self.audioManager.playSound("teleport");
+            }
+            
+            if(!self.player.isDead) {
+                self.audioManager.updateMusic();
+            }
         },
     
         updateBars: function() {
