@@ -456,10 +456,7 @@ define(['jquery', 'app'], function($, App) {
             game.player.skillbar.reset();
             game.player.skillbar.add(Types.Entities.FROSTNOVA);
             game.player.skillbar.add(Types.Entities.FROSTBOLT);
-            game.player.skillbar.add(Types.Entities.ICEBARRIER);
             game.player.skillbar.add(Types.Entities.FIREBALL);
-            game.player.skillbar.add(Types.Entities.BLINK);
-            game.player.skillbar.add(Types.Entities.POLYMORPH);
             
                         game.toggleDebugInfo();
                         game.togglePathingGrid();
