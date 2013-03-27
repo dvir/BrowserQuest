@@ -34,11 +34,13 @@ module.exports = Entity = DBEntity.extend({
     set x(x) {
         this.data.x = x;
         this.isDirty = true;
+        this.save();
     },
 
     set y(y) {
         this.data.y = y;
         this.isDirty = true;
+        this.save();
     },
 
     distanceTo: function(entity) {

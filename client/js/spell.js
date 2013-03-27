@@ -69,7 +69,6 @@ define(['spelleffect',
 
                 //globalGame.addEntity(effect);
                 globalGame.addItem(item, globalGame.player.gridX, globalGame.player.gridY);
-                console.log(globalGame.entities[item.id]);
                 item.interval = setInterval(function(){
                     item.moveSteps(1, orientation);
                 }, 80);

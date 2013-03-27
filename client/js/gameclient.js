@@ -594,9 +594,13 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.sendMessage(message);
         },
 
-        sendHello: function(player) {
+        sendHello: function(player, isResurrection) {
             this.sendMessage([Types.Messages.HELLO,
                               player.name]);
+        },
+
+        sendResurrect: function() {
+            this.sendMessage([Types.Messages.RESURRECT]);
         },
 
         sendMove: function(x, y) {

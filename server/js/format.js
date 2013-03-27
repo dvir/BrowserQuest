@@ -25,7 +25,8 @@ var _ = require('underscore'),
             this.formats[Types.Messages.USEITEM] = ['s'],
             this.formats[Types.Messages.USESPELL] = ['n', 'o', 'o', 'o'],
             this.formats[Types.Messages.SKILLBAR] = ['o'],
-            this.formats[Types.Messages.THROWITEM] = []
+            this.formats[Types.Messages.THROWITEM] = [],
+            this.formats[Types.Messages.RESURRECT] = []
         },
         
         check: function(msg) {

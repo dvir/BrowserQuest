@@ -76,14 +76,6 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
     
         loot: function(item) {
             log.info('Player '+this.id+' has looted '+item.id);
-
-            // commented out. Why stop invincibiility?! 
-            /*
-            if(Types.isArmor(item.kind) && this.invincible) {
-                this.stopInvincibility();
-            }
-            */
-
             item.onLoot(this);
         },
     

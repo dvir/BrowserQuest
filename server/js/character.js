@@ -54,7 +54,7 @@ module.exports = Character = Entity.extend({
     },
 
     set hp(hp) {
-        this.data.hp = Math.max(0, Math.min(this.maxHP, hp));
+        this.data.hp = Math.ceil(Math.max(0, Math.min(this.maxHP, hp)));
         this.isDirty = true;
         this.save();
     },

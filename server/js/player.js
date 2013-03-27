@@ -35,6 +35,17 @@ module.exports = Player = Character.extend({
         this.lastCheckpoint = null;
         this.formatChecker = new FormatChecker();
         this.disconnectTimeout = null;
+
+        this.playerenter_callback = function(isResurrection){
+            self.updatePosition(isResurrection);
+            self.send([Types.Messages.WELCOME, self.getData()]);
+            self.hasEnteredGame = true;
+            self.isDead = false;
+
+            self.server.addPlayer(self, function(){
+                self.server.enter_callback(self);
+            });
+        };
         
         this.connection.listen(function(message) {
             var action = parseInt(message[0]);
@@ -55,8 +66,12 @@ module.exports = Player = Character.extend({
             }
             
             self.resetTimeout();
-            
-            if(action === Types.Messages.HELLO) {
+           
+            if (action === Types.Messages.RESURRECT) {
+                self.hp = self.maxHP / 20;
+                self.playerenter_callback(true);
+            }
+            else if(action === Types.Messages.HELLO) {
                 var name = Utils.sanitize(message[1]);
                 
                 // If name was cleared by the sanitizer, give a default name.
@@ -86,16 +101,7 @@ module.exports = Player = Character.extend({
                         dbPlayer.save();
                     }
 
-                    self.setDBEntity(dbPlayer, function(){
-                        self.updatePosition();
-                        self.send([Types.Messages.WELCOME, self.getData()]);
-                        self.hasEnteredGame = true;
-                        self.isDead = false;
-
-                        self.server.addPlayer(self, function(){
-                            self.server.enter_callback(self);
-                        });
-                    });
+                    self.setDBEntity(dbPlayer, self.playerenter_callback);
                 });
             }
             else if(action === Types.Messages.WHO) {
@@ -476,9 +482,9 @@ module.exports = Player = Character.extend({
         this.send(new Messages.Data(this.getData()).serialize());
     },
 
-    updatePosition: function() {
+    updatePosition: function(isResurrection) {
         if(this.requestpos_callback) {
-            var pos = this.requestpos_callback();
+            var pos = this.requestpos_callback(isResurrection);
             this.setPosition(pos.x, pos.y);
         }
     },

@@ -142,6 +142,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     	    log.debug("Finished initPlayer");
         },
 
+        resurrect: function() {
+            this.client.sendResurrect(); 
+        },
+
         initShadows: function() {
             this.shadows = {};
             this.shadows["small"] = this.sprites["shadow16"];
@@ -589,7 +593,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             
                 if(entity.nextGridX >= 0 && entity.nextGridY >= 0) {
                     this.entityGrid[entity.nextGridY][entity.nextGridX][entity.id] = entity;
-                    if(!(entity instanceof Player)) {
+                    if(false && !(entity instanceof Player)) {
                         this.pathingGrid[entity.nextGridY][entity.nextGridX] = 1;
                     }
                 }
@@ -622,7 +626,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(entity) {
                 if(entity instanceof Character || entity instanceof Chest) {
                     this.entityGrid[y][x][entity.id] = entity;
-                    if(!(entity instanceof Player)) {
+                    if (entity instanceof Chest) {
                         this.pathingGrid[y][x] = 1;
                     }
                 }
@@ -760,6 +764,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 
                 self.client.host = host;
                 self.client.port = port;
+                self.player.isDying = false;
                 self.client.connect(); // connect to actual game server
             });
             
@@ -769,7 +774,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.player.name = self.username;
                 self.started = true;
            
-                self.sendHello(self.player);
+                self.sendHello();
             });
         
             this.client.onEntityList(function(list) {
@@ -791,11 +796,13 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             });
         
             this.client.onWelcome(function(data) {
+                self.player.isDead = false;
+                self.player.isDying = false;
+                self.player.idle();
+
                 self.player.loadFromObject(data);
 
                 log.info("Received player ID from server : "+ self.player.id);
-
-//                self.player.skillbar.add(Types.Entities.FROSTNOVA, false);
 
                 self.updateBars();
                 self.resetCamera();
@@ -913,10 +920,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
             
                 self.player.onStopPathing(function(x, y) {
-                    if (self.player.hasTarget()) {
-//                        self.player.lookAtTarget();
-                    }
-                
                     self.selectedCellVisible = false;
                 
                     if(self.isItemAt(x, y)) {
@@ -962,22 +965,31 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     log.info(self.player.id + " is dead");
                 
                     self.player.isDying = true;
-                    self.player.setSprite(globalSprites["death"]);
+
                     self.player.stopBlinking();
+                    /*
+                    self.player.setSprite(globalSprites["death"]);
                     self.player.animate("death", 120, 1, function() {
                         log.info(self.player.id + " was removed");
                     
                         self.removeEntity(self.player);
                         self.removeFromRenderingGrid(self.player, self.player.gridX, self.player.gridY);
-                    
-                        self.player = null;
-                        self.client.disable();
-                    
+                   
                         setTimeout(function() {
                             self.playerdeath_callback();
                         }, 1000);
                     });
+                    */
                 
+                    log.info(self.player.id + " was removed");
+                
+                    self.removeEntity(self.player);
+                    self.removeFromRenderingGrid(self.player, self.player.gridX, self.player.gridY);
+               
+                    setTimeout(function() {
+                        self.playerdeath_callback();
+                    }, 1000);
+
                     self.player.forEachAttacker(function(attacker) {
                         attacker.disengage();
                         attacker.idle();
@@ -1236,7 +1248,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
             
                 self.client.onEntityDestroy(function(id) {
-                    var entity = self.getEntityById(id);
+                    var entity = self.getEntityById(id, true);
                     if(entity) {
                         if(entity instanceof Item) {
                             self.removeItem(entity);
@@ -1278,7 +1290,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 });
             
                 self.client.onDamage(function(entityId, points, attackerId) {
-                    var entity = self.getEntityById(entityId);
+                    var entity = self.getEntityById(entityId, true);
 
                     if (self.player) {
                         if (attackerId == self.player.id) {
@@ -1535,8 +1547,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          * Sends a "hello" message to the server, as a way of initiating the player connection handshake.
          * @see GameClient.sendHello
          */
-        sendHello: function() {
-            this.client.sendHello(this.player);
+        sendHello: function(isResurrection) {
+            this.client.sendHello(this.player, isResurrection);
         },
 
         /**
@@ -1985,7 +1997,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
 
             this.player.orientation = orientation;
             this.player.idle();
-            this.processInput(pos);
+            this.processInput(pos, true);
 
             this.hoveringCollidingTile = oldHoveringCollidingValue;
         },
@@ -2009,7 +2021,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         /**
          * Processes game logic when the user triggers a click/touch event during the game.
          */
-        processInput: function(pos) {
+        processInput: function(pos, isKeyboard) {
             var entity;
 
     	    if(this.started
@@ -2021,7 +2033,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     	    && !this.hoveringPlateauTile) {
         	    entity = this.getEntityAt(pos.x, pos.y);
     	   
-                if (entity && entity.interactable) {
+                if (!isKeyboard && entity && entity.interactable) {
                     if(entity instanceof Mob) {
                         this.player.target = entity;
                         this.app.updateTarget();
@@ -2333,19 +2345,9 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     
         restart: function() {
             log.debug("Beginning restart");
-        
-            this.entities = {};
-            this.initEntityGrid();
-            this.initPathingGrid();
-            this.initRenderingGrid();
+       
+            this.resurrect();
 
-            this.player = new Warrior("player", this.username);
-            this.initPlayer();
-        
-            this.started = true;
-            this.client.enable();
-            this.sendHello(this.player);
-        
             this.storage.incrementRevives();
             
             if(this.renderer.mobile || this.renderer.tablet) {

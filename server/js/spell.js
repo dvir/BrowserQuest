@@ -110,6 +110,10 @@ module.exports = Spell = Entity.extend({
                 }
             }
 
+            if (!centerEntity.group || !server.groups[centerEntity.group]) {
+                return false;
+            }
+
             var entities = server.groups[centerEntity.group].entities;
 
             entities = _.reject(entities, function(entity) {

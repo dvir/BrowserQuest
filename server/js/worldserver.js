@@ -62,16 +62,10 @@ module.exports = World = cls.Class.extend({
         });
 
         this.onPlayerConnect(function(player) {
-            player.onRequestPosition(function() {
-                /*
-                 * we remember his last x/y coordinates, so there's no need
-                 * to load from checkpoint.
-                 */
-                /*
-                if(player.lastCheckpoint) {
+            player.onRequestPosition(function(isResurrection) {
+                if (isResurrection && player.lastCheckpoint) {
                     return player.lastCheckpoint.getRandomPosition();
                 }
-                */
 
                 if (player.x == 0 && player.y == 0) {
                     return self.map.getRandomStartingPosition();

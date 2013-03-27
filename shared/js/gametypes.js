@@ -39,6 +39,7 @@ Types = {
         USESPELL: 35,
         SKILLBAR: 36,
         THROWITEM: 37,
+        RESURRECT: 38,
 
         PLACEHOLDER: 10000
     },
