@@ -72,12 +72,6 @@ define(['spelleffect',
                 console.log(globalGame.entities[item.id]);
                 item.interval = setInterval(function(){
                     item.moveSteps(1, orientation);
-                    var entity = globalGame.getEntityAt(item.gridX, item.gridY);
-                    if (entity instanceof Mob) {
-                       clearInterval(item.interval);
-                       clearInterval(item.timeout);
-                       globalGame.removeItem(item);
-                    }
                 }, 80);
 
                 item.timeout = setTimeout(function(){
