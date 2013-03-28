@@ -9,7 +9,22 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 // The base Class implementation (does nothing)
 Class = function() {};
 
-Class.data = {};
+Class.prototype = {
+    callbacks: {},
+    on: function(name, callback) {
+        if (!this.callbacks.hasOwnProperty(name)) {
+            this.callbacks[name] = [];
+        }
+        this.callbacks[name].push(callback);
+    },
+    trigger: function(name) {
+        if (this.callbacks.hasOwnProperty(name)) {
+            for (var i = 0; i < this.callbacks[name].length; i++) {
+                this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
+            }
+        }
+    }
+};
 
 // Create a new Class that inherits from this class
 Class.extend = function(prop) {
