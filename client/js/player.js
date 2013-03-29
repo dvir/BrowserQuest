@@ -2,8 +2,6 @@
 define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character, Exceptions, Inventory, Skillbar) {
 
     var Player = Character.extend({
-        MAX_LEVEL: 10,
-        
         data: {
             // xp
             xp: 0,
