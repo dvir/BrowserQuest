@@ -1,5 +1,10 @@
 
-define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
+define(['entity', 
+        'transition', 
+        'timer'], function(
+        Entity, 
+        Transition, 
+        Timer) {
 
     var Character = Entity.extend({
         data: {
@@ -203,12 +208,12 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         requestPathfindingTo: function(x, y) {
             var ignored = [this]; // Always ignore self
             var target = null;
-            if (entity.hasTarget()) {
-                target = entity.target; 
-            } else if(entity.previousTarget) {
+            if (this.hasTarget()) {
+                target = this.target; 
+            } else if(this.previousTarget) {
                 // If repositioning before attacking again, ignore previous target
                 // See: tryMovingToADifferentTile()
-                target = entity.previousTarget;
+                target = this.previousTarget;
             }
             if (target) {
                 ignored.push(target);
@@ -221,15 +226,28 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
             
             return globalGame.findPath(this, x, y, ignored);
         },
+
+        startPathing: function(path) {
+
+        },
+        stopPathing: function(x, y) {
+            if (!this.isDying) {
+                if (this.hasTarget() && this.isAdjacent(entity.target)) {
+                    this.lookAtTarget();
+                }
+
+                var self = this;
+                this.forEachAttacker(function(attacker) {
+                    if (!attacker.isAdjacentNonDiagonal(self) && attacker.id !== self.id) {
+                        attacker.follow(self);
+                    }
+                });
     
-        onStartPathing: function(callback) {
-            this.start_pathing_callback = callback;
+                globalGame.unregisterEntityPosition(entity);
+                globalGame.registerEntityPosition(entity);
+            }
         },
     
-        onStopPathing: function(callback) {
-            this.stop_pathing_callback = callback;
-        },
-	
     	followPath: function(path) {
     		if(path.length > 1) { // Length of 1 means the player has clicked on himself
     			this.path = path;
@@ -239,9 +257,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
                     path.pop();
                 }
 			
-                if(this.start_pathing_callback) {
-                    this.start_pathing_callback(path);
-                }
+                this.startPathing(path);
                 this.nextStep();
     		}
     	},
@@ -324,9 +340,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
     		        this.path = null;
         			this.idle();
                 
-                    if(this.stop_pathing_callback) {
-                        this.stop_pathing_callback(this.gridX, this.gridY);
-                    }
+                    this.stopPathing(this.gridX, this.gridY);
         		}
         	}
     	},

@@ -1,5 +1,16 @@
 
-define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character, Exceptions, Inventory, Skillbar) {
+define(['character', 
+        'exceptions', 
+        'inventory', 
+        'skillbar',
+        'chest',
+        'npc'], function(
+        Character, 
+        Exceptions, 
+        Inventory, 
+        Skillbar, 
+        Chest,
+        Npc) {
 
     var Player = Character.extend({
         data: {
@@ -37,6 +48,63 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
                 ignored.push(this.target);
             }
             return globalGame.findPath(this, x, y, ignored);
+        },
+
+        startPathing: function(path) {
+            var i = path.length - 1,
+                x = path[i][0],
+                y = path[i][1];
+        
+            if (this.isMovingToLoot()) {
+                this.isLootMoving = false;
+            }
+            else if (!this.isAttacking()) {
+                globalGame.client.sendMove(x, y);
+            }
+        
+            // Target cursor position
+            globalGame.selectedX = x;
+            globalGame.selectedY = y;
+
+            if(globalGame.renderer.mobile || globalGame.renderer.tablet) {
+                globalGame.drawTarget = true;
+                globalGame.clearTarget = true;
+                globalGame.renderer.targetRect = globalGame.renderer.getTargetBoundingRect();
+                globalGame.checkOtherDirtyRects(globalGame.renderer.targetRect, null, globalGame.selectedX, globalGame.selectedY);
+            }
+        },
+        stopPathing: function(x, y) {
+            globalGame.selectedCellVisible = false;
+        
+            if(globalGame.isItemAt(x, y)) {
+                var item = globalGame.getItemAt(x, y);
+            
+                // notify the server that the user is trying
+                // to loot the item
+                globalGame.client.sendLoot(item); 
+            }
+        
+            if(!this.hasTarget() && globalGame.map.isDoor(x, y)) {
+                var dest = globalGame.map.getDoorDestination(x, y);
+                globalGame.teleport(dest);
+            }
+        
+            if(this.target instanceof Npc) {
+                globalGame.makeNpcTalk(this.target);
+            } else if(this.target instanceof Chest) {
+                globalGame.client.sendOpen(this.target);
+                globalGame.audioManager.playSound("chest");
+            }
+        
+            var self = this;
+            this.forEachAttacker(function(attacker) {
+                if(!attacker.isAdjacentNonDiagonal(self)) {
+                    attacker.follow(self);
+                }
+            });
+        
+            globalGame.unregisterEntityPosition(this);
+            globalGame.registerEntityPosition(this);
         },
 
         get areaName() {

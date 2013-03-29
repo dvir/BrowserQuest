@@ -846,30 +846,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
         
-                self.player.onStartPathing(function(path) {
-                    var i = path.length - 1,
-                        x =  path[i][0],
-                        y =  path[i][1];
-                
-                    if (self.player.isMovingToLoot()) {
-                        self.player.isLootMoving = false;
-                    }
-                    else if (!self.player.isAttacking()) {
-                        self.client.sendMove(x, y);
-                    }
-                
-                    // Target cursor position
-                    self.selectedX = x;
-                    self.selectedY = y;
-
-                    if(self.renderer.mobile || self.renderer.tablet) {
-        	            self.drawTarget = true;
-        	            self.clearTarget = true;
-        	            self.renderer.targetRect = self.renderer.getTargetBoundingRect();
-        	            self.checkOtherDirtyRects(self.renderer.targetRect, null, self.selectedX, self.selectedY);
-        	        }
-                });
-                
                 self.player.onCheckAggro(function() {
                     self.forEachMob(function(mob) {
                         if(mob.isAggressive && !mob.isAttacking() && self.player.isNear(mob, mob.aggroRange)) {
@@ -936,39 +912,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     if(!self.player.isDead) {
                         self.audioManager.updateMusic();
                     }
-                });
-            
-                self.player.onStopPathing(function(x, y) {
-                    self.selectedCellVisible = false;
-                
-                    if(self.isItemAt(x, y)) {
-                        var item = self.getItemAt(x, y);
-                    
-                        // notify the server that the user is trying
-                        // to loot the item
-                        self.client.sendLoot(item); 
-                    }
-                
-                    if(!self.player.hasTarget() && self.map.isDoor(x, y)) {
-                        var dest = self.map.getDoorDestination(x, y);
-                        self.teleport(dest);
-                    }
-                
-                    if(self.player.target instanceof Npc) {
-                        self.makeNpcTalk(self.player.target);
-                    } else if(self.player.target instanceof Chest) {
-                        self.client.sendOpen(self.player.target);
-                        self.audioManager.playSound("chest");
-                    }
-                    
-                    self.player.forEachAttacker(function(attacker) {
-                        if(!attacker.isAdjacentNonDiagonal(self.player)) {
-                            attacker.follow(self.player);
-                        }
-                    });
-                
-                    self.unregisterEntityPosition(self.player);
-                    self.registerEntityPosition(self.player);
                 });
             
                 self.player.onDeath(function() {
@@ -1088,33 +1031,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                                     attacker.follow(entity);
                                                 }
                                             });
-                                        }
-                                    });
-
-                                    entity.onStopPathing(function(x, y) {
-                                        if(!entity.isDying) {
-                                            if(entity.hasTarget() && entity.isAdjacent(entity.target)) {
-                                                entity.lookAtTarget();
-                                            }
-                                
-                                            if(entity instanceof Player) {
-                                                var gridX = entity.destination.gridX,
-                                                    gridY = entity.destination.gridY;
-
-                                                if(self.map.isDoor(gridX, gridY)) {
-                                                    var dest = self.map.getDoorDestination(gridX, gridY);
-                                                    entity.setGridPosition(dest.x, dest.y);
-                                                }
-                                            }
-                                        
-                                            entity.forEachAttacker(function(attacker) {
-                                                if(!attacker.isAdjacentNonDiagonal(entity) && attacker.id !== self.player.id) {
-                                                    attacker.follow(entity);
-                                                }
-                                            });
-                                
-                                            self.unregisterEntityPosition(entity);
-                                            self.registerEntityPosition(entity);
                                         }
                                     });
 
