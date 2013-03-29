@@ -862,58 +862,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     }
                 });
 
-                self.player.onBeforeStep(function() {
-                    var blockingEntity = self.getEntityAt(self.player.nextGridX, self.player.nextGridY);
-                    if(blockingEntity && blockingEntity.id !== self.player.id) {
-                        log.debug("Blocked by " + blockingEntity.id);
-                    }
-                    self.unregisterEntityPosition(self.player);
-                });
-            
-                self.player.onStep(function() {
-                    if(self.player.hasNextStep()) {
-                        self.registerEntityDualPosition(self.player);
-                    }
-                
-                    if(self.isZoningTile(self.player.gridX, self.player.gridY)) {
-                        self.enqueueZoningFrom(self.player.gridX, self.player.gridY);
-                    }
-                
-                    self.player.forEachAttacker(function(attacker) {
-                        if(attacker.isAdjacent(attacker.target)) {
-                            attacker.lookAtTarget();
-                        } else {
-                            attacker.follow(self.player);
-                        }
-                    });
-                
-                    if((self.player.gridX <= 85 && self.player.gridY <= 179 && self.player.gridY > 178) || (self.player.gridX <= 85 && self.player.gridY <= 266 && self.player.gridY > 265)) {
-                        self.tryUnlockingAchievement("INTO_THE_WILD");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 293 && self.player.gridY > 292) {
-                        self.tryUnlockingAchievement("AT_WORLDS_END");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 100 && self.player.gridY > 99) {
-                        self.tryUnlockingAchievement("NO_MANS_LAND");
-                    }
-                    
-                    if(self.player.gridX <= 85 && self.player.gridY <= 51 && self.player.gridY > 50) {
-                        self.tryUnlockingAchievement("HOT_SPOT");
-                    }
-                    
-                    if(self.player.gridX <= 27 && self.player.gridY <= 123 && self.player.gridY > 112) {
-                        self.tryUnlockingAchievement("TOMB_RAIDER");
-                    }
-                
-                    self.updatePlayerCheckpoint();
-                
-                    if(!self.player.isDead) {
-                        self.audioManager.updateMusic();
-                    }
-                });
-            
                 self.player.onDeath(function() {
                     log.info(self.player.id + " is dead");
                 
@@ -1016,24 +964,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                 log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
                         
                                 if(entity instanceof Character) {
-                                    entity.onBeforeStep(function() {
-                                        self.unregisterEntityPosition(entity);
-                                    });
-
-                                    entity.onStep(function() {
-                                        if(!entity.isDying) {
-                                            self.registerEntityDualPosition(entity);
-
-                                            entity.forEachAttacker(function(attacker) {
-                                                if(attacker.isAdjacent(attacker.target)) {
-                                                    attacker.lookAtTarget();
-                                                } else {
-                                                    attacker.follow(entity);
-                                                }
-                                            });
-                                        }
-                                    });
-
                                     entity.onDeath(function() {
                                         log.info(entity.id + " is dead");
                                 

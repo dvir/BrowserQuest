@@ -41,6 +41,60 @@ define(['character',
             this.skillbar = new Skillbar();
         },
 
+        beforeStep: function() {
+            var blockingEntity = globalGame.getEntityAt(this.nextGridX, this.nextGridY);
+            if (blockingEntity && blockingEntity.id !== this.id) {
+                log.debug("Blocked by " + blockingEntity.id);
+            }
+
+            globalGame.unregisterEntityPosition(this);
+        },
+
+        step: function() {
+            if (this.hasNextStep()) {
+                globalGame.registerEntityDualPosition(this);
+            }
+        
+            if (globalGame.isZoningTile(this.gridX, this.gridY)) {
+                globalGame.enqueueZoningFrom(this.gridX, this.gridY);
+            }
+       
+            var self = this;
+            this.forEachAttacker(function(attacker) {
+                if(attacker.isAdjacent(attacker.target)) {
+                    attacker.lookAtTarget();
+                } else {
+                    attacker.follow(self);
+                }
+            });
+        
+            if((this.gridX <= 85 && this.gridY <= 179 && this.gridY > 178) || (this.gridX <= 85 && this.gridY <= 266 && this.gridY > 265)) {
+                globalGame.tryUnlockingAchievement("INTO_THE_WILD");
+            }
+            
+            if(this.gridX <= 85 && this.gridY <= 293 && this.gridY > 292) {
+                globalGame.tryUnlockingAchievement("AT_WORLDS_END");
+            }
+            
+            if(this.gridX <= 85 && this.gridY <= 100 && this.gridY > 99) {
+                globalGame.tryUnlockingAchievement("NO_MANS_LAND");
+            }
+            
+            if(this.gridX <= 85 && this.gridY <= 51 && this.gridY > 50) {
+                globalGame.tryUnlockingAchievement("HOT_SPOT");
+            }
+            
+            if(this.gridX <= 27 && this.gridY <= 123 && this.gridY > 112) {
+                globalGame.tryUnlockingAchievement("TOMB_RAIDER");
+            }
+        
+            globalGame.updatePlayerCheckpoint();
+        
+            if(!this.isDead) {
+                globalGame.audioManager.updateMusic();
+            }
+        },
+
         requestPathfindingTo: function(x, y) {
             var ignored = [this]; // Always ignore self
         

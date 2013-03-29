@@ -293,9 +293,7 @@ define(['entity',
                 x, y, path;
         
     		if(this.isMoving()) {
-    		    if(this.before_step_callback) {
-                    this.before_step_callback();
-                }
+                this.beforeStep();
             
     		    this.updatePositionOnGrid();
                 this.checkAggro();
@@ -310,9 +308,7 @@ define(['entity',
                         this.nextGridY = this.path[this.step+1][1];
                     }
             
-                    if(this.step_callback) {
-                        this.step_callback();
-                    }
+                    this.doStep();
 			    
         			if(this.hasChangedItsPath()) {
         				x = this.newDestination.x;
@@ -345,12 +341,23 @@ define(['entity',
         	}
     	},
     
-        onBeforeStep: function(callback) {
-            this.before_step_callback = callback;
+        beforeStep: function() {
+            globalGame.unregisterEntityPosition(this);
         },
-    
-        onStep: function(callback) {
-            this.step_callback = callback;
+
+        doStep: function() {
+            if (!this.isDying) {
+                globalGame.registerEntityDualPosition(this);
+
+                var self = this;
+                this.forEachAttacker(function(attacker) {
+                    if (attacker.isAdjacent(attacker.target)) {
+                        attacker.lookAtTarget();
+                    } else {
+                        attacker.follow(self);
+                    }
+                });
+            }
         },
 
     	isMoving: function() {
