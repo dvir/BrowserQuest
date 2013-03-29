@@ -82,8 +82,14 @@ Class.extend = function(prop) {
     // The dummy class constructor
     Class = function () {
         // All construction is actually done in the init method
-        if ( !initializing && this.init )
-            this.init.apply(this, arguments);
+        if (!initializing) {
+            if (this.data) {
+                this.data = $.extend({}, prototype.data, this.data);
+            }
+            if (this.init) {
+                this.init.apply(this, arguments);
+            }
+        }
     }
     
     // Populate our constructed prototype object
