@@ -30,6 +30,15 @@ define(['character', 'exceptions', 'inventory', 'skillbar'], function(Character,
             this.skillbar = new Skillbar();
         },
 
+        requestPathfindingTo: function(x, y) {
+            var ignored = [this]; // Always ignore self
+        
+            if (this.hasTarget()) {
+                ignored.push(this.target);
+            }
+            return globalGame.findPath(this, x, y, ignored);
+        },
+
         get areaName() {
             if (globalGame.audioManager.getSurroundingMusic(this)) {
                 return globalGame.audioManager.getSurroundingMusic(this).name;

@@ -201,16 +201,25 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
         },
     
         requestPathfindingTo: function(x, y) {
-            if(this.request_path_callback) {
-                return this.request_path_callback(x, y);
-            } else {
-                log.error(this.id + " couldn't request pathfinding to "+x+", "+y);
-                return [];
+            var ignored = [this]; // Always ignore self
+            var target = null;
+            if (entity.hasTarget()) {
+                target = entity.target; 
+            } else if(entity.previousTarget) {
+                // If repositioning before attacking again, ignore previous target
+                // See: tryMovingToADifferentTile()
+                target = entity.previousTarget;
             }
-        },
-    
-        onRequestPath: function(callback) {
-            this.request_path_callback = callback;
+            if (target) {
+                ignored.push(target);
+
+                // also ignore other attackers of the target entity
+                target.forEachAttacker(function(attacker) {
+                    ignored.push(attacker);
+                });
+            }
+            
+            return globalGame.findPath(this, x, y, ignored);
         },
     
         onStartPathing: function(callback) {

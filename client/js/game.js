@@ -971,15 +971,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.registerEntityPosition(self.player);
                 });
             
-                self.player.onRequestPath(function(x, y) {
-                    var ignored = [self.player]; // Always ignore self
-                
-                    if(self.player.hasTarget()) {
-                        ignored.push(self.player.target);
-                    }
-                    return self.findPath(self.player, x, y, ignored);
-                });
-            
                 self.player.onDeath(function() {
                     log.info(self.player.id + " is dead");
                 
@@ -1125,28 +1116,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                             self.unregisterEntityPosition(entity);
                                             self.registerEntityPosition(entity);
                                         }
-                                    });
-
-                                    entity.onRequestPath(function(x, y) {
-                                        var ignored = [entity], // Always ignore self
-                                            ignoreTarget = function(target) {
-                                                ignored.push(target);
-
-                                                // also ignore other attackers of the target entity
-                                                target.forEachAttacker(function(attacker) {
-                                                    ignored.push(attacker);
-                                                });
-                                            };
-                                        
-                                        if(entity.hasTarget()) {
-                                            ignoreTarget(entity.target);
-                                        } else if(entity.previousTarget) {
-                                            // If repositioning before attacking again, ignore previous target
-                                            // See: tryMovingToADifferentTile()
-                                            ignoreTarget(entity.previousTarget);
-                                        }
-                                        
-                                        return self.findPath(entity, x, y, ignored);
                                     });
 
                                     entity.onDeath(function() {
