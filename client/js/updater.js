@@ -205,7 +205,7 @@ define(['character', 'timer'], function(Character, Timer) {
                 
                 if(anim) {
                     if(anim.update(t)) {
-                        entity.setDirty();
+                        entity.dirty();
                     }
                 }
             });

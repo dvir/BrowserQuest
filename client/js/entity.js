@@ -44,7 +44,7 @@ define(function() {
             this.isHighlighted = false;
             this.visible = true;
             this.isFading = false;
-            this.setDirty();
+            this.dirty();
     	},
 
         get x() {
@@ -311,15 +311,9 @@ define(function() {
             this.setVisible(true);
         },
         
-        setDirty: function() {
+        dirty: function() {
             this.isDirty = true;
-            if(this.dirty_callback) {
-                this.dirty_callback(this);
-            }
-        },
-        
-        onDirty: function(dirty_callback) {
-            this.dirty_callback = dirty_callback;
+            this.trigger("dirty");
         }
     });
     

@@ -443,10 +443,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 }
                 
                 if(this.renderer.mobile || this.renderer.tablet) {
-                    entity.onDirty(function(e) {
-                        if(self.camera.isVisible(e)) {
-                            e.dirtyRect = self.renderer.getEntityBoundingRect(e);
-                            self.checkOtherDirtyRects(e.dirtyRect, e, e.gridX, e.gridY);
+                    entity.on("dirty", function() {
+                        if(self.camera.isVisible(this)) {
+                            this.dirtyRect = self.renderer.getEntityBoundingRect(this);
+                            self.checkOtherDirtyRects(this.dirtyRect, this, this.gridX, this.gridY);
                         }
                     });
                 }
@@ -2279,7 +2279,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 
                 // Force immediate drawing of all visible entities in the new zone
                 this.forEachVisibleEntityByDepth(function(entity) {
-                    entity.setDirty();
+                    entity.dirty();
                 });
             }
             else {
@@ -2614,7 +2614,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 if(!e2.isDirty) {
                     var r2 = r.getEntityBoundingRect(e2);
                     if(r.isIntersecting(r1, r2)) {
-                        e2.setDirty();
+                        e2.dirty();
                     }
                 }
             });

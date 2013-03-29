@@ -616,7 +616,7 @@ define(['entity', 'transition', 'timer'], function(Entity, Transition, Timer) {
     	},
 	
     	hasMoved: function() {
-    	    this.setDirty();
+            this.dirty();
     	    if(this.hasmoved_callback) {
     	        this.hasmoved_callback(this);
     	    }
