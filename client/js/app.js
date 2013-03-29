@@ -357,7 +357,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
 
             $target.show();
             var healthbar = new Healthbar($target, target, scale);
-            target.onChange(function() {
+            target.on("change", function() {
                 healthbar.update();
             });
         },
