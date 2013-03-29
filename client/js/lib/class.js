@@ -10,6 +10,7 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 Class = function() {};
 
 Class.prototype = {
+    data: {},
     callbacks: {},
     on: function(name, callback) {
         if (!this.callbacks.hasOwnProperty(name)) {
@@ -38,6 +39,12 @@ Class.extend = function(prop) {
 
     // Copy the properties over onto the new prototype
     for (var name in prop) {
+        // data property should be extended, not copied
+        if (name == "data") {
+            $.extend(prototype.data, prop.data);
+            continue;
+        }
+
         // check if the property is a getter or a setter
         // and if so handle it differently
         var g = prop.__lookupGetter__(name), s = prop.__lookupSetter__(name);
