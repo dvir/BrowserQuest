@@ -325,17 +325,6 @@ define(['player',
                 chest.setGridPosition(x, y);
                 chest.setAnimation("idle_down", 150);
                 globalGame.addEntity(chest, x, y);
-            
-                chest.onOpen(function() {
-                    chest.stopBlinking();
-                    chest.setSprite(globalGame.sprites["death"]);
-                    chest.setAnimation("death", 120, 1, function() {
-                        log.info(chest.id + " was removed");
-                        globalGame.removeEntity(chest);
-                        globalGame.removeFromRenderingGrid(chest, chest.gridX, chest.gridY);
-                        globalGame.previousClickPosition = {};
-                    });
-                });
             } else {
                 var name, orientation, targetId, weapon, armor, hp, maxHP;
             
