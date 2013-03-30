@@ -854,23 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onEntityAttack(function(attackerId, targetId) {
-                    var attacker = self.getEntityById(attackerId),
-                        target = self.getEntityById(targetId);
-                
-                    if(attacker && target && attacker.id !== self.player.id) {
-                        log.debug(attacker.id + " attacks " + target.id);
-                        
-                        if(attacker && target instanceof Player && target.id !== self.player.id && target.target && target.target.id === attacker.id && attacker.getDistanceToEntity(target) < 3) {
-                            setTimeout(function() {
-                                self.createAttackLink(attacker, target);
-                            }, 200); // delay to prevent other players attacking mobs from ending up on the same tile as they walk towards each other.
-                        } else {
-                            self.createAttackLink(attacker, target);
-                        }
-                    }
-                });
-            
                 self.client.onDamage(function(entityId, points, attackerId) {
                     var entity = self.getEntityById(entityId, true);
 

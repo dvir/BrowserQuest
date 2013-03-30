@@ -234,14 +234,34 @@ define(['player',
         },
     
         receiveAttack: function(data) {
-            var attacker = data[1], 
-                target = data[2];
+            var attackerId = data[1], 
+                targetId = data[2];
         
-            if(this.attack_callback) {
-                this.attack_callback(attacker, target);
+            var attacker = globalGame.getEntityById(attackerId),
+                target = globalGame.getEntityById(targetId);
+        
+            if (attacker && target && attacker.id !== globalGame.player.id) {
+                log.debug(attacker.id + " attacks " + target.id);
+                
+                if (attacker 
+                    && target instanceof Player 
+                    && target.id !== globalGame.player.id 
+                    && target.target 
+                    && target.target.id === attacker.id 
+                    && attacker.getDistanceToEntity(target) < 3) 
+                {
+                    // delay to prevent other players attacking mobs 
+                    // from ending up on the same tile as they walk 
+                    // towards each other.
+                    setTimeout(function() {
+                        globalGame.createAttackLink(attacker, target);
+                    }, 200); 
+                } else {
+                    globalGame.createAttackLink(attacker, target);
+                }
             }
         },
-    
+
         receiveSpawn: function(data) {
             var id = data[1],
                 kind = data[2],
@@ -566,11 +586,7 @@ define(['player',
         onWelcome: function(callback) {
             this.welcome_callback = callback;
         },
-
-        onEntityAttack: function(callback) {
-            this.attack_callback = callback;
-        },
-    
+ 
         onPlayerEquipItem: function(callback) {
             this.equip_callback = callback;
         },
