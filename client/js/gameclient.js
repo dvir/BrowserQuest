@@ -494,8 +494,9 @@ define(['player',
         receiveBlink: function(data) {
             var id = data[1];
         
-            if(this.blink_callback) {
-                this.blink_callback(id);
+            var item = globalGame.getEntityById(id);
+            if (item) {
+                item.blink(150);
             }
         },
 
@@ -610,10 +611,6 @@ define(['player',
             this.inventory_callback = callback;
         },
     
-        onItemBlink: function(callback) {
-            this.blink_callback = callback;
-        },
-
         sendInventory: function(inventory) {
             this.sendMessage([Types.Messages.INVENTORY,
                               inventory.serialize()]);

@@ -854,14 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onItemBlink(function(id) {
-                    var item = self.getEntityById(id);
-
-                    if(item) {
-                        item.blink(150);
-                    }
-                });
-
                 self.client.onEntityMove(function(id, x, y) {
                     var entity = null;
 
