@@ -476,8 +476,14 @@ define(['player',
         receiveDestroy: function(data) {
             var id = data[1];
         
-            if(this.destroy_callback) {
-                this.destroy_callback(id);
+            var entity = globalGame.getEntityById(id, true);
+            if (entity) {
+                if (entity instanceof Item) {
+                    globalGame.removeItem(entity);
+                } else {
+                    globalGame.removeEntity(entity);
+                }
+                log.debug("Entity was destroyed: "+entity.id);
             }
         },
     
@@ -593,10 +599,6 @@ define(['player',
     
         onEntityList: function(callback) {
             this.list_callback = callback;
-        },
-    
-        onEntityDestroy: function(callback) {
-            this.destroy_callback = callback;
         },
     
         onPlayerChangeXP: function(callback) {

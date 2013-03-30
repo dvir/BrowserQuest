@@ -854,18 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onEntityDestroy(function(id) {
-                    var entity = self.getEntityById(id, true);
-                    if(entity) {
-                        if(entity instanceof Item) {
-                            self.removeItem(entity);
-                        } else {
-                            self.removeEntity(entity);
-                        }
-                        log.debug("Entity was destroyed: "+entity.id);
-                    }
-                });
-            
                 self.client.onPlayerMoveToItem(function(playerId, itemId) {
                     var player, item;
 
