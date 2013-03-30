@@ -348,11 +348,31 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             var worldPlayers = data[1],
                 totalPlayers = data[2];
         
-            if(this.population_callback) {
-                this.population_callback(worldPlayers, totalPlayers);
+            var setWorldPlayersString = function(string) {
+                    $("#instance-population").find("span:nth-child(2)").text(string);
+                    $("#playercount").find("span:nth-child(2)").text(string);
+                },
+                setTotalPlayersString = function(string) {
+                    $("#world-population").find("span:nth-child(2)").text(string);
+                };
+            
+            $("#playercount").find("span.count").text(worldPlayers);
+            
+            $("#instance-population").find("span").text(worldPlayers);
+            if (worldPlayers == 1) {
+                setWorldPlayersString("player");
+            } else {
+                setWorldPlayersString("players");
+            }
+            
+            $("#world-population").find("span").text(totalPlayers);
+            if(totalPlayers == 1) {
+                setTotalPlayersString("player");
+            } else {
+                setTotalPlayersString("players");
             }
         },
-    
+
         receiveKill: function(data) {
             var mobKind = data[1];
         
@@ -504,10 +524,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
     
         onPlayerKillMob: function(callback) {
             this.kill_callback = callback;
-        },
-    
-        onPopulationChange: function(callback) {
-            this.population_callback = callback;
         },
     
         onEntityList: function(callback) {

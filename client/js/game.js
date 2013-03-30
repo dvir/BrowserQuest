@@ -1222,13 +1222,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.assignBubbleTo(entity);
                     self.audioManager.playSound("chat");
                 });
-            
-                self.client.onPopulationChange(function(worldPlayers, totalPlayers) {
-                    if(self.nbplayers_callback) {
-                        self.nbplayers_callback(worldPlayers, totalPlayers);
-                    }
-                });
-                 
                 if(self.hasNeverStarted) {
                     self.start();
                     started_callback();

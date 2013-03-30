@@ -184,32 +184,6 @@ define(['jquery', 'app'], function($, App) {
     		    game.loadMap();
     		}
 	
-    		game.onNbPlayersChange(function(worldPlayers, totalPlayers) {
-    		    var setWorldPlayersString = function(string) {
-        		        $("#instance-population").find("span:nth-child(2)").text(string);
-        		        $("#playercount").find("span:nth-child(2)").text(string);
-        		    },
-        		    setTotalPlayersString = function(string) {
-        		        $("#world-population").find("span:nth-child(2)").text(string);
-        		    };
-    		    
-    		    $("#playercount").find("span.count").text(worldPlayers);
-    		    
-    		    $("#instance-population").find("span").text(worldPlayers);
-    		    if(worldPlayers == 1) {
-    		        setWorldPlayersString("player");
-    		    } else {
-    		        setWorldPlayersString("players");
-    		    }
-    		    
-    		    $("#world-population").find("span").text(totalPlayers);
-    		    if(totalPlayers == 1) {
-    		        setTotalPlayersString("player");
-    		    } else {
-    		        setTotalPlayersString("players");
-    		    }
-    		});
-	
             $('#nameinput').val('');
     		$('#chatbox').val('');
     		
