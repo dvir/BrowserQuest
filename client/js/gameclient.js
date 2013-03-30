@@ -197,8 +197,16 @@ define(['player',
                 x = data[2],
                 y = data[3];
         
-            if(this.move_callback) {
-                this.move_callback(id, x, y);
+            if (id !== globalGame.player.id) {
+                var entity = globalGame.getEntityById(id);
+                if (entity) {
+                    if (globalGame.player.isAttackedBy(entity)) {
+                        globalGame.tryUnlockingAchievement("COWARD");
+                    }
+                    entity.disengage();
+                    entity.idle();
+                    globalGame.makeCharacterGoTo(entity, x, y);
+                }
             }
         },
     
@@ -545,10 +553,6 @@ define(['player',
 
         onWelcome: function(callback) {
             this.welcome_callback = callback;
-        },
-
-        onEntityMove: function(callback) {
-            this.move_callback = callback;
         },
 
         onEntityAttack: function(callback) {

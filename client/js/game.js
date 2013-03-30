@@ -854,23 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onEntityMove(function(id, x, y) {
-                    var entity = null;
-
-                    if(id !== self.player.id) {
-                        entity = self.getEntityById(id);
-                
-                        if(entity) {
-                            if(self.player.isAttackedBy(entity)) {
-                                self.tryUnlockingAchievement("COWARD");
-                            }
-                            entity.disengage();
-                            entity.idle();
-                            self.makeCharacterGoTo(entity, x, y);
-                        }
-                    }
-                });
-            
                 self.client.onEntityDestroy(function(id) {
                     var entity = self.getEntityById(id, true);
                     if(entity) {
