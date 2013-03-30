@@ -226,10 +226,48 @@ define(['player',
         },
     
         receiveLoot: function(data) {
-            var item = data[1];
+            var itemId = data[1];
         
-            if(this.loot_callback) {
-                this.loot_callback(item);
+            var item = globalGame.getEntityById(itemId);
+            if (!item) return;
+
+            try {
+                globalGame.player.loot(item);
+                globalGame.showNotification(item.getLootMessage());
+            
+                if(item.type === "armor") {
+                    globalGame.tryUnlockingAchievement("FAT_LOOT");
+                }
+                
+                if(item.type === "weapon") {
+                    globalGame.tryUnlockingAchievement("A_TRUE_WARRIOR");
+                }
+
+                if(item.kind === Types.Entities.CAKE) {
+                    globalGame.tryUnlockingAchievement("FOR_SCIENCE");
+                }
+                
+                if(item.kind === Types.Entities.FIREPOTION) {
+                    globalGame.tryUnlockingAchievement("FOXY");
+                    globalGame.audioManager.playSound("firefox");
+                }
+            
+                if(Types.isHealingItem(item.kind)) {
+                    globalGame.audioManager.playSound("heal");
+                } else {
+                    globalGame.audioManager.playSound("loot");
+                }
+                
+                if(item.wasDropped && !_(item.playersInvolved).include(globalGame.player.id)) {
+                    globalGame.tryUnlockingAchievement("NINJA_LOOT");
+                }
+            } catch(e) {
+                if(e instanceof Exceptions.LootException) {
+                    globalGame.showNotification(e.message);
+                    globalGame.audioManager.playSound("noloot");
+                } else {
+                    throw e;
+                }
             }
         },
     
@@ -662,10 +700,6 @@ define(['player',
             this.chat_callback = callback;
         },
 
-        onLootItem: function(callback) {
-            this.loot_callback = callback;
-        },
-    
         onDropItem: function(callback) {
             this.drop_callback = callback;
         },

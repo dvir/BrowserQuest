@@ -854,50 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onLootItem(function(itemId) {
-                    var item = self.getEntityById(itemId);
-                    if (!item) return;
-
-                    try {
-                        self.player.loot(item);
-                        self.showNotification(item.getLootMessage());
-                    
-                        if(item.type === "armor") {
-                            self.tryUnlockingAchievement("FAT_LOOT");
-                        }
-                        
-                        if(item.type === "weapon") {
-                            self.tryUnlockingAchievement("A_TRUE_WARRIOR");
-                        }
-
-                        if(item.kind === Types.Entities.CAKE) {
-                            self.tryUnlockingAchievement("FOR_SCIENCE");
-                        }
-                        
-                        if(item.kind === Types.Entities.FIREPOTION) {
-                            self.tryUnlockingAchievement("FOXY");
-                            self.audioManager.playSound("firefox");
-                        }
-                    
-                        if(Types.isHealingItem(item.kind)) {
-                            self.audioManager.playSound("heal");
-                        } else {
-                            self.audioManager.playSound("loot");
-                        }
-                        
-                        if(item.wasDropped && !_(item.playersInvolved).include(self.player.id)) {
-                            self.tryUnlockingAchievement("NINJA_LOOT");
-                        }
-                    } catch(e) {
-                        if(e instanceof Exceptions.LootException) {
-                            self.showNotification(e.message);
-                            self.audioManager.playSound("noloot");
-                        } else {
-                            throw e;
-                        }
-                    }
-                });
-            
                 self.client.onPlayerEquipItem(function(playerId, itemKind) {
                     var player = self.getEntityById(playerId),
                         itemName = Types.getKindAsString(itemKind);
