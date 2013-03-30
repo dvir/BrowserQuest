@@ -1,5 +1,12 @@
 
-define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory, BISON) {
+define(['player', 
+       'mob',
+       'entityfactory', 
+       'lib/bison'], function(
+           Player, 
+           Mob,
+           EntityFactory, 
+           BISON) {
 
     var GameClient = Class.extend({
         init: function(host, port) {
@@ -8,7 +15,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
             this.port = port;
     
             this.connected_callback = null;
-            this.spawn_callback = null;
             this.movement_callback = null;
         
             this.handlers = [];
@@ -226,28 +232,37 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
 
                 var spell = EntityFactory.createEntity(kind, id);
             
-                if(this.spawn_spell_callback) {
-                    this.spawn_spell_callback(spell, x, y);
-                }
             } else if(Types.isItem(kind)) {
                 var item = EntityFactory.createEntity(kind, id);
             
-                if(this.spawn_item_callback) {
-                    this.spawn_item_callback(item, x, y);
-                }
+                log.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at "+x+", "+y);
+                globalGame.addItem(item, x, y);
             } else if(Types.isChest(kind)) {
-                var item = EntityFactory.createEntity(kind, id);
+                var chest = EntityFactory.createEntity(kind, id);
+
+                log.info("Spawned chest (" + chest.id + ") at "+x+", "+y);
+                chest.setSprite(globalGame.sprites[chest.getSpriteName()]);
+                chest.setGridPosition(x, y);
+                chest.setAnimation("idle_down", 150);
+                globalGame.addEntity(chest, x, y);
             
-                if(this.spawn_chest_callback) {
-                    this.spawn_chest_callback(item, x, y);
-                }
+                chest.onOpen(function() {
+                    chest.stopBlinking();
+                    chest.setSprite(globalGame.sprites["death"]);
+                    chest.setAnimation("death", 120, 1, function() {
+                        log.info(chest.id + " was removed");
+                        globalGame.removeEntity(chest);
+                        globalGame.removeFromRenderingGrid(chest, chest.gridX, chest.gridY);
+                        globalGame.previousClickPosition = {};
+                    });
+                });
             } else {
-                var name, orientation, target, weapon, armor, hp, maxHP;
+                var name, orientation, targetId, weapon, armor, hp, maxHP;
             
                 hp = data[5];
                 maxHP = data[6];
                 orientation = data[7];
-                target = data[8];
+                targetId = data[8];
 
                 if (Types.isPlayer(kind)) {
                     name = data[9];
@@ -266,8 +281,35 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
                     character.equipArmor(armor);
                 }
             
-                if(this.spawn_character_callback) {
-                    this.spawn_character_callback(character, x, y, orientation, target);
+                if (!globalGame.entityIdExists(character.id)) {
+                    try {
+                        if (character.id !== globalGame.player.id) {
+                            var kindString = Types.getKindAsString(character.skin);
+                            character.setSprite(globalGame.sprites[kindString]);
+                            character.setGridPosition(x, y);
+                            character.setOrientation(orientation);
+                            character.idle();
+
+                            globalGame.addEntity(character);
+                    
+                            log.info("Spawned " + Types.getKindAsString(character.kind) + " (" + character.id + ") at "+character.gridX+", "+character.gridY);
+                    
+                            if (character instanceof Mob) {
+                                if(targetId) {
+                                    var player = globalGame.getEntityById(targetId);
+                                    if(player) {
+                                        globalGame.createAttackLink(character, player);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch(e) {
+                        log.error("ReceiveSpawn failed. Error: "+e);
+                        log.error(e.stack);
+                    }
+                } else {
+                    log.debug("Character "+character.id+" already exists. Don't respawn.");
                 }
             }
         },
@@ -468,18 +510,6 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
 
         onWelcome: function(callback) {
             this.welcome_callback = callback;
-        },
-
-        onSpawnCharacter: function(callback) {
-            this.spawn_character_callback = callback;
-        },
-    
-        onSpawnItem: function(callback) {
-            this.spawn_item_callback = callback;
-        },
-    
-        onSpawnChest: function(callback) {
-            this.spawn_chest_callback = callback;
         },
 
         onDespawnEntity: function(callback) {

@@ -854,62 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onSpawnItem(function(item, x, y) {
-                    log.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at "+x+", "+y);
-                    self.addItem(item, x, y);
-                });
-            
-                self.client.onSpawnChest(function(chest, x, y) {
-                    log.info("Spawned chest (" + chest.id + ") at "+x+", "+y);
-                    chest.setSprite(self.sprites[chest.getSpriteName()]);
-                    chest.setGridPosition(x, y);
-                    chest.setAnimation("idle_down", 150);
-                    self.addEntity(chest, x, y);
-                
-                    chest.onOpen(function() {
-                        chest.stopBlinking();
-                        chest.setSprite(self.sprites["death"]);
-                        chest.setAnimation("death", 120, 1, function() {
-                            log.info(chest.id + " was removed");
-                            self.removeEntity(chest);
-                            self.removeFromRenderingGrid(chest, chest.gridX, chest.gridY);
-                            self.previousClickPosition = {};
-                        });
-                    });
-                });
-
-                self.client.onSpawnCharacter(function(entity, x, y, orientation, targetId) {
-                    if(!self.entityIdExists(entity.id)) {
-                        try {
-                            if(entity.id !== self.player.id) {
-                                var kindString = Types.getKindAsString(entity.skin);
-                                entity.setSprite(self.sprites[kindString]);
-                                entity.setGridPosition(x, y);
-                                entity.setOrientation(orientation);
-                                entity.idle();
-
-                                self.addEntity(entity);
-                        
-                                log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
-                        
-                                if (entity instanceof Mob) {
-                                    if(targetId) {
-                                        var player = self.getEntityById(targetId);
-                                        if(player) {
-                                            self.createAttackLink(entity, player);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch(e) {
-                            log.error(e);
-                        }
-                    } else {
-                        log.debug("Character "+entity.id+" already exists. Don't respawn.");
-                    }
-                });
-
                 self.client.onDespawnEntity(function(entityId) {
                     var entity = self.getEntityById(entityId, true);
             
