@@ -145,12 +145,9 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
 
             var healthbar = new Healthbar($("#player"), this.game.player, scale);
             
-            var playerhp_callback = function(player) {
+            this.game.on("HealthChange", function(){
                 healthbar.update();
-        	};
-
-        	this.game.onPlayerHealthChange(playerhp_callback);
-        	this.game.onPlayerHurt(this.blinkHealthBar.bind(this));
+            });
         },
 
         blinkHealthBar: function() {
@@ -163,19 +160,16 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
         },
 
         initXPBar: function() {
-            var scale = this.game.renderer.getScaleFactor(),
-                XPMaxWidth = $("#xpbar").width() - (12 * scale);
-           
-            var playerxp_callback = function(player) {
+            this.game.on("XPChange", function(){
+                var scale = globalGame.renderer.getScaleFactor(),
+                    XPMaxWidth = $("#xpbar").width() - (12 * scale),
+                    player = globalGame.player;
+
         	    var barWidth = Math.round((XPMaxWidth / player.maxXP) * (player.xp > 0 ? player.xp : 0));
                 $("#xpbar").html(player.xp + "/" + player.maxXP);
         	    $("#xp").css('width', barWidth + "px");
                 $("#level").html(player.level);
-        	};
-
-            this.game.onPlayerXPChange(playerxp_callback);
-
-            playerxp_callback(this.game.player);
+            });
         },
 
         toggleButton: function() {
@@ -450,19 +444,30 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
         },
 
         initEquipmentIcons: function() {
-            var scale = this.game.renderer.getScaleFactor();
-            var getIconPath = function(spriteName) {
-                    return 'img/'+ scale +'/item-' + spriteName + '.png';
-                },
-                weapon = Types.getKindAsString(this.game.player.weapon),
-                armor = Types.getKindAsString(this.game.player.armor),
-                weaponPath = getIconPath(weapon),
-                armorPath = getIconPath(armor);
+            this.game.on("ArmorChange", function(){
+                var scale = globalGame.renderer.getScaleFactor();
+                var getIconPath = function(spriteName) {
+                        return 'img/'+ scale +'/item-' + spriteName + '.png';
+                };
 
-            $('#weapon').css('background-image', 'url("' + weaponPath + '")');
-            if (armor !== 'firefox') {
-                $('#armor').css('background-image', 'url("' + armorPath + '")');
-            }
+                var armor = Types.getKindAsString(globalGame.player.armor);
+                var armorPath = getIconPath(armor);
+                
+                if (armor !== 'firefox') {
+                    $('#armor').css('background-image', 'url("' + armorPath + '")');
+                }
+            });
+
+            this.game.on("WeaponChange", function(){
+                var scale = globalGame.renderer.getScaleFactor();
+                var getIconPath = function(spriteName) {
+                        return 'img/'+ scale +'/item-' + spriteName + '.png';
+                };
+
+                var weapon = Types.getKindAsString(globalGame.player.weapon);
+                var weaponPath = getIconPath(weapon);
+                $('#weapon').css('background-image', 'url("' + weaponPath + '")');
+            });
         },
 
         hideWindows: function() {

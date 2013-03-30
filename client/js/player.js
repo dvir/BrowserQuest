@@ -299,6 +299,7 @@ define(['character',
 
         set xp(xp) {
             this._xp = xp;
+            this.trigger("XPChange");
         },
 
         get maxXP() {
@@ -307,6 +308,7 @@ define(['character',
 
         set maxXP(maxXP) {
             this._maxXP = maxXP;
+            this.trigger("XPChange");
         },
 
         getWeaponName: function() {

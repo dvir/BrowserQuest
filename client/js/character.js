@@ -72,6 +72,7 @@ define(['entity',
 
         set hp(hp) {
             this._hp = hp;
+            this.trigger("HealthChange");
             this.trigger("change");
         },
 
@@ -81,6 +82,7 @@ define(['entity',
 
         set maxHP(maxHP) {
             this._maxHP = maxHP;
+            this.trigger("HealthChange");
             this.trigger("change");
         },
         
@@ -90,6 +92,7 @@ define(['entity',
 
         set level(level) {
             this._level = level;
+            this.trigger("LevelChange");
             this.trigger("change");
         },
    
@@ -107,6 +110,7 @@ define(['entity',
 
         set armor(armor) {
             this._armor = armor;
+            this.trigger("ArmorChange");
             this.trigger("change");
         },
 
@@ -116,6 +120,7 @@ define(['entity',
 
         set weapon(weapon) {
             this._weapon = weapon;
+            this.trigger("WeaponChange");
             this.trigger("change");
         },
 

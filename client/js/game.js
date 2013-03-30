@@ -25,6 +25,9 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         
             // Player
             this.player = new Warrior("player", "");
+
+            // make events from player to bubble to game
+            this.player.bubbleTo(this);
     
             // Game state
             this.entities = {};
@@ -815,6 +818,11 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             });
         
             this.client.onWelcome(function(data) {
+                self.app.initEquipmentIcons();
+                self.app.initHealthBar();                  
+                self.app.initXPBar();
+                log.debug("initiated bars");
+ 
                 self.player.isDead = false;
                 self.player.isDying = false;
                 self.player.idle();
@@ -822,7 +830,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.player.loadFromObject(data);
 
                 log.info("Received player ID from server : "+ self.player.id);
-
+                
                 self.updateBars();
                 self.resetCamera();
                 self.updatePlateauMode();
@@ -845,7 +853,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.player.loadFromStorage();
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
-             
+
                 self.client.onSpawnItem(function(item, x, y) {
                     log.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at "+x+", "+y);
                     self.addItem(item, x, y);
@@ -884,13 +892,11 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                         
                                 log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
                         
-                                if(entity instanceof Character) {
-                                    if(entity instanceof Mob) {
-                                        if(targetId) {
-                                            var player = self.getEntityById(targetId);
-                                            if(player) {
-                                                self.createAttackLink(entity, player);
-                                            }
+                                if (entity instanceof Mob) {
+                                    if(targetId) {
+                                        var player = self.getEntityById(targetId);
+                                        if(player) {
+                                            self.createAttackLink(entity, player);
                                         }
                                     }
                                 }
@@ -1039,9 +1045,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                     self.audioManager.playSound("hurt");
                                     self.storage.addDamage(-diff);
                                     self.tryUnlockingAchievement("MEATSHIELD");
-                                    if (self.playerhurt_callback) {
-                                        self.playerhurt_callback();
-                                    }
+                                    self.trigger("Hurt");
                                 } else if (!isRegen) {
                                     self.infoManager.addDamageInfo("+"+diff, player.x, player.y - 15, "healed");
                                 }
@@ -1224,9 +1228,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                         self.nbplayers_callback(worldPlayers, totalPlayers);
                     }
                 });
-                
-                self.gameStart();
-            
+                 
                 if(self.hasNeverStarted) {
                     self.start();
                     started_callback();
@@ -2065,13 +2067,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         
             log.debug("Finished restart");
         },
-    
-        gameStart: function() {
-            this.app.initEquipmentIcons();
-            this.app.initHealthBar();                  
-            this.app.initXPBar();
-            log.debug("initiated bars");
-        },
         
         disconnected: function(message) {
             $('#death').find('p').html(message+"<em>Please reload the page.</em>");
@@ -2084,19 +2079,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             }
             $('body').addClass('death');
         },
-    
-        onPlayerHealthChange: function(callback) {
-            this.playerhp_callback = callback;
-        },
-    
-        onPlayerXPChange: function(callback) {
-            this.playerxp_callback = callback;
-        },
-    
-        onPlayerHurt: function(callback) {
-            this.playerhurt_callback = callback;
-        },
-    
+     
         playerChangedEquipment: function() {
     		this.app.initEquipmentIcons();
         },
@@ -2175,19 +2158,9 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         updateBars: function() {
-            if (this.player) {
-                if (this.playerhp_callback) {
-                    this.playerhp_callback(this.player);
-                }
-
-                if (this.playerxp_callback) {
-                    this.playerxp_callback(this.player);
-                }
-
-                this.app.updateTarget();
-                this.app.updateInventory();
-                this.app.updateSkillbar();
-            }
+            this.app.updateTarget();
+            this.app.updateInventory();
+            this.app.updateSkillbar();
         },
     
         getDeadMobPosition: function(mobId) {

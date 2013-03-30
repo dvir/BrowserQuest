@@ -74,14 +74,15 @@ define(function() {
         setPosition: function(x, y) {
     		this.x = x;
     		this.y = y;
+
+            this.trigger("PositionChange");
     	},
 	
     	setGridPosition: function(x, y) {
     		this.gridX = x;
     		this.gridY = y;
-
-            this.x = x * 16;
-            this.y = y * 16;
+            
+            this.setPosition(x * 16, y * 16);
     	},
         
         moveSteps: function(steps, orientation) {
