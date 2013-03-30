@@ -854,39 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onHealth(function(mobId, hp, maxHP, isRegen) {
-                    var mob = self.getEntityById(mobId);
-                    if (mob) {
-                        var diff = hp - mob.hp;
-
-                        mob.maxHP = maxHP;
-                        mob.hp = hp;
-
-                        if (mobId == self.player.id) {
-                            var player = self.player,
-                                isHurt = diff < 0;
-                        
-                            if (player && !player.isDead && !player.invincible) {
-                                if (player.hp <= 0) {
-                                    player.die();
-                                }
-                                if (isHurt) {
-                                    player.hurt();
-                                    self.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
-                                    self.audioManager.playSound("hurt");
-                                    self.storage.addDamage(-diff);
-                                    self.tryUnlockingAchievement("MEATSHIELD");
-                                    self.trigger("Hurt");
-                                } else if (!isRegen) {
-                                    self.infoManager.addDamageInfo("+"+diff, player.x, player.y - 15, "healed");
-                                }
-
-                                self.updateBars();
-                            }
-                        }
-                    }
-                });
-            
                 self.client.onPlayerKillMob(function(kind) {
                     var mobName = Types.getKindAsString(kind);
                     

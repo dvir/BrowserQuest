@@ -396,8 +396,33 @@ define(['player',
                 maxHP = data[3],
                 isRegen = data[4] ? true : false;
         
-            if (this.health_callback) {
-                this.health_callback(entityId, hp, maxHP, isRegen);
+            var entity = globalGame.getEntityById(entityId);
+            if (entity) {
+                var diff = hp - entity.hp;
+
+                entity.maxHP = maxHP;
+                entity.hp = hp;
+
+                if (entityId == globalGame.player.id) {
+                    var player = globalGame.player,
+                        isHurt = diff < 0;
+                
+                    if (player && !player.isDead && !player.invincible) {
+                        if (player.hp <= 0) {
+                            player.die();
+                        }
+                        if (isHurt) {
+                            player.hurt();
+                            globalGame.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
+                            globalGame.audioManager.playSound("hurt");
+                            globalGame.storage.addDamage(-diff);
+                            globalGame.tryUnlockingAchievement("MEATSHIELD");
+                            globalGame.trigger("Hurt");
+                        } else if (!isRegen) {
+                            globalGame.infoManager.addDamageInfo("+"+diff, player.x, player.y - 15, "healed");
+                        }
+                    }
+                }
             }
         },
     
@@ -567,10 +592,6 @@ define(['player',
             if (this.inventory_callback) {
                 this.inventory_callback(dataObject);
             }
-        },
-
-        onHealth: function(callback) {
-            this.health_callback = callback;
         },
 
         onDispatched: function(callback) {
