@@ -465,20 +465,24 @@ define(['player',
         },
     
         receiveChat: function(data) {
-            var id = data[1],
-                text = data[2];
+            var entityId = data[1],
+                message = data[2];
         
-            if(this.chat_callback) {
-                this.chat_callback(id, text);
-            }
+            var entity = globalGame.getEntityById(entityId);
+            globalGame.createBubble(entityId, message);
+            globalGame.assignBubbleTo(entity);
+            globalGame.audioManager.playSound("chat");
         },
     
         receiveEquipItem: function(data) {
-            var id = data[1],
+            var playerId = data[1],
                 itemKind = data[2];
         
-            if(this.equip_callback) {
-                this.equip_callback(id, itemKind);
+            var player = globalGame.getEntityById(playerId),
+                itemName = Types.getKindAsString(itemKind);
+        
+            if (player) {
+                player.equip(itemKind);
             }
         },
     
@@ -492,9 +496,12 @@ define(['player',
             item.playersInvolved = data[4];
 
             var pos = data[5]; 
-            if (this.drop_callback) {
-                this.drop_callback(item, entityId, pos);
+            if (!pos) {
+                pos = globalGame.getDeadMobPosition(entityId);
             }
+            
+            globalGame.addItem(item, pos.x, pos.y);
+            globalGame.updateCursor();
         },
     
         receiveTeleport: function(data) {
@@ -502,11 +509,26 @@ define(['player',
                 x = data[2],
                 y = data[3];
         
-            if(this.teleport_callback) {
-                this.teleport_callback(id, x, y);
+            if (id !== globalGame.player.id) {
+                var entity = null,
+                    currentOrientation;
+
+                entity = globalGame.getEntityById(id);
+                if (entity) {
+                    currentOrientation = entity.orientation;
+                
+                    globalGame.makeCharacterTeleportTo(entity, x, y);
+                    entity.setOrientation(currentOrientation);
+                
+                    entity.forEachAttacker(function(attacker) {
+                        attacker.disengage();
+                        attacker.idle();
+                        attacker.stop();
+                    });
+                }
             }
         },
-    
+
         receiveDamage: function(data) {
             var entityId = data[1],
                 points = data[2],
@@ -688,22 +710,6 @@ define(['player',
             this.welcome_callback = callback;
         },
  
-        onPlayerEquipItem: function(callback) {
-            this.equip_callback = callback;
-        },
-     
-        onPlayerTeleport: function(callback) {
-            this.teleport_callback = callback;
-        },
-    
-        onChatMessage: function(callback) {
-            this.chat_callback = callback;
-        },
-
-        onDropItem: function(callback) {
-            this.drop_callback = callback;
-        },
-      
         onEntityList: function(callback) {
             this.list_callback = callback;
         },

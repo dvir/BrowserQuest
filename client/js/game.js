@@ -854,52 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onPlayerEquipItem(function(playerId, itemKind) {
-                    var player = self.getEntityById(playerId),
-                        itemName = Types.getKindAsString(itemKind);
-                
-                    if (player) {
-                        player.equip(itemKind);
-                    }
-                });
-            
-                self.client.onPlayerTeleport(function(id, x, y) {
-                    var entity = null,
-                        currentOrientation;
-
-                    if(id !== self.player.id) {
-                        entity = self.getEntityById(id);
-                
-                        if(entity) {
-                            currentOrientation = entity.orientation;
-                        
-                            self.makeCharacterTeleportTo(entity, x, y);
-                            entity.setOrientation(currentOrientation);
-                        
-                            entity.forEachAttacker(function(attacker) {
-                                attacker.disengage();
-                                attacker.idle();
-                                attacker.stop();
-                            });
-                        }
-                    }
-                });
-            
-                self.client.onDropItem(function(item, mobId, pos) {
-                    if (!pos) {
-                        pos = self.getDeadMobPosition(mobId);
-                    }
-                    
-                    self.addItem(item, pos.x, pos.y);
-                    self.updateCursor();
-                });
-            
-                self.client.onChatMessage(function(entityId, message) {
-                    var entity = self.getEntityById(entityId);
-                    self.createBubble(entityId, message);
-                    self.assignBubbleTo(entity);
-                    self.audioManager.playSound("chat");
-                });
                 if(self.hasNeverStarted) {
                     self.start();
                     started_callback();
