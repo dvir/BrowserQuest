@@ -854,38 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onDespawnEntity(function(entityId) {
-                    var entity = self.getEntityById(entityId, true);
-            
-                    if (entity) {
-                        entity.removed = true;
-
-                        log.info("Despawning " + Types.getKindAsString(entity.kind) + " (" + entity.id+ ")");
-                        
-                        if(entity.gridX === self.previousClickPosition.x
-                        && entity.gridY === self.previousClickPosition.y) {
-                            self.previousClickPosition = {};
-                        }
-                      
-                        if (entity instanceof SpellEffect) {
-                            self.removeSpellEffect(entity);
-                        } else if(entity instanceof Item) {
-                            self.removeItem(entity);
-                        } else if(entity instanceof Character) {
-                            entity.forEachAttacker(function(attacker) {
-                                if(attacker.canReachTarget()) {
-                                    attacker.hit();
-                    	        }
-                            });
-                            entity.die();
-                        } else if(entity instanceof Chest) {
-                            entity.open();
-                        }
-                        
-                        entity.clean();
-                    }
-                });
-            
                 self.client.onItemBlink(function(id) {
                     var item = self.getEntityById(id);
 

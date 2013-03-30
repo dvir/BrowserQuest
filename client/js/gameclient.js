@@ -1,10 +1,18 @@
 
 define(['player', 
+       'character',
+       'spelleffect',
        'mob',
+       'item',
+       'chest',
        'entityfactory', 
        'lib/bison'], function(
            Player, 
+           Character,
+           SpellEffect,
            Mob,
+           Item,
+           Chest,
            EntityFactory, 
            BISON) {
 
@@ -317,8 +325,34 @@ define(['player',
         receiveDespawn: function(data) {
             var id = data[1];
         
-            if(this.despawn_callback) {
-                this.despawn_callback(id);
+            var entity = globalGame.getEntityById(id, true);
+            if (entity) {
+                entity.removed = true;
+
+                log.info("Despawning " + Types.getKindAsString(entity.kind) + " (" + entity.id+ ")");
+                
+                if (entity.gridX === globalGame.previousClickPosition.x
+                   && entity.gridY === globalGame.previousClickPosition.y) 
+                {
+                    globalGame.previousClickPosition = {};
+                }
+              
+                if (entity instanceof SpellEffect) {
+                    globalGame.removeSpellEffect(entity);
+                } else if (entity instanceof Item) {
+                    globalGame.removeItem(entity);
+                } else if (entity instanceof Character) {
+                    entity.forEachAttacker(function(attacker) {
+                        if (attacker.canReachTarget()) {
+                            attacker.hit();
+                        }
+                    });
+                    entity.die();
+                } else if (entity instanceof Chest) {
+                    entity.open();
+                }
+                
+                entity.clean();
             }
         },
     
@@ -510,10 +544,6 @@ define(['player',
 
         onWelcome: function(callback) {
             this.welcome_callback = callback;
-        },
-
-        onDespawnEntity: function(callback) {
-            this.despawn_callback = callback;
         },
 
         onEntityMove: function(callback) {
