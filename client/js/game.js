@@ -854,49 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onPlayerKillMob(function(kind) {
-                    var mobName = Types.getKindAsString(kind);
-                    
-                    if(mobName === 'skeleton2') {
-                        mobName = 'greater skeleton';
-                    }
-                    
-                    if(mobName === 'eye') {
-                        mobName = 'evil eye';
-                    }
-                    
-                    if(mobName === 'deathknight') {
-                        mobName = 'death knight';
-                    }
-                    
-                    if(mobName === 'boss') {
-                        self.showNotification("You killed the skeleton king");
-                    } else {
-                        if(_.include(['a', 'e', 'i', 'o', 'u'], mobName[0])) {
-                            self.showNotification("You killed an " + mobName);
-                        } else {
-                            self.showNotification("You killed a " + mobName);
-                        }
-                    }
-                    
-                    self.storage.incrementTotalKills();
-                    self.tryUnlockingAchievement("HUNTER");
-
-                    if(kind === Types.Entities.RAT) {
-                        self.storage.incrementRatCount();
-                        self.tryUnlockingAchievement("ANGRY_RATS");
-                    }
-                    
-                    if(kind === Types.Entities.SKELETON || kind === Types.Entities.SKELETON2) {
-                        self.storage.incrementSkeletonCount();
-                        self.tryUnlockingAchievement("SKULL_COLLECTOR");
-                    }
-
-                    if(kind === Types.Entities.BOSS) {
-                        self.tryUnlockingAchievement("HERO");
-                    }
-                });
-            
                 self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
                     self.player.xp = xp;
 

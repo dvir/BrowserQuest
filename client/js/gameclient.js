@@ -514,10 +514,46 @@ define(['player',
         },
 
         receiveKill: function(data) {
-            var mobKind = data[1];
-        
-            if(this.kill_callback) {
-                this.kill_callback(mobKind);
+            var kind = data[1];
+            var mobName = Types.getKindAsString(kind);
+            
+            if (mobName === 'skeleton2') {
+                mobName = 'greater skeleton';
+            }
+            
+            if (mobName === 'eye') {
+                mobName = 'evil eye';
+            }
+            
+            if (mobName === 'deathknight') {
+                mobName = 'death knight';
+            }
+            
+            if (mobName === 'boss') {
+                globalGame.showNotification("You killed the skeleton king");
+            } else {
+                if(_.include(['a', 'e', 'i', 'o', 'u'], mobName[0])) {
+                    globalGame.showNotification("You killed an " + mobName);
+                } else {
+                    globalGame.showNotification("You killed a " + mobName);
+                }
+            }
+            
+            globalGame.storage.incrementTotalKills();
+            globalGame.tryUnlockingAchievement("HUNTER");
+
+            if (kind === Types.Entities.RAT) {
+                globalGame.storage.incrementRatCount();
+                globalGame.tryUnlockingAchievement("ANGRY_RATS");
+            }
+            
+            if (kind === Types.Entities.SKELETON || kind === Types.Entities.SKELETON2) {
+                globalGame.storage.incrementSkeletonCount();
+                globalGame.tryUnlockingAchievement("SKULL_COLLECTOR");
+            }
+
+            if (kind === Types.Entities.BOSS) {
+                globalGame.tryUnlockingAchievement("HERO");
             }
         },
     
@@ -632,11 +668,7 @@ define(['player',
         onDropItem: function(callback) {
             this.drop_callback = callback;
         },
-     
-        onPlayerKillMob: function(callback) {
-            this.kill_callback = callback;
-        },
-    
+      
         onEntityList: function(callback) {
             this.list_callback = callback;
         },
