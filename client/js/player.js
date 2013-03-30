@@ -41,6 +41,58 @@ define(['character',
             this.skillbar = new Skillbar();
         },
 
+    	die: function() {
+    	    this.removeTarget();
+    	    this.isDead = true;
+	    
+            log.info(this.id + " is dead");
+        
+            this.isDying = true;
+
+            this.stopBlinking();
+            this.setSprite(globalSprites["death"]);
+
+            var self = this;
+            this.animate("death", 120, 1, function() {
+                log.info(self.id + " was removed");
+            
+                globalGame.removeEntity(self);
+                globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
+           
+                setTimeout(function() {
+                    globalGame.playerdeath_callback();
+                }, 1000);
+            });
+        
+            this.forEachAttacker(function(attacker) {
+                attacker.disengage();
+                attacker.idle();
+            });
+        
+            globalGame.audioManager.fadeOutCurrentMusic();
+            globalGame.audioManager.playSound("death");
+    	},
+
+        checkAggro: function() {
+            var self = this;
+            globalGame.forEachMob(function(mob) {
+                if (mob.isAggressive 
+                    && !mob.isAttacking() 
+                    && self.isNear(mob, mob.aggroRange)) 
+                {
+                    self.aggro(mob);
+                }
+            });
+        },
+        
+        aggro: function(character) {
+            if (!character.isWaitingToAttack(this) && !this.isAttackedBy(character)) {
+                this.log_info("Aggroed by " + character.id + " at ("+this.gridX+", "+this.gridY+")");
+                globalGame.client.sendAggro(character);
+                character.waitToAttack(this);
+            }
+        },
+    
         beforeStep: function() {
             var blockingEntity = globalGame.getEntityAt(this.nextGridX, this.nextGridY);
             if (blockingEntity && blockingEntity.id !== this.id) {
@@ -50,7 +102,7 @@ define(['character',
             globalGame.unregisterEntityPosition(this);
         },
 
-        step: function() {
+        doStep: function() {
             if (this.hasNextStep()) {
                 globalGame.registerEntityDualPosition(this);
             }

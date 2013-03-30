@@ -576,19 +576,19 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         removeFromRenderingGrid: function(entity, x, y) {
-            if(entity && this.renderingGrid[y] && this.renderingGrid[y][x] && entity.id in this.renderingGrid[y][x]) {
+            if (entity && entity.id in this.renderingGrid[y][x]) {
                 delete this.renderingGrid[y][x][entity.id];
             }
         },
     
         removeFromEntityGrid: function(entity, x, y) {
-            if(this.entityGrid && this.entityGrid[y] && this.entityGrid[y][x] && this.entityGrid[y][x][entity.id]) {
+            if (this.entityGrid && entity.id in this.entityGrid[y][x]) {
                 delete this.entityGrid[y][x][entity.id];
             }
         },
         
         removeFromItemGrid: function(item, x, y) {
-            if(item && this.itemGrid && this.itemGrid[x] && this.itemGrid[x][y] && this.itemGrid[y][x][item.id]) {
+            if (item && item.id in this.itemGrid[y][x]) {
                 delete this.itemGrid[y][x][item.id];
             }
         },
@@ -845,61 +845,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.player.loadFromStorage();
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
-        
-                self.player.onCheckAggro(function() {
-                    self.forEachMob(function(mob) {
-                        if(mob.isAggressive && !mob.isAttacking() && self.player.isNear(mob, mob.aggroRange)) {
-                            self.player.aggro(mob);
-                        }
-                    });
-                });
-            
-                self.player.onAggro(function(mob) {
-                    if(!mob.isWaitingToAttack(self.player) && !self.player.isAttackedBy(mob)) {
-                        self.player.log_info("Aggroed by " + mob.id + " at ("+self.player.gridX+", "+self.player.gridY+")");
-                        self.client.sendAggro(mob);
-                        mob.waitToAttack(self.player);
-                    }
-                });
-
-                self.player.onDeath(function() {
-                    log.info(self.player.id + " is dead");
-                
-                    self.player.isDying = true;
-
-                    self.player.stopBlinking();
-                    /*
-                    self.player.setSprite(globalSprites["death"]);
-                    self.player.animate("death", 120, 1, function() {
-                        log.info(self.player.id + " was removed");
-                    
-                        self.removeEntity(self.player);
-                        self.removeFromRenderingGrid(self.player, self.player.gridX, self.player.gridY);
-                   
-                        setTimeout(function() {
-                            self.playerdeath_callback();
-                        }, 1000);
-                    });
-                    */
-                
-                    log.info(self.player.id + " was removed");
-                
-                    self.removeEntity(self.player);
-                    self.removeFromRenderingGrid(self.player, self.player.gridX, self.player.gridY);
-               
-                    setTimeout(function() {
-                        self.playerdeath_callback();
-                    }, 1000);
-
-                    self.player.forEachAttacker(function(attacker) {
-                        attacker.disengage();
-                        attacker.idle();
-                    });
-                
-                    self.audioManager.fadeOutCurrentMusic();
-                    self.audioManager.playSound("death");
-                });
-            
+             
                 self.player.onHasMoved(function(player) {
                     self.assignBubbleTo(player);
                 });
@@ -964,45 +910,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                 log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
                         
                                 if(entity instanceof Character) {
-                                    entity.onDeath(function() {
-                                        log.info(entity.id + " is dead");
-                                
-                                        if(entity instanceof Mob) {
-                                            // Keep track of where mobs die in order to spawn their dropped items
-                                            // at the right position later.
-                                            self.deathpositions[entity.id] = {x: entity.gridX, y: entity.gridY};
-                                        }
-
-                                        entity.isDying = true;
-                                        entity.setSprite(self.sprites["death"]);
-                                        entity.animate("death", 120, 1, function() {
-                                            log.info(entity.id + " was removed");
-
-                                            self.removeEntity(entity);
-                                            self.removeFromRenderingGrid(entity, entity.gridX, entity.gridY);
-                                        });
-
-                                        entity.forEachAttacker(function(attacker) {
-                                            attacker.disengage();
-                                        });
-                                        
-                                        if(self.player.target && self.player.target.id === entity.id) {
-                                            self.player.disengage();
-                                        }
-                                    
-                                        // Upon death, this entity is removed from both grids, allowing the player
-                                        // to click very fast in order to loot the dropped item and not be blocked.
-                                        // The entity is completely removed only after the death animation has ended.
-                                        self.removeFromEntityGrid(entity, entity.gridX, entity.gridY);
-                                        self.removeFromPathingGrid(entity.gridX, entity.gridY);
-                                    
-                                        if(self.camera.isVisible(entity)) {
-                                            self.audioManager.playSound("kill"+Math.floor(Math.random()*2+1));
-                                        }
-                                    
-                                        self.updateCursor();
-                                    });
-
                                     entity.onHasMoved(function(entity) {
                                         self.assignBubbleTo(entity); // Make chat bubbles follow moving entities
                                     });

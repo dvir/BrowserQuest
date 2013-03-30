@@ -232,7 +232,7 @@ define(['entity',
         },
         stopPathing: function(x, y) {
             if (!this.isDying) {
-                if (this.hasTarget() && this.isAdjacent(entity.target)) {
+                if (this.hasTarget() && this.isAdjacent(this.target)) {
                     this.lookAtTarget();
                 }
 
@@ -243,8 +243,8 @@ define(['entity',
                     }
                 });
     
-                globalGame.unregisterEntityPosition(entity);
-                globalGame.registerEntityPosition(entity);
+                globalGame.unregisterEntityPosition(this);
+                globalGame.registerEntityPosition(this);
             }
         },
     
@@ -384,28 +384,10 @@ define(['entity',
             return near;
         },
     
-        onAggro: function(callback) {
-            this.aggro_callback = callback;
-        },
-        
-        onCheckAggro: function(callback) {
-            this.checkaggro_callback = callback;
-        },
-    
         checkAggro: function() {
-            if(this.checkaggro_callback) {
-                this.checkaggro_callback();
-            }
         },
         
         aggro: function(character) {
-            if(this.aggro_callback) {
-                this.aggro_callback(character);
-            }
-        },
-    
-        onDeath: function(callback) {
-            this.death_callback = callback;
         },
     
         /**
@@ -622,10 +604,41 @@ define(['entity',
     	die: function() {
     	    this.removeTarget();
     	    this.isDead = true;
-	    
-    	    if(this.death_callback) {
-    	        this.death_callback();
-    	    }
+
+            log.info(this.id + " is dead");
+        
+            this.isDying = true;
+            this.setSprite(globalGame.sprites["death"]);
+
+            var self = this;
+            this.animate("death", 120, 1, function() {
+                log.info(self.id + " was removed");
+
+                globalGame.removeEntity(self);
+                globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
+            });
+
+            this.forEachAttacker(function(attacker) {
+                attacker.disengage();
+            });
+            
+            if (globalGame.player.target 
+               && globalGame.player.target.id === this.id) 
+            {
+                globalGame.player.disengage();
+            }
+        
+            // Upon death, this entity is removed from both grids, allowing the player
+            // to click very fast in order to loot the dropped item and not be blocked.
+            // The entity is completely removed only after the death animation has ended.
+            globalGame.removeFromEntityGrid(this, this.gridX, this.gridY);
+            globalGame.removeFromPathingGrid(this.gridX, this.gridY);
+        
+            if (globalGame.camera.isVisible(this)) {
+                globalGame.audioManager.playSound("kill"+Math.floor(Math.random()*2+1));
+            }
+        
+            globalGame.updateCursor();
     	},
 	
     	onHasMoved: function(callback) {
