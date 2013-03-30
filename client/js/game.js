@@ -854,39 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onPlayerChangeXP(function(xp, maxXP, gainedXP) {
-                    self.player.xp = xp;
-
-                    if (gainedXP > 0) {
-                        self.showNotification("You gained "+gainedXP+" XP"); 
-                        self.infoManager.addDamageInfo("+"+gainedXP+" XP", self.player.x + 5, self.player.y - 15, "xp");
-                    }
-
-                    if (!self.player.maxXP || self.player.maxXP != maxXP) {
-                        self.player.maxXP = maxXP;
-                    }
-
-                    self.updateBars();
-                });
-
-                self.client.onPlayerChangeLevel(function(level) {
-                    self.player.level = level;
-                    
-                    self.updateBars();
-                });
-
-                self.client.onInventoryUpdate(function(data) {
-                    self.player.loadInventory(data);
-                    
-                    self.updateBars();
-                });
-            
-                self.client.onDataUpdate(function(data) {
-                    self.player.loadFromObject(data);
-
-                    self.updateBars();
-                });
-
                 self.client.onLootItem(function(itemId) {
                     var item = self.getEntityById(itemId);
                     if (!item) return;

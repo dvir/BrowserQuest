@@ -592,8 +592,15 @@ define(['player',
                 maxXP = data[2],
                 gainedXP = data[3];
 
-            if (this.xp_callback) {
-                this.xp_callback(xp, maxXP, gainedXP);
+            var player = globalGame.player;
+            player.xp = xp;
+            if (gainedXP != 0) {
+                globalGame.showNotification("You "+(gainedXP > 0 ? "gained" : "lost")+" "+gainedXP+" XP"); 
+                globalGame.infoManager.addDamageInfo((gainedXP > 0 ? "+" : "-")+gainedXP+" XP", player.x + 5, player.y - 15, "xp");
+            }
+
+            if (!player.maxXP || player.maxXP != maxXP) {
+                player.maxXP = maxXP;
             }
         },
     
@@ -609,25 +616,19 @@ define(['player',
         receiveLevel: function(data) {
             var level = data[1];
 
-            if (this.level_callback) {
-                this.level_callback(level);
-            }
+            globalGame.player.level = level;
         },
 
         receiveData: function(data) {
             var dataObject = data[1];
 
-            if (this.data_callback) {
-                this.data_callback(dataObject);
-            }
+            globalGame.player.loadFromObject(dataObject);
         },
         
         receiveInventory: function(data) {
             var dataObject = data[1];
-
-            if (this.inventory_callback) {
-                this.inventory_callback(dataObject);
-            }
+            
+            globalGame.player.loadInventory(dataObject);
         },
 
         onDispatched: function(callback) {
@@ -671,22 +672,6 @@ define(['player',
       
         onEntityList: function(callback) {
             this.list_callback = callback;
-        },
-    
-        onPlayerChangeXP: function(callback) {
-            this.xp_callback = callback;
-        },
-
-        onPlayerChangeLevel: function(callback) {
-            this.level_callback = callback;
-        },
-
-        onDataUpdate: function(callback) {
-            this.data_callback = callback;
-        },
-
-        onInventoryUpdate: function(callback) {
-            this.inventory_callback = callback;
         },
     
         sendInventory: function(inventory) {
