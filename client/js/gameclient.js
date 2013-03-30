@@ -211,11 +211,17 @@ define(['player',
         },
     
         receiveLootMove: function(data) {
-            var id = data[1], 
-                item = data[2];
+            var playerId = data[1], 
+                itemId = data[2];
         
-            if(this.lootmove_callback) {
-                this.lootmove_callback(id, item);
+            var player, item;
+            if (id !== globalGame.player.id) {
+                player = globalGame.getEntityById(playerId);
+                item = globalGame.getEntityById(itemId);
+        
+                if (player && item) {
+                    globalGame.makeCharacterGoTo(player, item.gridX, item.gridY);
+                }
             }
         },
     
@@ -568,11 +574,7 @@ define(['player',
         onPlayerEquipItem: function(callback) {
             this.equip_callback = callback;
         },
-    
-        onPlayerMoveToItem: function(callback) {
-            this.lootmove_callback = callback;
-        },
-    
+     
         onPlayerTeleport: function(callback) {
             this.teleport_callback = callback;
         },

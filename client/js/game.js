@@ -854,19 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onPlayerMoveToItem(function(playerId, itemId) {
-                    var player, item;
-
-                    if(playerId !== self.player.id) {
-                        player = self.getEntityById(playerId);
-                        item = self.getEntityById(itemId);
-                
-                        if(player && item) {
-                            self.makeCharacterGoTo(player, item.gridX, item.gridY);
-                        }
-                    }
-                });
-            
                 self.client.onEntityAttack(function(attackerId, targetId) {
                     var attacker = self.getEntityById(attackerId),
                         target = self.getEntityById(targetId);
