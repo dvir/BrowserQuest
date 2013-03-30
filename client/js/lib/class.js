@@ -10,21 +10,6 @@ var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ :
 Class = function() {};
 
 Class.prototype = {
-    data: {},
-    callbacks: {},
-    on: function(name, callback) {
-        if (!this.callbacks.hasOwnProperty(name)) {
-            this.callbacks[name] = [];
-        }
-        this.callbacks[name].push(callback);
-    },
-    trigger: function(name) {
-        if (this.callbacks.hasOwnProperty(name)) {
-            for (var i = 0; i < this.callbacks[name].length; i++) {
-                this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
-            }
-        }
-    }
 };
 
 // Create a new Class that inherits from this class
@@ -83,8 +68,28 @@ Class.extend = function(prop) {
     Class = function () {
         // All construction is actually done in the init method
         if (!initializing) {
+            if (!this.callbacks) this.callbacks = {};
+
+            this.on = function(name, callback) {
+                if (!this.callbacks.hasOwnProperty(name)) {
+                    this.callbacks[name] = [];
+                }
+                this.callbacks[name].push(callback);
+            };
+            
+            this.trigger = function(name) {
+                if (this.callbacks.hasOwnProperty(name)) {
+                    for (var i = 0; i < this.callbacks[name].length; i++) {
+                        this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
+                    }
+                }
+            };
+
             if (this.data) {
                 this.data = $.extend({}, prototype.data, this.data);
+            }
+            if (this.callbacks) {
+                this.callbacks = $.extend({}, prototype.callbacks, this.callbacks);
             }
             if (this.init) {
                 this.init.apply(this, arguments);
