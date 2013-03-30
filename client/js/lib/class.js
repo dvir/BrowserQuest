@@ -68,6 +68,7 @@ Class.extend = function(prop) {
     Class = function () {
         // All construction is actually done in the init method
         if (!initializing) {
+            if (!this.bubbleToObjects) this.bubbleToObjects = [];
             if (!this.callbacks) this.callbacks = {};
 
             this.on = function(name, callback) {
@@ -83,6 +84,14 @@ Class.extend = function(prop) {
                         this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
                     }
                 }
+
+                for (var i = 0; i < this.bubbleToObjects.length; i++) {
+                    this.bubbleToObjects[i].trigger(name);
+                }
+            };
+
+            this.bubbleTo = function(object) {
+                this.bubbleToObjects.push(object);
             };
 
             if (this.data) {
