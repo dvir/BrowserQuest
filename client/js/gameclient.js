@@ -446,12 +446,17 @@ define(['player',
     
         receiveDamage: function(data) {
             var entityId = data[1],
-                dmg = data[2],
+                points = data[2],
                 attackerId = data[3];
         
-            if(this.dmg_callback) {
-                this.dmg_callback(entityId, dmg, attackerId);
-            }
+            var entity = globalGame.getEntityById(entityId, true);
+            if (attackerId == globalGame.player.id) {
+                if (entity) {
+                    globalGame.infoManager.addDamageInfo(points, entity.x, entity.y - 15, "inflicted");
+                }
+            } else if (entityId == globalGame.player.id) {
+                globalGame.infoManager.addDamageInfo(-points, globalGame.player.x, globalGame.player.y - 15, "received");
+            }   
         },
     
         receivePopulation: function(data) {
@@ -606,11 +611,7 @@ define(['player',
         onDropItem: function(callback) {
             this.drop_callback = callback;
         },
-    
-        onDamage: function(callback) {
-            this.dmg_callback = callback;
-        },
-    
+     
         onPlayerKillMob: function(callback) {
             this.kill_callback = callback;
         },

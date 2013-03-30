@@ -854,20 +854,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
-                self.client.onDamage(function(entityId, points, attackerId) {
-                    var entity = self.getEntityById(entityId, true);
-
-                    if (self.player) {
-                        if (attackerId == self.player.id) {
-                            if (entity) {
-                                self.infoManager.addDamageInfo(points, entity.x, entity.y - 15, "inflicted");
-                            }
-                        } else if (entityId == self.player.id) {
-                            self.infoManager.addDamageInfo(-points, self.player.x, self.player.y - 15, "received");
-                        }   
-                    }
-                });
-
                 self.client.onHealth(function(mobId, hp, maxHP, isRegen) {
                     var mob = self.getEntityById(mobId);
                     if (mob) {
