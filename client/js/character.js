@@ -640,17 +640,12 @@ define(['entity',
         
             globalGame.updateCursor();
     	},
-	
-    	onHasMoved: function(callback) {
-    	    this.hasmoved_callback = callback;
-    	},
-	
-    	hasMoved: function() {
+
+        moved: function() {
             this.dirty();
-    	    if(this.hasmoved_callback) {
-    	        this.hasmoved_callback(this);
-    	    }
-    	},
+            // Make chat bubbles follow moving entities
+            globalGame.assignBubbleTo(this); 
+        },
 	
     	hurt: function() {
             var self = this;

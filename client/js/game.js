@@ -576,19 +576,19 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         removeFromRenderingGrid: function(entity, x, y) {
-            if (entity && entity.id in this.renderingGrid[y][x]) {
+            if (entity && this.renderingGrid[y][x] && entity.id in this.renderingGrid[y][x]) {
                 delete this.renderingGrid[y][x][entity.id];
             }
         },
     
         removeFromEntityGrid: function(entity, x, y) {
-            if (this.entityGrid && entity.id in this.entityGrid[y][x]) {
+            if (entity && this.entityGrid[y][x] && entity.id in this.entityGrid[y][x]) {
                 delete this.entityGrid[y][x][entity.id];
             }
         },
         
         removeFromItemGrid: function(item, x, y) {
-            if (item && item.id in this.itemGrid[y][x]) {
+            if (item && this.itemGrid[y][x] && item.id in this.itemGrid[y][x]) {
                 delete this.itemGrid[y][x][item.id];
             }
         },
@@ -846,31 +846,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
              
-                self.player.onHasMoved(function(player) {
-                    self.assignBubbleTo(player);
-                });
-                
-                self.player.onArmorLoot(function(armorName) {
-                    console.error("DONT USE ONARMORLOOT!");
-//                    self.player.switchArmor(self.sprites[armorName]);
-                });
-            
-                self.player.onSwitchItem(function() {
-                    self.storage.savePlayer(self.renderer.getPlayerImage(),
-                                            self.player);
-                    if(self.equipment_callback) {
-                        self.equipment_callback();
-                    }
-                });
-                
-                self.player.onInvincible(function() {
-                    self.invincible_callback();
-                    // no need to swithc armor anymore.
-                    // invincibility will be triggered by .invincible boolean
-                    // only.
-//                    self.player.switchArmor(self.sprites["firefox"]);
-                });
-            
                 self.client.onSpawnItem(function(item, x, y) {
                     log.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at "+x+", "+y);
                     self.addItem(item, x, y);
@@ -910,10 +885,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                 log.info("Spawned " + Types.getKindAsString(entity.kind) + " (" + entity.id + ") at "+entity.gridX+", "+entity.gridY);
                         
                                 if(entity instanceof Character) {
-                                    entity.onHasMoved(function(entity) {
-                                        self.assignBubbleTo(entity); // Make chat bubbles follow moving entities
-                                    });
-
                                     if(entity instanceof Mob) {
                                         if(targetId) {
                                             var player = self.getEntityById(targetId);
@@ -1254,16 +1225,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                     }
                 });
                 
-                self.client.onDisconnected(function(message) {
-                    if(self.player) {
-                        self.player.die();
-                    }
-                    if(self.disconnect_callback) {
-                        self.disconnect_callback(message);
-                    }
-                });
-            
-                self.gamestart_callback();
+                self.gameStart();
             
                 if(self.hasNeverStarted) {
                     self.start();
@@ -2104,16 +2066,23 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             log.debug("Finished restart");
         },
     
-        onGameStart: function(callback) {
-            this.gamestart_callback = callback;
+        gameStart: function() {
+            this.app.initEquipmentIcons();
+            this.app.initHealthBar();                  
+            this.app.initXPBar();
+            log.debug("initiated bars");
         },
         
-        onDisconnect: function(callback) {
-            this.disconnect_callback = callback;
+        disconnected: function(message) {
+            $('#death').find('p').html(message+"<em>Please reload the page.</em>");
+            $('#respawn').hide();
         },
     
-        onPlayerDeath: function(callback) {
-            this.playerdeath_callback = callback;
+        playerDeath: function() {
+            if ($('body').hasClass('credits')) {
+                $('body').removeClass('credits');
+            }
+            $('body').addClass('death');
         },
     
         onPlayerHealthChange: function(callback) {
@@ -2128,20 +2097,21 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.playerhurt_callback = callback;
         },
     
-        onPlayerEquipmentChange: function(callback) {
-            this.equipment_callback = callback;
+        playerChangedEquipment: function() {
+    		this.app.initEquipmentIcons();
         },
 
         onNbPlayersChange: function(callback) {
             this.nbplayers_callback = callback;
         },
     
-        onNotification: function(callback) {
-            this.notification_callback = callback;
-        },
-    
-        onPlayerInvincible: function(callback) {
-            this.invincible_callback = callback
+        playerInvincible: function(state) {
+            if (state) {
+                $('#player > .hitpoints').toggleClass('invincible', state);
+                return;
+            }
+
+            $('#player > .hitpoints').toggleClass('invincible');
         },
     
         resize: function() {
@@ -2231,28 +2201,22 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             return position;
         },
     
-        onAchievementUnlock: function(callback) {
-            this.unlock_callback = callback;
-        },
-    
         tryUnlockingAchievement: function(name) {
             var achievement = null;
-            if(name in this.achievements) {
+            if (name in this.achievements) {
                 achievement = this.achievements[name];
             
-                if(achievement.isCompleted() && this.storage.unlockAchievement(achievement.id)) {
-                    if(this.unlock_callback) {
-                        this.unlock_callback(achievement.id, achievement.name, achievement.desc);
-                        this.audioManager.playSound("achievement");
-                    }
+                if (achievement.isCompleted() 
+                    && this.storage.unlockAchievement(achievement.id)) 
+                {
+                    this.app.unlockAchievement(achievement.id, achievement.name, achievement.desc);
+                    this.audioManager.playSound("achievement");
                 }
             }
         },
     
         showNotification: function(message) {
-            if(this.notification_callback) {
-                this.notification_callback(message);
-            }
+            this.app.showMessage(message);
         },
 
         removeObsoleteEntities: function() {

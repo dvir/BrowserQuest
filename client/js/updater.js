@@ -138,11 +138,11 @@ define(['character', 'timer'], function(Character, Timer) {
                     c.movement.start(this.game.currentTime,
                                      function(x) {
                                         c.x = x;
-                                        c.hasMoved();
+                                        c.moved();
                                      },
                                      function() {
                                         c.x = c.movement.endValue;
-                                        c.hasMoved();
+                                        c.moved();
                                         c.nextStep();
                                      },
                                      c.x - tick,
@@ -153,11 +153,11 @@ define(['character', 'timer'], function(Character, Timer) {
                     c.movement.start(this.game.currentTime,
                                      function(x) {
                                         c.x = x;
-                                        c.hasMoved();
+                                        c.moved();
                                      },
                                      function() {
                                         c.x = c.movement.endValue;
-                                        c.hasMoved();
+                                        c.moved();
                                         c.nextStep();
                                      },
                                      c.x + tick,
@@ -168,11 +168,11 @@ define(['character', 'timer'], function(Character, Timer) {
                     c.movement.start(this.game.currentTime,
                                      function(y) {
                                         c.y = y;
-                                        c.hasMoved();
+                                        c.moved();
                                      },
                                      function() {
                                         c.y = c.movement.endValue;
-                                        c.hasMoved();
+                                        c.moved();
                                         c.nextStep();
                                      },
                                      c.y - tick,
@@ -183,11 +183,11 @@ define(['character', 'timer'], function(Character, Timer) {
                     c.movement.start(this.game.currentTime,
                                      function(y) {
                                         c.y = y;
-                                        c.hasMoved();
+                                        c.moved();
                                      },
                                      function() {
                                         c.y = c.movement.endValue;
-                                        c.hasMoved();
+                                        c.moved();
                                         c.nextStep();
                                      },
                                      c.y + tick,

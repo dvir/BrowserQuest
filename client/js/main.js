@@ -184,33 +184,6 @@ define(['jquery', 'app'], function($, App) {
     		    game.loadMap();
     		}
 	
-    		game.onGameStart(function() {
-                app.initEquipmentIcons();
-                app.initHealthBar();                  
-                app.initXPBar();
-                log.debug("initiated bars");
-    		});
-    		
-    		game.onDisconnect(function(message) {
-    		    $('#death').find('p').html(message+"<em>Please reload the page.</em>");
-    		    $('#respawn').hide();
-    		});
-	
-    		game.onPlayerDeath(function() {
-    		    if($('body').hasClass('credits')) {
-    		        $('body').removeClass('credits');
-    		    }
-                $('body').addClass('death');
-    		});
-	
-    		game.onPlayerEquipmentChange(function() {
-    		    app.initEquipmentIcons();
-    		});
-	
-    		game.onPlayerInvincible(function() {
-    		    $('#player > .hitpoints').toggleClass('invincible');
-    		});
-
     		game.onNbPlayersChange(function(worldPlayers, totalPlayers) {
     		    var setWorldPlayersString = function(string) {
         		        $("#instance-population").find("span:nth-child(2)").text(string);
@@ -237,14 +210,6 @@ define(['jquery', 'app'], function($, App) {
     		    }
     		});
 	
-    		game.onAchievementUnlock(function(id, name, description) {
-    		    app.unlockAchievement(id, name);
-    		});
-	
-    		game.onNotification(function(message) {
-    		    app.showMessage(message);
-    		});
-
             $('#nameinput').val('');
     		$('#chatbox').val('');
     		

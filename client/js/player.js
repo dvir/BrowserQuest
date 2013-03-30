@@ -41,6 +41,12 @@ define(['character',
             this.skillbar = new Skillbar();
         },
 
+        moved: function() {
+            this.dirty();
+            // Make chat bubbles follow moving entities
+            globalGame.assignBubbleTo(this);
+        },
+
     	die: function() {
     	    this.removeTarget();
     	    this.isDead = true;
@@ -60,7 +66,7 @@ define(['character',
                 globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
            
                 setTimeout(function() {
-                    globalGame.playerdeath_callback();
+                    globalGame.playerDeath();
                 }, 1000);
             });
         
@@ -332,10 +338,8 @@ define(['character',
             this.switchingWeapon = true;
             var blanking = setInterval(function() {
                 if(toggle()) {
-//                        self.setWeaponName(newWeaponName);
                     self.weapon = item.kind;
                 } else {
-//                        self.setWeaponName(null);
                     self.weapon = null;
                 }
 
@@ -344,9 +348,7 @@ define(['character',
                     clearInterval(blanking);
                     self.switchingWeapon = false;
                 
-                    if(self.switch_callback) {
-                        self.switch_callback();
-                    }
+                    self.changedEquipment();
                 }
             }, 90);
         },
@@ -374,26 +376,18 @@ define(['character',
                 if(count === 1) {
                     clearInterval(blanking);
                     self.isSwitchingArmor = false;
-                
-                    if(self.switch_callback) {
-                        self.switch_callback();
-                    }
+               
+                    self.changedEquipment();
                 }
             }, 90);
         },
-    
-        onArmorLoot: function(callback) {
-            this.armorloot_callback = callback;
-        },
 
-        onSwitchItem: function(callback) {
-            this.switch_callback = callback;
+        changedEquipment: function() {
+            globalGame.storage.savePlayer(globalGame.renderer.getPlayerImage(),
+                                          this);
+            globalGame.playerChangedEquipment();
         },
         
-        onInvincible: function(callback) {
-            this.invincible_callback = callback;
-        },
-
         startInvincibility: function() {
             var self = this;
         
@@ -404,7 +398,7 @@ define(['character',
                 }
             } else {
                 this.invincible = true;
-                this.invincible_callback();      
+                globalGame.playerInvincible(true);
             }
         
             this.invincibleTimeout = setTimeout(function() {
@@ -414,7 +408,7 @@ define(['character',
         },
     
         stopInvincibility: function() {
-            this.invincible_callback();
+            globalGame.playerInvincible(false);
             this.invincible = false;
         
             if(this.invincibleTimeout) {
