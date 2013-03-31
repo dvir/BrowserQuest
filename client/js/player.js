@@ -1,11 +1,13 @@
 
 define(['character', 
+        'mob',
         'exceptions', 
         'inventory', 
         'skillbar',
         'chest',
         'npc'], function(
-        Character, 
+        Character,
+        Mob,
         Exceptions, 
         Inventory, 
         Skillbar, 
@@ -27,9 +29,6 @@ define(['character',
 
             this.name = name;
         
-            // Renderer
-     		this.nameOffsetY = -10;
-        
             // modes
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;
@@ -39,6 +38,10 @@ define(['character',
             
             this.inventory = new Inventory();
             this.skillbar = new Skillbar();
+        },
+
+        isHostile: function(entity) {
+            return (entity instanceof Mob);
         },
 
         moved: function() {

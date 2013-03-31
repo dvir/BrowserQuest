@@ -16,6 +16,9 @@ define(function() {
             this._name = "unknown";
             this._x = 0;
             this._y = 0;
+            
+            // Renderer
+     		this.nameOffsetY = -10;
 
             this.gridX = 0;
             this.gridY = 0;
@@ -29,7 +32,6 @@ define(function() {
             this.kind = kind;
 
             // Renderer
-    		this.sprite = null;
     		this.flipSpriteX = false;
         	this.flipSpriteY = false;
     		this.animations = null;
@@ -46,6 +48,14 @@ define(function() {
             this.isFading = false;
             this.dirty();
     	},
+
+        get sprite() {
+            return this._sprite;
+        },
+
+        set sprite(sprite) {
+            this._sprite = sprite;
+        },
 
         get x() {
             return this._x;
@@ -143,6 +153,10 @@ define(function() {
     	getSpriteName: function() {
     	    return Types.getKindAsString(this.kind);
     	},
+
+        get kindName() {
+            return Types.getKindAsString(this.kind);
+        },
 	
     	getAnimationByName: function(name) {
             var animations = this.animations;
@@ -229,6 +243,19 @@ define(function() {
             } else {
                 this.setVisible(true);
             }
+        },
+
+        isHostile: function(entity) {
+            return false;
+        },
+
+        distanceTo: function(entity) {
+            var distance = Math.sqrt(
+                                Math.pow(this.gridX - entity.gridX, 2)
+                                + Math.pow(this.gridY - entity.gridY, 2)
+                            );
+            // round to 3 digit precision
+            return Math.round(distance * Math.pow(10, 3)) / Math.pow(10, 3);
         },
     
         /**

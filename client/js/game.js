@@ -818,9 +818,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             });
         
             this.client.onWelcome(function(data) {
-                self.app.initEquipmentIcons();
-                self.app.initHealthBar();                  
-                self.app.initXPBar();
+                self.app.initBars();
                 log.debug("initiated bars");
  
                 self.player.isDead = false;
@@ -932,14 +930,20 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 log.debug("Teleport out of bounds: "+x+", "+y);
             }
         },
+
+        makePlayerTargetNearestEnemy: function() {
+            var enemies = this.player.getNearestEnemies(this.entities);
+            if (enemies.length > 0) {
+                this.player.setTarget(enemies[0]);
+            }
+        },
         
         /**
          *
          */
         makePlayerAttackNext: function()
         {
-
-            pos = {
+            var pos = {
                 x: this.player.gridX,
                 y: this.player.gridY
             };
@@ -1020,7 +1024,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          */
         makePlayerAttack: function(mob) {
             this.createAttackLink(this.player, mob);
-            this.app.updateTarget();
             this.client.sendAttack(mob);
         },
 
@@ -1372,7 +1375,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 if (!isKeyboard && entity && entity.interactable) {
                     if(entity instanceof Mob) {
                         this.player.target = entity;
-                        this.app.updateTarget();
                     }
                     else if(entity instanceof Item) {
                         this.makePlayerGoToItem(entity);
@@ -1783,7 +1785,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         updateBars: function() {
-            this.app.updateTarget();
             this.app.updateInventory();
             this.app.updateSkillbar();
         },

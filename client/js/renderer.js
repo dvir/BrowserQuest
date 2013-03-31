@@ -589,10 +589,16 @@ define(['camera',
                },
 
                drawEntityName: function(entity) {
+                   var name = entity.name;
+
+                   if (this.isDebugInfoVisible) {
+                       name = name + " ("+entity.id+","+entity.distanceTo(this.game.player)+")";
+                   }
+
                    this.context.save();
-                   if(entity.name && entity instanceof Player) {
+                   if (name) {
                        var color = (entity.id === this.game.playerId) ? "#fcda5c" : "white";
-                       this.drawText(entity.name,
+                       this.drawText(name,
                                      (entity.x + 8) * this.scale,
                                      (entity.y + entity.nameOffsetY) * this.scale,
                                      true,

@@ -302,6 +302,9 @@ define(['jquery', 'app'], function($, App) {
                         case Types.Keys.S:
                             game.player.moveDown = true;
                             break;
+                        case Types.Keys.TAB:
+                            game.makePlayerTargetNearestEnemy();
+                            break;
                         case Types.Keys.SPACE:
                             game.makePlayerAttackNext();
                             break;
@@ -403,7 +406,6 @@ define(['jquery', 'app'], function($, App) {
                     }
                     if(key === 27) { // ESC
                         game.player.target = null;
-                        app.updateTarget();
                         app.hideWindows();
                         _.each(game.player.attackers, function(attacker) {
                             attacker.stop();

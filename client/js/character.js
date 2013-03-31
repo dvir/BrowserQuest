@@ -49,7 +49,7 @@ define(['entity',
     		this.adjacentTiles = {};
 		
     		// Combat
-    		this.target = null;
+    		this._target = null;
             this.unconfirmedTarget = null;
             this.attackers = {};
        
@@ -65,6 +65,36 @@ define(['entity',
                 attacker.idle();
             });
     	},
+
+        isHostile: function(entity) {
+            // @TODO: implement!
+            return true;
+        },
+
+        getNearestEnemies: function(entities) {
+            var self = this;
+            entities = _.reject(entities, function(entity) {
+                            return (self == entity 
+                                    || false == self.isHostile(entity)
+                                    || entity.isDead);
+                        });
+
+            entities = _.sortBy(entities, function(entity) {
+                        return self.distanceTo(entity);
+                    });
+
+            return entities;
+        },
+
+        get target() {
+            return this._target;
+        },
+
+        set target(target) {
+            this._target = target;
+            this.trigger("TargetChange");
+            this.trigger("change");
+        },
 
         get hp() {
             return this._hp;

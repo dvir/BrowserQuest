@@ -140,6 +140,13 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
         	}
         },
 
+        initBars: function() {
+            this.initEquipmentIcons();
+            this.initHealthBar();                  
+            this.initXPBar();
+            this.initTargetBar();
+        },
+
         initHealthBar: function() {
             var scale = this.game.renderer.getScaleFactor();
 
@@ -169,6 +176,27 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
                 $("#xpbar").html(player.xp + "/" + player.maxXP);
         	    $("#xp").css('width', barWidth + "px");
                 $("#level").html(player.level);
+            });
+        },
+
+        initTargetBar: function() {
+            var self = this;
+            var $target = $("#target");
+
+            this.game.on("TargetChange", function(){
+                var scale = self.game.renderer.getScaleFactor();
+                var target = self.game.player.target;
+
+                if (!target) {
+                    $target.hide();
+                    return;
+                }
+
+                $target.show();
+                var healthbar = new Healthbar($target, target, scale);
+                target.on("change", function() {
+                    healthbar.update();
+                });
             });
         },
 
@@ -336,24 +364,6 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
                     $div.css("background-image", "url('/img/"+scale+"/item-"+Types.getKindAsString(item.kind)+".png')");
                 }
             }
-        },
-
-        updateTarget: function() {
-            var scale = this.game.renderer.getScaleFactor();
-            
-            var target = this.game.player.target;
-            var $target = $("#target");
-
-            if (!target) {
-                $target.hide();
-                return;
-            }
-
-            $target.show();
-            var healthbar = new Healthbar($target, target, scale);
-            target.on("change", function() {
-                healthbar.update();
-            });
         },
 
         updateSkillbar: function() {
@@ -749,8 +759,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
             if(this.game) {
                 if(this.game.started) {
                     this.game.resize();
-                    this.initHealthBar();
-                    this.initXPBar();
+                    this.initBars();
                     this.game.updateBars();
                 } else {
                     var newScale = this.game.renderer.getScaleFactor();
