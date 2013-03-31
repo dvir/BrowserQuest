@@ -4,6 +4,7 @@ define(['entity'], function(Entity) {
     var Chest = Entity.extend({
         init: function(id, kind) {
     	    this._super(id, Types.Entities.CHEST);
+            this._name = "Chest";
         },
     
         getSpriteName: function() {

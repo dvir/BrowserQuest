@@ -9,6 +9,9 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.idleSpeed = 700;
                 this.shadowOffsetY = -2;
                 this.isAggressive = false;
+
+                this._name = "Rat";
+                this.nameOffsetY += 5;
             }
         }),
 
@@ -20,6 +23,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.idleSpeed = 800;
                 this.shadowOffsetY = 1;
                 this.setAttackRate(1300);
+
+                this._name = "Skeleton";
             }
         }),
 
@@ -32,6 +37,9 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.walkSpeed = 200;
                 this.shadowOffsetY = 1;
                 this.setAttackRate(1300);
+
+                this._name = "Skeleton Warrior";
+                this.nameOffsetY -= 2;
             }
         }),
 
@@ -44,6 +52,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.walkSpeed = 200;
                 this.shadowOffsetY = 1;
                 this.setAttackRate(900);
+
+                this._name = "Spectre";
             }
         }),
         
@@ -56,6 +66,9 @@ define(['mob', 'timer'], function(Mob, Timer) {
         		this.idleSpeed = 450;
         		this.setAttackRate(800);
         		this.aggroRange = 3;
+
+                this._name = "Death Knight";
+                this.nameOffsetY -= 3;
             },
             
             idle: function(orientation) {
@@ -74,6 +87,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.atkSpeed = 60;
                 this.idleSpeed = 600;
                 this.setAttackRate(700);
+
+                this._name = "Goblin";
             }
         }),
 
@@ -83,6 +98,9 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.moveSpeed = 300;
                 this.atkSpeed = 100;
                 this.idleSpeed = 600;
+
+                this._name = "Ogre";
+                this.nameOffsetY -= 6;
             }
         }),
 
@@ -92,6 +110,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.moveSpeed = 200;
                 this.atkSpeed = 40;
                 this.idleSpeed = 500;
+
+                this._name = "Crab";
             }
         }),
 
@@ -103,6 +123,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.idleSpeed = 250;
                 this.walkSpeed = 100;
                 this.shadowOffsetY = -4;
+
+                this._name = "Snake";
             }
         }),
 
@@ -112,6 +134,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.moveSpeed = 200;
                 this.atkSpeed = 40;
                 this.idleSpeed = 50;
+
+                this._name = "Eye";
             }
         }),
 
@@ -123,6 +147,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.idleSpeed = 90;
                 this.walkSpeed = 85;
                 this.isAggressive = false;
+
+                this._name = "Bat";
             }
         }),
 
@@ -132,6 +158,8 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.moveSpeed = 200;
                 this.atkSpeed = 100;
                 this.idleSpeed = 150;
+
+                this._name = "Wizard";
             }
         }),
 
@@ -144,6 +172,9 @@ define(['mob', 'timer'], function(Mob, Timer) {
                 this.atkRate = 2000;
                 this.attackCooldown = new Timer(this.atkRate);
         		this.aggroRange = 3;
+
+                this._name = "Skeleton King";
+                this.nameOffsetY -= 14;
             },
             
             idle: function(orientation) {

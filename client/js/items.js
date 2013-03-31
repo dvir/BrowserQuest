@@ -2,11 +2,11 @@
 define(['item'], function(Item) {
     
     var Items = {
-        
         Sword2: Item.extend({
             init: function(id) {
                 this._super(id, Types.Entities.SWORD2, "weapon");
                 this.lootMessage = "You pick up a steel sword";
+                this._name = "Sword";
             },
         }),
 
@@ -14,6 +14,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.AXE, "weapon");
                 this.lootMessage = "You pick up an axe";
+                this._name = "Axe";
             },
         }),
 
@@ -21,6 +22,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.REDSWORD, "weapon");
                 this.lootMessage = "You pick up a blazing sword";
+                this._name = "Red Sword";
             },
         }),
 
@@ -28,6 +30,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.BLUESWORD, "weapon");
                 this.lootMessage = "You pick up a magic sword";
+                this._name = "Blue Sword";
             },
         }),
 
@@ -35,6 +38,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.GOLDENSWORD, "weapon");
                 this.lootMessage = "You pick up the ultimate sword";
+                this._name = "Golden Sword";
             },
         }),
 
@@ -42,6 +46,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.MORNINGSTAR, "weapon");
                 this.lootMessage = "You pick up a morning star";
+                this._name = "Morning Star";
             },
         }),
 
@@ -49,6 +54,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.LEATHERARMOR, "armor");
                 this.lootMessage = "You equip a leather armor";
+                this._name = "Leather Armor";
             },
         }),
 
@@ -56,6 +62,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.MAILARMOR, "armor");
                 this.lootMessage = "You equip a mail armor";
+                this._name = "Mail Armor";
             },
         }),
 
@@ -63,6 +70,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.PLATEARMOR, "armor");
                 this.lootMessage = "You equip a plate armor";
+                this._name = "Plate Armor";
             },
         }),
 
@@ -70,6 +78,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.REDARMOR, "armor");
                 this.lootMessage = "You equip a ruby armor";
+                this._name = "Red Armor";
             },
         }),
 
@@ -77,6 +86,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.GOLDENARMOR, "armor");
                 this.lootMessage = "You equip a golden armor";
+                this._name = "Golden Armor";
             },
         }),
 
@@ -85,6 +95,7 @@ define(['item'], function(Item) {
                 this._super(id, Types.Entities.FLASK, "object");
                 this.lootMessage = "You drink a health potion";
                 this.isStackable = true;
+                this._name = "Potion";
             },
         }),
         
@@ -92,6 +103,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.CAKE, "object");
                 this.lootMessage = "You eat a cake";
+                this._name = "Cake";
             },
         }),
 
@@ -99,6 +111,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.BURGER, "object");
                 this.lootMessage = "You can haz rat burger";
+                this._name = "Burger";
             },
         }),
 
@@ -106,6 +119,7 @@ define(['item'], function(Item) {
             init: function(id) {
                 this._super(id, Types.Entities.FIREPOTION, "object");
                 this.lootMessage = "You feel the power of Firefox!";
+                this._name = "Fire Potion";
             },
     
             onLoot: function(player) {

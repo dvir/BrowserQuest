@@ -12,6 +12,7 @@ define(['entity'], function(Entity) {
             this._cooldown = 1;
             this._castTime = 1;
             this._tooltip = "N/A";
+            this.nameOffsetY += 5;
         },
         
         get cooldown() {
