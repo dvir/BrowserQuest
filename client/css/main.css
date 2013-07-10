@@ -586,13 +586,75 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
   left: 33px;
 }
 
-      .healthbar {font-size:110%;line-height:35px;height:39px;background-position:0 -51px;width:306px;background-size:1440px;z-index:20;}
+.hitpoints {
+  border-radius: 8px;
+}
+
+#player {
+  top: 16px;
+  left: 16px;
+}
+#player > .hitpoints {
+  left: 32px;
+}
+
+#target {
+  top: 16px;
+  left: 330px;
+}
+#target > .hitpoints {
+  left: 32px;
+}
+
+#skillbar {
+  width: 580px;
+  left: 415px;
+  bottom: 18px;
+}
+      
+      .barSlot, ul.slotbar > li {
+        background-image: url('../img/3/barsheet.png');
+        background-position:-312px -1px;
+      }
+
+      .barSlot, ul.slotbar > li, ul.slotbar > li > div {
+        width: 48px;
+        height: 48px;
+      }
+
+      #skillbar > ul.slotbar > li > div.type-spell {
+        background-size: 100% auto;
+        width: 38px;
+        height: 38px;
+        margin-left: 5px;
+      }
+
+      ul.slotbar > li > div {
+        position: absolute;
+      }
+      ul.slotbar > li > div > span.amount {
+        position: absolute;
+        left: 3px;
+        bottom: 1px;
+      }
+      #skillbar > ul.slotbar > li > div > span.keybind {
+        position: absolute;
+        right: 2px;
+        top: 2px;
+      }
+
+      .healthbar {font-size:110%;line-height:35px;height:39px;background-position:0 -51px;width:304px;background-size:1440px;z-index:20;}
       .hitpoints {width:0px;height:33px;z-index:10;position:absolute;}
+    
+      #xp-container {
+        bottom: 58px;
+        left: 16px;
+      }
 
       #xpbar {font-size:110%;line-height:35px;height:39px;background-position:0 -195px;width:306px;top:15px;background-size:1440px;z-index:20;}
       #xp {width:0px;height:33px;top:18px;left:33px;z-index:10;position:absolute;}
 
-      #level {font-size:110%;top:25px;left:28px;}
+      #level {font-size:110%;top:25px;left:13px;}
 
       #armor, #weapon {width:48px;height:48px;position:absolute;background-size:288px;background-position:-96px;}
       #weapon {left:312px;top:3px;background-size:288px;}
@@ -765,6 +827,11 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
       .healthbar {height:26px;background-position:0 -34px;width:204px;background-size:960px;z-index:20;}
       .hitpoints {width:0px;height:22px;z-index:10;position:absolute;}
+    
+      #xp-container {
+        bottom: 35px;
+        left: 10px;
+      }
 
       #xpbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
       #xp {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}
@@ -941,6 +1008,11 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
       .healthbar {font-size:100%;line-height:23px;height:26px;background-position:0 -34px;width:204px;background-size:960px;z-index:20;}
       .hitpoints {width:0px;height:22px;z-index:10;position:absolute;}
+    
+      #xp-container {
+        bottom: 35px;
+        left: 10px;
+      }
 
       #xpbar {font-size:100%;line-height:23px;height:26px;background-position:0 -132px;width:204px;top:10px;background-size:960px;z-index:20;}
       #xp {width:0px;height:22px;top:12px;left:22px;z-index:10;position:absolute;}
@@ -1145,6 +1217,11 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
       .healthbar {height:13px;background-position:0 -17px;width:102px;background-size:480px;z-index:20;}
       .hitpoints {width:0px;height:11px;z-index:10;position:absolute;}
+    
+      #xp-container {
+        bottom: 35px;
+        left: 10px;
+      }
 
       #xpbar {height:13px;background-position:0 -17px;width:102px;top:3px;background-size:480px;z-index:20;}
       #xp {width:0px;height:11px;top:4px;left:11px;z-index:10;position:absolute;}
@@ -1320,6 +1397,11 @@ body {background:#000;}
 
 .healthbar {height:26px;background-position:0 -34px;width:204px;background-size:960px;z-index:20;}
 .hitpoints {width:0px;height:22px;z-index:10;position:absolute;}
+    
+#xp-container {
+  bottom: 35px;
+  left: 10px;
+}
 
 #xpbar {height:26px;background-position:0 -34px;width:204px;top:6px;background-size:960px;z-index:20;}
 #xp {width:0px;height:22px;top:8px;left:22px;z-index:10;position:absolute;}

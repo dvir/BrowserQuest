@@ -60,8 +60,6 @@ define(['camera',
                },
 
                getScaleFactor: function() {
-                    return 2;
-
                    var w = window.innerWidth,
                    h = window.innerHeight,
                    scale;
@@ -145,6 +143,9 @@ define(['camera',
                },
 
                drawText: function(text, x, y, centered, color, strokeColor, align) {
+                   if (x < 0) x += this.canvas.width;
+                   if (y < 0) y += this.canvas.height;
+
                    var ctx = this.context;
 
                    var strokeSize;
@@ -687,7 +688,7 @@ define(['camera',
                drawMapInfo: function() {
                    var player = this.game.player;
                    if (player) {
-                       this.drawText(player.areaName + " ("+player.gridX+","+player.gridY+")", 950, 20, false, false, false, "right");
+                       this.drawText(player.areaName + " ("+player.gridX+","+player.gridY+")", -1, 20, false, false, false, "right");
                    }
                },
 
