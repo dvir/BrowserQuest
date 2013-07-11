@@ -643,6 +643,16 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
         top: 2px;
       }
 
+      #inventory {
+        position: absolute;
+        bottom: 70px;
+        right: 14px;
+      }
+
+      #inventory > ul.slotbar {
+        width: 192px;
+      }
+
       .healthbar {font-size:110%;line-height:35px;height:39px;background-position:0 -51px;width:304px;background-size:1440px;z-index:20;}
       .hitpoints {width:0px;height:33px;z-index:10;position:absolute;}
     
