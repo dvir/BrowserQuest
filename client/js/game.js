@@ -406,23 +406,24 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             else {
                 this.targetColor = "rgba(255, 255, 255, 0.5)";
             }
-        
-            if(this.hoveringMob && this.started) {
+
+            if (this.hoveringPlayer && this.player.isHostile(this.hoveringTarget) && this.started) {
                 this.setCursor("sword");
                 this.hoveringTarget = false;
                 this.targetCellVisible = false;
-            }
-            else if(this.hoveringNpc && this.started) {
+            } else if(this.hoveringMob && this.started) {
+                this.setCursor("sword");
+                this.hoveringTarget = false;
+                this.targetCellVisible = false;
+            } else if(this.hoveringNpc && this.started) {
                 this.setCursor("talk");
                 this.hoveringTarget = false;
                 this.targetCellVisible = false;
-            }
-            else if((this.hoveringItem || this.hoveringChest) && this.started) {
+            } else if((this.hoveringItem || this.hoveringChest) && this.started) {
                 this.setCursor("loot");
                 this.hoveringTarget = false;
                 this.targetCellVisible = true;
-            }
-            else {
+            } else {
                 this.setCursor("hand");
                 this.hoveringTarget = false;
                 this.targetCellVisible = true;
@@ -977,7 +978,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         makePlayerAttackTo: function(pos)
         {
             entity = this.getEntityAt(pos.x, pos.y);
-            if(entity instanceof Mob) {
+            if (this.player.isHostile(entity)) {
                 this.makePlayerAttack(entity);
             }
         },
@@ -1168,6 +1169,14 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             return entity;
         },
 
+        getPlayerAt: function(x, y) {
+            var entity = this.getEntityAt(x, y);
+            if (entity && (entity instanceof Player)) {
+                return entity;
+            }
+            return null;
+        },
+
         getMobAt: function(x, y) {
             var entity = this.getEntityAt(x, y);
             if(entity && (entity instanceof Mob)) {
@@ -1221,6 +1230,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          */
         isEntityAt: function(x, y) {
             return !_.isNull(this.getEntityAt(x, y));
+        },
+        
+        isPlayerAt: function(x, y) {
+            return !_.isNull(this.getPlayerAt(x, y));
         },
 
         isMobAt: function(x, y) {
@@ -1304,6 +1317,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(this.player && !this.renderer.mobile && !this.renderer.tablet) {
                 this.hoveringCollidingTile = this.map.isColliding(x, y);
                 this.hoveringPlateauTile = this.player.isOnPlateau ? !this.map.isPlateau(x, y) : this.map.isPlateau(x, y);
+                this.hoveringPlayer = this.isPlayerAt(x, y);
                 this.hoveringMob = this.isMobAt(x, y);
                 this.hoveringItem = this.isItemAt(x, y);
                 this.hoveringNpc = this.isNpcAt(x, y);
@@ -1373,24 +1387,20 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         	    entity = this.getEntityAt(pos.x, pos.y);
     	   
                 if (!isKeyboard && entity && entity.interactable) {
-                    if(entity instanceof Mob) {
+                    if (entity instanceof Mob || entity instanceof Player) {
                         this.player.target = entity;
-                    }
-                    else if(entity instanceof Item) {
+                    } else if(entity instanceof Item) {
                         this.makePlayerGoToItem(entity);
-                    }
-                    else if(entity instanceof Npc) {
+                    } else if(entity instanceof Npc) {
                         if(this.player.isAdjacentNonDiagonal(entity) === false) {
                             this.makePlayerTalkTo(entity);
                         } else {
                             this.makeNpcTalk(entity);
                         }
-                    }
-                    else if(entity instanceof Chest) {
+                    } else if(entity instanceof Chest) {
                         this.makePlayerOpenChest(entity);
                     }
-                }
-        	    else {
+                } else {
         	        this.makePlayerGoTo(pos.x, pos.y);
         	    }
         	}

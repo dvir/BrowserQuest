@@ -41,7 +41,7 @@ define(['character',
         },
 
         isHostile: function(entity) {
-            return (entity instanceof Mob);
+            return (entity instanceof Mob) || ((entity instanceof Player) && this.id != entity.id);
         },
 
         moved: function() {

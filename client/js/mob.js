@@ -1,5 +1,5 @@
 
-define(['character'], function(Character) {
+define(['character', 'player'], function(Character) {
     
     var Mob = Character.extend({
         init: function(id, kind) {
@@ -8,6 +8,11 @@ define(['character'], function(Character) {
             this.targetable = true;
             this.aggroRange = 1;
             this.isAggressive = true;
+        },
+        
+        isHostile: function(entity) {
+            // @TODO: implement!
+            return (entity instanceof Player);
         },
 
     	die: function() {

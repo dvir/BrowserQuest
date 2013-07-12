@@ -68,7 +68,7 @@ define(['entity',
 
         isHostile: function(entity) {
             // @TODO: implement!
-            return true;
+            return false;
         },
 
         getNearestEnemies: function(entities) {
