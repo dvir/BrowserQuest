@@ -47,7 +47,7 @@ Types = {
     Entities: {
         UNKNOWN: 999,
 
-        WARRIOR: 1,
+        PLAYER: 1,
         
         // Mobs
         RAT: 2,
@@ -156,7 +156,7 @@ Types = {
 var kinds = {
     unknown: [Types.Entities.UNKNOWN, "unknown"],
 
-    warrior: [Types.Entities.WARRIOR, "player"],
+    player: [Types.Entities.PLAYER, "player"],
     
     rat: [Types.Entities.RAT, "mob"],
     skeleton: [Types.Entities.SKELETON , "mob"],

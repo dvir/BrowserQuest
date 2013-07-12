@@ -35,10 +35,6 @@ module.exports = Mob = Character.extend({
         this.handleRespawn();
     },
     
-    receiveDamage: function(points, playerId) {
-        this.hp -= points;
-    },
-    
     hates: function(playerId) {
         return _.any(this.hatelist, function(obj) { 
             return obj.id === playerId; 

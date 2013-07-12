@@ -19,7 +19,7 @@ module.exports = Player = Character.extend({
         this.server = worldServer;
         this.connection = connection;
 
-        this._super(this.connection.id, "player", Types.Entities.WARRIOR, 0, 0, "");
+        this._super(this.connection.id, "player", Types.Entities.PLAYER, 0, 0, "");
 
         Utils.Mixin(this.data, {
             xp: 0
@@ -50,7 +50,7 @@ module.exports = Player = Character.extend({
         this.connection.listen(function(message) {
             var action = parseInt(message[0]);
             
-            log.debug("Received: "+message);
+            log.debug("Received ("+self.connection.id+"): "+message);
             if(!check(message)) {
                 self.connection.close("Invalid "+Types.getMessageTypeAsString(action)+" message format: "+message);
                 return;
@@ -79,7 +79,7 @@ module.exports = Player = Character.extend({
                 // (also enforced by the maxlength attribute of the name input element).
                 self.name = (name === "") ? "lorem ipsum" : name.substr(0, 15);
 
-                self.kind = Types.Entities.WARRIOR;
+                self.kind = Types.Entities.PLAYER;
                 self.orientation = Utils.randomOrientation();
                 
                 // find previous player with this id
@@ -161,14 +161,18 @@ module.exports = Player = Character.extend({
                 }
             }
             else if(action === Types.Messages.HIT) {
-                var mob = self.server.getEntityById(message[1]);
-                if (mob) {
-                    var dmg = Formulas.dmg(self.weaponLevel, mob.armorLevel);
+                var target = self.server.getEntityById(message[1]);
+                if (target) {
+                    var dmg = Formulas.dmg(self.weaponLevel, target.armorLevel);
                     
                     if (dmg > 0) {
-                        mob.receiveDamage(dmg, self.id);
-                        self.server.handleMobHate(mob.id, self.id, dmg);
-                        self.server.handleHurtEntity(mob, self, dmg);
+                        target.receiveDamage(dmg, self.id);
+
+                        if (target instanceof Mob) {
+                            self.server.handleMobHate(target.id, self.id, dmg);
+                        }
+
+                        self.server.handleHurtEntity(target, self, dmg);
                     }
                 }
             }
@@ -326,6 +330,7 @@ module.exports = Player = Character.extend({
     },
     
     send: function(message) {
+        log.debug("Sent ("+this.connection.id+"): "+message);
         this.connection.send(message);
     },
     

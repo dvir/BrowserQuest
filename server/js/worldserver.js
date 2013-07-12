@@ -82,7 +82,7 @@ module.exports = World = cls.Class.extend({
             self.pushRelevantEntityListTo(player);
     
             var move_callback = function(x, y) {
-                log.debug(player.name + " is moving to (" + x + ", " + y + ").");
+                log.debug(player.name + "("+player.connection.id+") is moving to (" + x + ", " + y + ").");
                 
                 player.forEachAttacker(function(mob) {
                     var target = self.getEntityById(mob.target);

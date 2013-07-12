@@ -2,10 +2,10 @@ globalSprites = {};
 globalInventoryItems = {};
 
 define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animation', 'sprite', 'tile',
-        'warrior', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
+        'hero', 'gameclient', 'audio', 'updater', 'transition', 'pathfinder',
         'item', 'mob', 'npc', 'player', 'character', 'chest', 'mobs', 'exceptions', 'config', 'spelleffect', '../../shared/js/gametypes'],
 function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedTile,
-         Warrior, GameClient, AudioManager, Updater, Transition, Pathfinder,
+         Hero, GameClient, AudioManager, Updater, Transition, Pathfinder,
          Item, Mob, Npc, Player, Character, Chest, Mobs, Exceptions, config, SpellEffect) {
     
     var Game = Class.extend({
@@ -24,7 +24,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.audioManager = null;
         
             // Player
-            this.player = new Warrior("player", "");
+            this.player = new Hero("player", "");
 
             // make events from player to bubble to game
             this.player.bubbleTo(this);
@@ -47,6 +47,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.targetColor = "rgba(255, 255, 255, 0.5)";
             this.targetCellVisible = true;
             this.hoveringTarget = false;
+            this.hoveringPlayer = false;
             this.hoveringMob = false;
             this.hoveringItem = false;
             this.hoveringCollidingTile = false;
@@ -407,7 +408,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 this.targetColor = "rgba(255, 255, 255, 0.5)";
             }
 
-            if (this.hoveringPlayer && this.player.isHostile(this.hoveringTarget) && this.started) {
+            if (this.hoveringPlayer && this.player.isHostile(this.hoveringPlayer) && this.started) {
                 this.setCursor("sword");
                 this.hoveringTarget = false;
                 this.targetCellVisible = false;
@@ -1317,16 +1318,16 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(this.player && !this.renderer.mobile && !this.renderer.tablet) {
                 this.hoveringCollidingTile = this.map.isColliding(x, y);
                 this.hoveringPlateauTile = this.player.isOnPlateau ? !this.map.isPlateau(x, y) : this.map.isPlateau(x, y);
-                this.hoveringPlayer = this.isPlayerAt(x, y);
-                this.hoveringMob = this.isMobAt(x, y);
-                this.hoveringItem = this.isItemAt(x, y);
-                this.hoveringNpc = this.isNpcAt(x, y);
-                this.hoveringChest = this.isChestAt(x, y);
-        
-                if(this.hoveringMob || this.hoveringNpc || this.hoveringChest) {
-                    var entity = this.getEntityAt(x, y);
-            
-                    if(!entity.isHighlighted && this.renderer.supportsSilhouettes) {
+                this.hoveringPlayer = this.getPlayerAt(x, y);
+                this.hoveringMob = this.getMobAt(x, y);
+                this.hoveringItem = this.getItemAt(x, y);
+                this.hoveringNpc = this.getNpcAt(x, y);
+                this.hoveringChest = this.getChestAt(x, y);
+
+                var entity = this.hoveringPlayer | this.hoveringMob | this.hoveringNpc | this.hoveringChest;
+       
+                if (entity) {
+                    if (!entity.isHighlighted && this.renderer.supportsSilhouettes) {
                         if(this.lastHovered) {
                             this.lastHovered.setHighlight(false);
                         }

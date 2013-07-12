@@ -35,6 +35,10 @@ module.exports = Character = Entity.extend({
         this._lastCombat = Date.now();
     },
    
+    receiveDamage: function(points, playerId) {
+        this.hp -= points;
+    },
+    
     set level(level) {
         this.data.level = level;
         this.isDirty = true;

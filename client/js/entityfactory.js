@@ -1,5 +1,5 @@
 
-define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs, Warrior, Chest) {
+define(['mobs', 'items', 'npcs', 'character', 'player', 'hero', 'chest'], function(Mobs, Items, NPCs, Character, Player, Hero, Chest) {
 
     var EntityFactory = {};
 
@@ -20,8 +20,12 @@ define(['mobs', 'items', 'npcs', 'warrior', 'chest'], function(Mobs, Items, NPCs
 
     EntityFactory.builders = [];
 
-    EntityFactory.builders[Types.Entities.WARRIOR] = function(id, name) {
-        return new Warrior(id, name);
+    EntityFactory.builders[Types.Entities.PLAYER] = function(id, name) {
+        if (globalGame.player.id == id) {
+            return new Hero(id, name);
+        } else {
+            return new Player(id, name, Types.Entities.PLAYER);
+        }
     };
 
     EntityFactory.builders[Types.Entities.RAT] = function(id) {
