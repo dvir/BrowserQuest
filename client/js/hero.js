@@ -46,10 +46,35 @@ define(['character',
             this.animate("death", 120, 1, function() {
                 log.info(self.id + " was removed");
             
-                globalGame.removeEntity(self);
-                globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
-           
                 setTimeout(function() {
+                    globalGame.removeEntity(self);
+                    globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
+               
+                    globalGame.audioManager.fadeOutCurrentMusic();
+                    globalGame.audioManager.playSound("death");
+                    
+                    globalGame.entities = {};
+                    globalGame.deathpositions = {};
+                    globalGame.currentCursor = null;
+                    globalGame.zoningQueue = [];
+                    globalGame.previousClickPosition = {};
+            
+                    globalGame.initPathingGrid();
+                    globalGame.initEntityGrid();
+                    globalGame.initRenderingGrid();
+                    globalGame.initItemGrid();
+
+                    globalGame.selectedX = 0;
+                    globalGame.selectedY = 0;
+                    globalGame.selectedCellVisible = false;
+                    globalGame.targetColor = "rgba(255, 255, 255, 0.5)";
+                    globalGame.targetCellVisible = true;
+                    globalGame.hoveringTarget = false;
+                    globalGame.hoveringPlayer = false;
+                    globalGame.hoveringMob = false;
+                    globalGame.hoveringItem = false;
+                    globalGame.hoveringCollidingTile = false;
+
                     globalGame.playerDeath();
                 }, 1000);
             });
@@ -58,9 +83,6 @@ define(['character',
                 attacker.disengage();
                 attacker.idle();
             });
-        
-            globalGame.audioManager.fadeOutCurrentMusic();
-            globalGame.audioManager.playSound("death");
     	},
         
         checkAggro: function() {

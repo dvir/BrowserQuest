@@ -562,6 +562,7 @@ module.exports = World = cls.Class.extend({
     
             if(entity.type === "player") {
                 this.handlePlayerVanish(entity);
+                this.decrementPlayerCount();
             }
     
             this.removeEntity(entity);

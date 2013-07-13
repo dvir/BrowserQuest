@@ -359,11 +359,8 @@ define(['camera',
                    ds = this.upscaledRendering ? this.scale : 1;
 
                    if (!sprite) {
-                        console.log("kindString: " + kindString);
-                   }
-
-                   if (entity.isDying) {
-                       sprite = this.game.sprites["death"];
+                        console.log("kindString: %s | skin: %s", kindString, entity.skin);
+                        return;
                    }
 
                    if(anim && sprite) {
@@ -437,8 +434,8 @@ define(['camera',
                            var weapon = this.game.sprites[Types.getKindAsString(entity.weapon)];
 
                            if(weapon) {
-                               var weaponAnimData = weapon.animationData[anim.name],
-                               index = frame.index < weaponAnimData.length ? frame.index : frame.index % weaponAnimData.length;
+                               var weaponAnimData = weapon.animationData[anim.name];
+                               var index = frame.index < weaponAnimData.length ? frame.index : frame.index % weaponAnimData.length;
                                wx = weapon.width * index * os,
                                wy = weapon.height * anim.row * os,
                                ww = weapon.width * os,

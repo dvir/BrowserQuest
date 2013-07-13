@@ -115,9 +115,8 @@ Types = {
         BLINK: 104,
         POLYMORPH: 105,
 
-
         // using this so I won't have to mess with ending commas
-        DEATH: 999
+        DEATH: 9999
     },
     
     Orientations: {
@@ -155,6 +154,8 @@ Types = {
 
 var kinds = {
     unknown: [Types.Entities.UNKNOWN, "unknown"],
+
+    death: [Types.Entities.DEATH, "death"],
 
     player: [Types.Entities.PLAYER, "player"],
     

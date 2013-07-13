@@ -22,13 +22,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.chatinput = null;
             this.bubbleManager = null;
             this.audioManager = null;
-        
-            // Player
-            this.player = new Hero("player", "");
+       
+            this.player = null;
+            this.playerName = null;
 
-            // make events from player to bubble to game
-            this.player.bubbleTo(this);
-    
             // Game state
             this.entities = {};
             this.deathpositions = {};
@@ -141,9 +138,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.player.loadFromStorage(function(){
                 self.updateBars();               
             });
-        	this.player.setSprite(globalSprites["clotharmor"]);
-        	this.player.idle();
         
+            this.player.setSprite(this.sprites["clotharmor"]);
     	    log.debug("Finished initPlayer");
         },
 
@@ -461,6 +457,13 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             }
         },
 
+        removeAllEntities: function() {
+            for (var entityId in this.entities) {
+                this.unregisterEntityPosition(this.entities[entityId]);
+                delete this.entities[entityId];
+            }
+        },
+
         removeEntity: function(entity) {
             if(entity.id in this.entities) {
                 this.unregisterEntityPosition(entity);
@@ -715,7 +718,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 
                     self.setPathfinder(new Pathfinder(self.map.width, self.map.height));
             
-                    self.initPlayer();
+                    //self.initPlayer();
                     self.setCursor("hand");
                     
                     self.connect(started_callback);
@@ -795,7 +798,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.client.onConnected(function() {
                 log.info("Starting client/server handshake");
                 
-                self.player.name = self.username;
+                self.playerName = self.username;
                 self.started = true;
            
                 self.sendHello();
@@ -812,7 +815,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             
                 // Destroy entities outside of the player's zone group
                 self.removeObsoleteEntities();
-                
+
                 // Ask the server for spawn information about unknown entities
                 if(_.size(newIds) > 0) {
                     self.client.sendWho(newIds);
@@ -820,12 +823,17 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             });
         
             this.client.onWelcome(function(data) {
+                // Player
+                self.player = new Hero("player", "");
+
+                // make events from player to bubble to game
+                self.player.bubbleTo(self);
+        
                 self.app.initBars();
                 log.debug("initiated bars");
  
                 self.player.isDead = false;
                 self.player.isDying = false;
-                self.player.idle();
 
                 self.player.loadFromObject(data);
 
@@ -839,6 +847,9 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.addEntity(self.player);
                 self.player.dirtyRect = self.renderer.getEntityBoundingRect(self.player);
 
+                self.initPlayer();
+                self.player.idle();
+
                 setTimeout(function() {
                     self.tryUnlockingAchievement("STILL_ALIVE");
                 }, 1500);
@@ -849,8 +860,6 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                                             self.player);
                     self.showNotification("Welcome to BrowserQuest!");
                 } else {
-                    self.player.setStorage(self.storage);
-                    self.player.loadFromStorage();
                     self.showNotification("Welcome back to BrowserQuest!");
                 }
 
@@ -884,7 +893,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
          * @see GameClient.sendHello
          */
         sendHello: function(isResurrection) {
-            this.client.sendHello(this.player, isResurrection);
+            this.client.sendHello(this.playerName, isResurrection);
         },
 
         /**
@@ -1702,7 +1711,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(this.renderer.mobile || this.renderer.tablet) {
                 this.renderer.clearScreen(this.renderer.context);
             }
-        
+
             log.debug("Finished restart");
         },
         

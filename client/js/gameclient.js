@@ -197,7 +197,7 @@ define(['player',
                 x = data[2],
                 y = data[3];
         
-            if (id !== globalGame.player.id) {
+            if (globalGame.player && id !== globalGame.player.id) {
                 var entity = globalGame.getEntityById(id);
                 if (entity) {
                     if (globalGame.player.isAttackedBy(entity)) {
@@ -435,9 +435,9 @@ define(['player',
                         isHurt = diff < 0;
                 
                     if (player && !player.isDead && !player.invincible) {
-                        if (player.hp <= 0) {
-                            player.die();
-                        }
+                        //if (player.hp <= 0) {
+                            //player.die();
+                        //}
                         if (isHurt) {
                             player.hurt();
                             globalGame.infoManager.addDamageInfo(diff, player.x, player.y - 15, "received");
@@ -759,9 +759,9 @@ define(['player',
             this.sendMessage(message);
         },
 
-        sendHello: function(player, isResurrection) {
+        sendHello: function(playerName, isResurrection) {
             this.sendMessage([Types.Messages.HELLO,
-                              player.name]);
+                              playerName]);
         },
 
         sendResurrect: function() {
