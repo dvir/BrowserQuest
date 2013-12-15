@@ -6,6 +6,10 @@ define(['entity'], function(Entity) {
     	    this._super(id, kind);
         },
 
+        get name() {
+            return null;
+        },
+
         get spellEffectKind() {
             return Types.getKindAsString(this.kind);
         },
