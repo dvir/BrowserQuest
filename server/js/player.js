@@ -460,7 +460,7 @@ module.exports = Player = Character.extend({
 
         var diff = xp - this.xp;
 
-        if (xp > this.maxXP) {
+        if (xp >= this.maxXP) {
             // level up!
             this.data.xp = xp - this.maxXP;
             this.levelUp();
