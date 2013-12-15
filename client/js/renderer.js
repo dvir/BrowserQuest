@@ -595,7 +595,16 @@ define(['camera',
 
                    this.context.save();
                    if (name) {
-                       var color = (entity.id === this.game.playerId) ? "#fcda5c" : "white";
+                       var color = "white";
+                       if (entity.id === this.game.player.id) {
+                           color = "#fcda5c";
+                       } else if (this.game.player.target
+                               && entity.id === this.game.player.target.id) {
+                           color = "#40f022"; 
+                       } else if (this.game.player.isHostile(entity)) {
+                           color = "#f03a51"; 
+                       }
+
                        this.drawText(name,
                                      (entity.x + 8) * this.scale,
                                      (entity.y + entity.nameOffsetY) * this.scale,
