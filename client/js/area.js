@@ -10,14 +10,11 @@ define(function() {
         },
     
         contains: function(entity) {
-            if(entity) {
-                return entity.gridX >= this.x
-                    && entity.gridY >= this.y
-                    && entity.gridX < this.x + this.width
-                    && entity.gridY < this.y + this.height;
-            } else {
-                return false;
-            }
+            return entity  
+                   && entity.gridX >= this.x
+                   && entity.gridY >= this.y
+                   && entity.gridX < this.x + this.width
+                   && entity.gridY < this.y + this.height;
         }
     });
     
