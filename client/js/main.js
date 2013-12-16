@@ -287,6 +287,13 @@ define(['jquery', 'app'], function($, App) {
                 {
                     var knownKeybinding = true;
                     switch(key) {
+                        case Types.Keys.ESC:
+                            game.player.target = null;
+                            app.hideWindows();
+                            _.each(game.player.attackers, function(attacker) {
+                                attacker.stop();
+                            });
+                            break;
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
                             game.player.moveLeft = true;
@@ -333,6 +340,15 @@ define(['jquery', 'app'], function($, App) {
                             break;
                         case Types.Keys.Y:
                             game.activateTownPortal();
+                            break;
+                        case Types.Keys.F:
+                            game.player.skillbar.reset();
+                            game.player.skillbar.add(Types.Entities.FROSTNOVA);
+                            game.player.skillbar.add(Types.Entities.FROSTBOLT);
+                            game.player.skillbar.add(Types.Entities.FIREBALL);
+            
+                            game.toggleDebugInfo();
+                            game.togglePathingGrid();
                             break;
                         default:
                             if (game.player && game.player.skillbar.click(key, game.player.target)) {
@@ -393,47 +409,6 @@ define(['jquery', 'app'], function($, App) {
             
             $('#mutebutton').click(function() {
                 game.audioManager.toggle();
-            });
-            
-            $(document).bind("keydown", function(e) {
-            	var key = e.which,
-            	    $chat = $('#chatinput');
-
-                if($('#chatinput:focus').size() == 0 && $('#nameinput:focus').size() == 0) {
-                    if(key === 13) { // Enter
-                        if(game.ready) {
-                            $chat.focus();
-                            return false;
-                        }
-                    }
-                    if(key === 70) { // F
-            game.player.skillbar.reset();
-            game.player.skillbar.add(Types.Entities.FROSTNOVA);
-            game.player.skillbar.add(Types.Entities.FROSTBOLT);
-            game.player.skillbar.add(Types.Entities.FIREBALL);
-            
-                        game.toggleDebugInfo();
-                        game.togglePathingGrid();
-                        return false;
-                    }
-                    if(key === 27) { // ESC
-                        game.player.target = null;
-                        app.hideWindows();
-                        _.each(game.player.attackers, function(attacker) {
-                            attacker.stop();
-                        });
-                        return false;
-                    }
-                    if(key === 65) { // a
-                        // game.player.hit();
-                        return false;
-                    }
-                } else {
-                    if(key === 13 && game.ready) {
-                        $chat.focus();
-                        return false;
-                    }
-                }
             });
             
             if(game.renderer.tablet) {

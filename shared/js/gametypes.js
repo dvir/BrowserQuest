@@ -128,6 +128,7 @@ Types = {
 
     Keys: {
         ENTER: 13,
+        ESC: 27,
         UP: 38,
         DOWN: 40,
         LEFT: 37,
@@ -138,6 +139,7 @@ Types = {
         D: 68,
         TAB: 9,
         SPACE: 32,
+        F: 70,
         H: 72,
         I: 73,
         K: 75,
