@@ -285,6 +285,7 @@ define(['jquery', 'app'], function($, App) {
                 }
                 if (game.started && !$('#chatbox').hasClass('active'))
                 {
+                    var knownKeybinding = true;
                     switch(key) {
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
@@ -303,7 +304,11 @@ define(['jquery', 'app'], function($, App) {
                             game.player.moveDown = true;
                             break;
                         case Types.Keys.TAB:
-                            game.makePlayerTargetNearestEnemy();
+                            if (e.shiftKey) {
+                                game.player.target = game.player;
+                            } else {
+                                game.makePlayerTargetNearestEnemy();
+                            }
                             break;
                         case Types.Keys.SPACE:
                             game.makePlayerAttackNext();
@@ -330,10 +335,17 @@ define(['jquery', 'app'], function($, App) {
                             game.activateTownPortal();
                             break;
                         default:
-                            if (game.player && !game.player.skillbar.click(key, game.player.target)) {
-                                // not even a skillbar action
+                            if (game.player && game.player.skillbar.click(key, game.player.target)) {
+                                // was a skillbar action
+                            } else {
+                                knownKeybinding = false;
                             }
                             break;
+                    }
+
+                    if (knownKeybinding) {
+                        e.preventDefault();
+                        return false;
                     }
                 }
             });
