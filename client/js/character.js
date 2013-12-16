@@ -93,7 +93,7 @@ define(['entity',
         set target(target) {
             this._target = target;
             this.trigger("TargetChange");
-            this.trigger("change");
+            //this.trigger("change");
         },
 
         get hp() {
@@ -443,6 +443,7 @@ define(['entity',
             }
             else if(this.followingMode) {
                 this.followingMode = false;
+                console.log("just unset followingmode");
                 this.target = null;
             }
             this.moveTo_(x, y);
