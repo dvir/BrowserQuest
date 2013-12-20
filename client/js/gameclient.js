@@ -471,7 +471,7 @@ define(['player',
             globalGame.assignBubbleTo(entity);
             globalGame.audioManager.playSound("chat");
 
-            this.chat.push({entity: entity, text: message, channel: channel});
+            this.chat.push({entity: entity, name: entity.name, text: message, channel: channel});
         },
     
         receiveEquipItem: function(data) {

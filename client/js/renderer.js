@@ -680,7 +680,7 @@ define(['camera',
                        if (message.channel == "global") {
                             color = "orange"; 
                        }
-                       this.drawText("["+time+"] "+message.entity.name+": "+message.text, 10, -110 + (i * line_height), false, color);
+                       this.drawText("["+time+"] ["+message.name+"]: "+message.text, 10, -110 + (i * line_height), false, color);
                    }
                },
 
