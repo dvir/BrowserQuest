@@ -1663,10 +1663,10 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 var command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
                 var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
 
-                if (command == "global") {
+                if (command == "global" || command == "g") {
                    this.client.setChatChannel("global");
                    this.client.sendChat(rest);
-                } else if (command == "say") {
+                } else if (command == "say" || command == "s") {
                    this.client.setChatChannel("say");
                    this.client.sendChat(rest);
                 } else {
