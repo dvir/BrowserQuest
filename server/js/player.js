@@ -333,6 +333,10 @@ module.exports = Player = Character.extend({
         
         return basestate.concat(state);
     },
+
+    getBasicState: function() {
+        return {id: this.id, kind: this.kind, name: this.name};
+    },
     
     send: function(message) {
         log.debug("Sent ("+this.connection.id+"): "+message);

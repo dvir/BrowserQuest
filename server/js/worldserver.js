@@ -77,6 +77,9 @@ module.exports = World = cls.Class.extend({
         
         this.onPlayerEnter(function(player) {
             log.info(player.name + " has joined "+ self.id);
+
+            self.pushToPlayer(player, new Messages.Players(this.players));
+            self.pushBroadcast(new Messages.PlayerEnter(player), player);
             
             self.incrementPlayerCount();
             self.pushRelevantEntityListTo(player);
@@ -121,6 +124,8 @@ module.exports = World = cls.Class.extend({
     
             player.onExit(function() {
                 log.info(player.name + " has left the game.");
+
+                self.pushBroadcast(new Messages.PlayerExit(player), player);
 
                 self.removePlayer(player);
                 self.decrementPlayerCount();

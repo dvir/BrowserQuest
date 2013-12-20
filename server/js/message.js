@@ -272,3 +272,36 @@ Messages.Inventory = Message.extend({
                     this.inventory.serialize()];
     }
 });
+
+Messages.PlayerEnter = Message.extend({
+    init: function(player) {
+        this.player = player;
+    },
+    serialize: function() {
+        return [Types.Messages.PLAYER_ENTER, this.player.getBasicState()];
+    }
+});
+
+Messages.PlayerExit = Message.extend({
+    init: function(player) {
+        this.playerID = player.id;
+    },
+    serialize: function() {
+        return [Types.Messages.PLAYER_EXIT,
+                this.playerID];
+    }
+});
+
+Messages.Players = Message.extend({
+    init: function(players) {
+        this.players = players;
+    },
+    serialize: function() {
+        var playersData = [];
+        for (var i in this.players) {
+            playersData.push(this.players[i].getBasicState());       
+        }
+        return [Types.Messages.PLAYERS,
+                playersData];
+    }
+});

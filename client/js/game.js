@@ -27,6 +27,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             this.playerName = null;
 
             // Game state
+            this.players = {};
             this.entities = {};
             this.deathpositions = {};
             this.entityGrid = null;
@@ -79,6 +80,18 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
     		this.setBubbleManager(new BubbleManager($bubbleContainer));
     		this.setRenderer(new Renderer(this, canvas, background, foreground));
     		this.setChatInput(input);
+        },
+
+        addPlayer: function(player) {
+            this.players[player.id] = player;
+        },
+
+        removePlayer: function(playerID) {
+            delete this.players[playerID];
+        },
+
+        getPlayer: function(playerID) {
+            return this.players[playerID];
         },
 
         updateInventory: function() {

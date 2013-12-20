@@ -40,6 +40,9 @@ Types = {
         SKILLBAR: 36,
         THROWITEM: 37,
         RESURRECT: 38,
+        PLAYER_ENTER: 39,
+        PLAYER_EXIT: 40,
+        PLAYERS: 41,
 
         PLACEHOLDER: 10000
     },

@@ -52,6 +52,9 @@ define(['player',
             this.handlers[Types.Messages.DATA] = this.receiveData;
             this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
             this.handlers[Types.Messages.LOOT] = this.receiveLoot;
+            this.handlers[Types.Messages.PLAYER_ENTER] = this.receivePlayerEnter;
+            this.handlers[Types.Messages.PLAYER_EXIT] = this.receivePlayerExit;
+            this.handlers[Types.Messages.PLAYERS] = this.receivePlayers;
 
             this.chat = new Chat();
             
@@ -308,6 +311,34 @@ define(['player',
             }
         },
 
+        receivePlayers: function(data) {
+            var playersData = data[1];
+            for (var i in playersData) {
+                this.handlePlayerEnter(playersData[i]);
+            }
+        },
+
+        receivePlayerEnter: function(data) {
+            this.handlePlayerEnter(data[1]);
+        },
+
+        handlePlayerEnter: function(data) {
+            var player = globalGame.getPlayer(data.id);
+            if (player) {
+                // already exists - skip it
+                return;
+            }
+
+            player = EntityFactory.createEntity(data.kind, data.id, data.name);
+            globalGame.addPlayer(player);
+        },
+
+        receivePlayerExit: function(data) {
+            var id = data[1];
+
+            globalGame.removePlayer(id);
+        },
+
         receiveSpawn: function(data) {
             var id = data[1],
                 kind = data[2],
@@ -341,15 +372,18 @@ define(['player',
                 orientation = data[7];
                 targetId = data[8];
 
+                var character;
                 if (Types.isPlayer(kind)) {
                     name = data[9];
                     armor = data[10];
                     weapon = data[11];
-                } else if(Types.isMob(kind)) {
 
+                    // get existing player entity
+                    character = globalGame.getPlayer(id); 
+                } else {
+                    character = EntityFactory.createEntity(kind, id, name);
                 }
 
-                var character = EntityFactory.createEntity(kind, id, name);
                 character.hp = hp;
                 character.maxHP = maxHP;
             
