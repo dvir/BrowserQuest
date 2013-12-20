@@ -1,6 +1,7 @@
 
 define(['player', 
        'character',
+       'chat',
        'spelleffect',
        'mob',
        'item',
@@ -9,6 +10,7 @@ define(['player',
        'lib/bison'], function(
            Player, 
            Character,
+           Chat,
            SpellEffect,
            Mob,
            Item,
@@ -50,9 +52,15 @@ define(['player',
             this.handlers[Types.Messages.DATA] = this.receiveData;
             this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
             this.handlers[Types.Messages.LOOT] = this.receiveLoot;
+
+            this.chat = new Chat();
             
             this.useBison = false;
             this.enable();
+        },
+
+        setChatChannel: function(channel) {
+            this.chat.setChannel(channel);
         },
     
         enable: function() {
@@ -455,12 +463,15 @@ define(['player',
     
         receiveChat: function(data) {
             var entityId = data[1],
-                message = data[2];
+                message = data[2],
+                channel = data[3];
         
             var entity = globalGame.getEntityById(entityId);
             globalGame.createBubble(entityId, message);
             globalGame.assignBubbleTo(entity);
             globalGame.audioManager.playSound("chat");
+
+            this.chat.push({entity: entity, text: message, channel: channel});
         },
     
         receiveEquipItem: function(data) {
@@ -801,9 +812,13 @@ define(['player',
                               mob.id]);
         },
     
-        sendChat: function(text) {
+        sendChat: function(text, channel) {
+            if (!channel) {
+                channel = this.chat.getChannel();
+            }
             this.sendMessage([Types.Messages.CHAT,
-                              text]);
+                              text,
+                              channel]);
         },
     
         sendLoot: function(item) {

@@ -119,14 +119,16 @@ Messages.Drop = Message.extend({
 });
 
 Messages.Chat = Message.extend({
-    init: function(player, message) {
+    init: function(player, message, channel) {
         this.playerId = player.id;
         this.message = message;
+        this.channel = channel;
     },
     serialize: function() {
         return [Types.Messages.CHAT,
                 this.playerId,
-                this.message];
+                this.message,
+                this.channel];
     }
 });
 

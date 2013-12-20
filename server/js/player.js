@@ -113,11 +113,16 @@ module.exports = Player = Character.extend({
             }
             else if(action === Types.Messages.CHAT) {
                 var msg = Utils.sanitize(message[1]);
+                var channel = message[2];
                 
                 // Sanitized messages may become empty. No need to broadcast empty chat messages.
                 if(msg && msg !== "") {
-                    msg = msg.substr(0, 60); // Enforce maxlength of chat input
-                    self.broadcastToZone(new Messages.Chat(self, msg), false);
+                    msg = msg.substr(0, 200); // Enforce maxlength of chat input
+                    if (channel == "global") {
+                        self.broadcast(new Messages.Chat(self, msg, channel), false);
+                    } else {
+                        self.broadcastToZone(new Messages.Chat(self, msg, channel), false);
+                    }
                 }
             }
             else if(action === Types.Messages.MOVE) {

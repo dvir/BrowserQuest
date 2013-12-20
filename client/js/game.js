@@ -1657,6 +1657,26 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         },
     
         say: function(message) {
+            if (message.indexOf("/") === 0) {
+                // command given
+                var firstSpaceIndex = message.indexOf(" "); 
+                var command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
+                var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
+
+                if (command == "global") {
+                   this.client.setChatChannel("global");
+                   this.client.sendChat(rest);
+                } else if (command == "say") {
+                   this.client.setChatChannel("say");
+                   this.client.sendChat(rest);
+                } else {
+                   console.log("Unknown command '%s' given with args '%s'.", command, rest); 
+                }
+
+                return;
+            }
+
+            // no command given - this is a message to the default chat channel
             this.client.sendChat(message);
         },
     

@@ -668,6 +668,22 @@ define(['camera',
                    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                },
 
+               drawChat: function() {
+                   var messages = this.game.client.chat.getMessages();
+                   var line_height = 22;
+                   for (var i in messages) {
+                       var message = messages[i];
+                       var date = new Date(message.time);
+                       var time = ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2);
+                       var channel = message.channel;
+                       var color = "white";
+                       if (message.channel == "global") {
+                            color = "orange"; 
+                       }
+                       this.drawText("["+time+"] "+message.entity.name+": "+message.text, 10, -110 + (i * line_height), false, color);
+                   }
+               },
+
                drawFPS: function() {
                    var nowTime = new Date(),
                    diffTime = nowTime.getTime() - this.lastTime.getTime();
@@ -806,6 +822,7 @@ define(['camera',
                    this.drawMapInfo();
                    this.drawCursor();
                    this.drawDebugInfo();
+                   this.drawChat();
                },
 
                renderFrameMobile: function() {
