@@ -276,17 +276,17 @@ define(['jquery', 'app'], function($, App) {
             	var key = e.which,
                     $chat = $('#chatinput');
 
-                if(key === Types.Keys.ENTER) {
-                    if($('#chatbox').hasClass('active')) {
-                        app.hideChat();
-                    } else {
-                        app.showChat();
-                    }
-                }
-                if (game.started && !$('#chatbox').hasClass('active'))
-                {
+                if (game.started && !$('#chatbox').hasClass('active')) {
                     var knownKeybinding = true;
                     switch(key) {
+                        case Types.Keys.ENTER:
+                            app.showChat();
+                            break;
+
+                        case Types.Keys.SLASH:
+                            app.showChat("/");
+                            break;
+
                         case Types.Keys.ESC:
                             game.player.target = null;
                             app.hideWindows();
@@ -294,22 +294,27 @@ define(['jquery', 'app'], function($, App) {
                                 attacker.stop();
                             });
                             break;
+
                         case Types.Keys.LEFT:
                         case Types.Keys.A:
                             game.player.moveLeft = true;
                             break;
+
                         case Types.Keys.RIGHT:
                         case Types.Keys.D:
                             game.player.moveRight = true;
                             break;
+
                         case Types.Keys.UP:
                         case Types.Keys.W:
                             game.player.moveUp = true;
                             break;
+
                         case Types.Keys.DOWN:
                         case Types.Keys.S:
                             game.player.moveDown = true;
                             break;
+
                         case Types.Keys.TAB:
                             if (e.shiftKey) {
                                 game.player.target = game.player;
@@ -317,30 +322,39 @@ define(['jquery', 'app'], function($, App) {
                                 game.makePlayerTargetNearestEnemy();
                             }
                             break;
+
                         case Types.Keys.SPACE:
                             game.makePlayerAttackNext();
                             break;
+
                         case Types.Keys.I:
                             $('#inventorybutton').click();
                             break;
+
                         case Types.Keys.K:
                             $('#achievementsbutton').click();
                             break;
+
                         case Types.Keys.H:
                             $('#helpbutton').click();
                             break;
+
                         case Types.Keys.M:
                             $('#mutebutton').click();
                             break;
+
                         case Types.Keys.P:
                             $('#playercount').click();
                             break;
+
                         case Types.Keys.T:
                             game.makePlayerAttackTarget();
                             break;
+
                         case Types.Keys.Y:
                             game.activateTownPortal();
                             break;
+
                         case Types.Keys.F:
                             game.player.skillbar.reset();
                             game.player.skillbar.add(Types.Entities.FROSTNOVA);
@@ -350,6 +364,7 @@ define(['jquery', 'app'], function($, App) {
                             game.toggleDebugInfo();
                             game.togglePathingGrid();
                             break;
+
                         default:
                             if (game.player && game.player.skillbar.click(key, game.player.target)) {
                                 // was a skillbar action

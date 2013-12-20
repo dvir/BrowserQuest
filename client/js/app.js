@@ -222,10 +222,10 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
             }, 1000);
         },
 
-        showChat: function() {
+        showChat: function(initial_text) {
             if(this.game.started) {
                 $('#chatbox').addClass('active');
-                $('#chatinput').focus();
+                $('#chatinput').val(initial_text || "").focus();
                 $('#chatbutton').addClass('active');
             }
         },
