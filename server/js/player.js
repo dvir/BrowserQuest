@@ -530,7 +530,7 @@ module.exports = Player = Character.extend({
         var newItem = this.inventory.add(item);
         if (newItem) {
             log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
-            this.server.pushToPlayer(this, this.loot(item));
+            this.server.pushToPlayer(this, this.loot(newItem));
             this.broadcast(item.despawn());
             this.server.removeEntity(item);
 

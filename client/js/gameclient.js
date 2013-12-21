@@ -264,8 +264,11 @@ define(['player',
         receiveLoot: function(data) {
             var itemId = data[1];
         
-            var item = globalGame.getEntityById(itemId);
-            if (!item) return;
+            var item = globalGame.player.inventory.find(itemId);
+            if (!item) {
+              console.log("Loot was picked up but couldn't be found in inventory. (%s)", itemId);
+              return;
+            }
 
             try {
                 globalGame.player.loot(item);

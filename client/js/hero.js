@@ -239,22 +239,22 @@ define(['character',
         },
 
         lootedArmor: function(item) {
-            // make sure that we aren't weilding the same armor already,
-            // and that it's better than what we already have
-            if(item.kind !== this.armor && 
-               Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) 
-            {
-                this.switchArmor(item);
+            // make sure that it's better than what we already have, and if so - equip it
+            if (Types.getArmorRank(item.kind) > Types.getArmorRank(this.armor)) {
+              item.use();
+
+              // we are optimistically equipping the item before-hand.
+              this.switchArmor(item);
             }
         },
     
         lootedWeapon: function(item) {
-            // make sure that we aren't weilding the same weapon already,
-            // and that it's better than what we already have
-            if(item.kind !== this.weapon && 
-               Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)) 
-            {
-                this.switchWeapon(item);
+            // make sure that it's better than what we already have, and if so - equip it
+            if (Types.getWeaponRank(item.kind) > Types.getWeaponRank(this.weapon)) {
+              item.use();
+
+              // we are optimistically equipping the item before-hand.
+              this.switchWeapon(item);
             }
         },
     
