@@ -1,23 +1,22 @@
+define(['entity'], function (Entity) {
 
-define(['entity'], function(Entity) {
+  var SpellEffect = Entity.extend({
+    init: function (id, kind) {
+      this._super(id, kind);
+    },
 
-    var SpellEffect = Entity.extend({
-        init: function(id, kind) {
-    	    this._super(id, kind);
-        },
+    get name() {
+      return null;
+    },
 
-        get name() {
-            return null;
-        },
+    get spellEffectKind() {
+      return Types.getKindAsString(this.kind);
+    },
 
-        get spellEffectKind() {
-            return Types.getKindAsString(this.kind);
-        },
+    getSpriteName: function () {
+      return "spell-" + this.spellEffectKind;
+    }
+  });
 
-        getSpriteName: function() {
-            return "spell-"+ this.spellEffectKind;
-        }
-    });
-    
-    return SpellEffect;
+  return SpellEffect;
 });

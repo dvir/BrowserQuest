@@ -1,234 +1,233 @@
+define(['character',
+  'mob',
+  'exceptions',
+  'inventory',
+  'skillbar',
+  'chest',
+  'npc'
+], function (
+  Character,
+  Mob,
+  Exceptions,
+  Inventory,
+  Skillbar,
+  Chest,
+  Npc) {
 
-define(['character', 
-        'mob',
-        'exceptions', 
-        'inventory', 
-        'skillbar',
-        'chest',
-        'npc'], function(
-        Character,
-        Mob,
-        Exceptions, 
-        Inventory, 
-        Skillbar, 
-        Chest,
-        Npc) {
+  var Player = Character.extend({
+    data: {
+      // xp
+      xp: 0,
+      maxXP: 0,
+    },
 
-    var Player = Character.extend({
-        data: {
-            // xp
-            xp: 0,
-            maxXP: 0,
-        },
-    
-        init: function(id, name, kind) {
-            this._super(id, kind);
+    init: function (id, name, kind) {
+      this._super(id, kind);
 
-            this._xp = 0;
-            this._maxXP = 0;
+      this._xp = 0;
+      this._maxXP = 0;
 
-            this.name = name; 
-            this.party = null;
+      this.name = name;
+      this.party = null;
 
-            this.reset();
-        },
+      this.reset();
+    },
 
-        reset: function() {
-            this._super();
+    reset: function () {
+      this._super();
 
-            // modes
-            this.isLootMoving = false;
-            this.isSwitchingWeapon = true;
-        },
+      // modes
+      this.isLootMoving = false;
+      this.isSwitchingWeapon = true;
+    },
 
-        isHostile: function(entity) {
-            return (entity instanceof Mob) || ((entity instanceof Player) && this.id != entity.id);
-        },
+    isHostile: function (entity) {
+      return (entity instanceof Mob) || ((entity instanceof Player) && this.id != entity.id);
+    },
 
-        requestPathfindingTo: function(x, y) {
-            var ignored = [this]; // Always ignore self
-        
-            if (this.hasTarget()) {
-                ignored.push(this.target);
-            }
-            return globalGame.findPath(this, x, y, ignored);
-        },
+    requestPathfindingTo: function (x, y) {
+      var ignored = [this]; // Always ignore self
 
-        get areaName() {
-            return "n/a";
-        },
-        
-        loot: function(item) {
-            log.info('Player '+this.id+' has looted '+item.id);
-            item.onLoot(this);
-        },
+      if (this.hasTarget()) {
+        ignored.push(this.target);
+      }
+      return globalGame.findPath(this, x, y, ignored);
+    },
 
-        /**
-         * Returns true if the character is currently walking towards an item in order to loot it.
-         */
-        isMovingToLoot: function() {
-            return this.isLootMoving;
-        },
-    
-        getSpriteName: function() {
-            return this.spriteName;
-        },
-    
-        get skin() {
-            if (this.isDying) {
-                return Types.Entities.DEATH;
-            }
+    get areaName() {
+      return "n/a";
+    },
 
-            if (this.invincible) {
-                return Types.Entities.FIREFOX;
-            }
+    loot: function (item) {
+      log.info('Player ' + this.id + ' has looted ' + item.id);
+      item.onLoot(this);
+    },
 
-            if (!this.armor) {
-                return this.kind;
-            }
+    /**
+     * Returns true if the character is currently walking towards an item in order to loot it.
+     */
+    isMovingToLoot: function () {
+      return this.isLootMoving;
+    },
 
-            return this.armor;
-        },
-   
-        get xp() {
-            return this._xp;
-        },
+    getSpriteName: function () {
+      return this.spriteName;
+    },
 
-        set xp(xp) {
-            this._xp = xp;
-            this.trigger("XPChange");
-        },
+    get skin() {
+      if (this.isDying) {
+        return Types.Entities.DEATH;
+      }
 
-        get maxXP() {
-            return this._maxXP;
-        },
+      if (this.invincible) {
+        return Types.Entities.FIREFOX;
+      }
 
-        set maxXP(maxXP) {
-            this._maxXP = maxXP;
-            this.trigger("XPChange");
-        },
+      if (!this.armor) {
+        return this.kind;
+      }
 
-        getWeaponName: function() {
-            return this.weaponName;
-        },
-    
-        setWeaponName: function(name) {
-            this.weaponName = name;
-        },
-    
-        hasWeapon: function() {
-            return this.weaponName !== null;
-        },
-    
-        switchWeapon: function(item) {
-            var count = 14, 
-                value = false, 
-                self = this;
-        
-            var toggle = function() {
-                value = !value;
-                return value;
-            };
-        
-            if(this.isSwitchingWeapon) {
-                clearInterval(blanking);
-            }
-        
-            this.switchingWeapon = true;
-            var blanking = setInterval(function() {
-                if(toggle()) {
-                    self.weapon = item.kind;
-                } else {
-                    self.weapon = null;
-                }
+      return this.armor;
+    },
 
-                count -= 1;
-                if(count === 1) {
-                    clearInterval(blanking);
-                    self.switchingWeapon = false;
-                
-                    self.changedEquipment();
-                }
-            }, 90);
-        },
-    
-        switchArmor: function(item) {
-            var count = 14, 
-                value = false, 
-                self = this;
-        
-            var toggle = function() {
-                value = !value;
-                return value;
-            };
-        
-            if(this.isSwitchingArmor) {
-                clearInterval(blanking);
-            }
-        
-            this.isSwitchingArmor = true;
-            self.armor = item.kind;
-            var blanking = setInterval(function() {
-                self.setVisible(toggle());
+    get xp() {
+      return this._xp;
+    },
 
-                count -= 1;
-                if(count === 1) {
-                    clearInterval(blanking);
-                    self.isSwitchingArmor = false;
-               
-                    self.changedEquipment();
-                }
-            }, 90);
-        },
+    set xp(xp) {
+      this._xp = xp;
+      this.trigger("XPChange");
+    },
 
-        changedEquipment: function() {
-        },
-        
-        startInvincibility: function() {
-            var self = this;
-        
-            if (this.invincible) {
-                // If the player already has invincibility, just reset its duration.
-                if(this.invincibleTimeout) {
-                    clearTimeout(this.invincibleTimeout);
-                }
-            } else {
-                this.invincible = true;
-                //globalGame.playerInvincible(true);
-            }
-        
-            this.invincibleTimeout = setTimeout(function() {
-                //self.stopInvincibility();
-                self.idle();
-            }, 15000);
-        },
-    
-        stopInvincibility: function() {
-            //globalGame.playerInvincible(false);
-            this.invincible = false;
-        
-            if(this.invincibleTimeout) {
-                clearTimeout(this.invincibleTimeout);
-            }
-        },
+    get maxXP() {
+      return this._maxXP;
+    },
 
-        equip: function(itemKind) {
-            if(Types.isArmor(itemKind)) {
-                this.equipArmor(itemKind);
-            } else if(Types.isWeapon(itemKind)) {
-                this.equipWeapon(itemKind);
-            }
-        },
+    set maxXP(maxXP) {
+      this._maxXP = maxXP;
+      this.trigger("XPChange");
+    },
 
-        loadFromObject: function(data) {
-            // x and y in server are mapped to gridX and gridY on client
-            this.setGridPosition(data.x, data.y);
-            delete data.x;
-            delete data.y;
-        
-            $.extend(this, data);        
+    getWeaponName: function () {
+      return this.weaponName;
+    },
+
+    setWeaponName: function (name) {
+      this.weaponName = name;
+    },
+
+    hasWeapon: function () {
+      return this.weaponName !== null;
+    },
+
+    switchWeapon: function (item) {
+      var count = 14,
+        value = false,
+        self = this;
+
+      var toggle = function () {
+        value = !value;
+        return value;
+      };
+
+      if (this.isSwitchingWeapon) {
+        clearInterval(blanking);
+      }
+
+      this.switchingWeapon = true;
+      var blanking = setInterval(function () {
+        if (toggle()) {
+          self.weapon = item.kind;
+        } else {
+          self.weapon = null;
         }
-    });
 
-    return Player;
+        count -= 1;
+        if (count === 1) {
+          clearInterval(blanking);
+          self.switchingWeapon = false;
+
+          self.changedEquipment();
+        }
+      }, 90);
+    },
+
+    switchArmor: function (item) {
+      var count = 14,
+        value = false,
+        self = this;
+
+      var toggle = function () {
+        value = !value;
+        return value;
+      };
+
+      if (this.isSwitchingArmor) {
+        clearInterval(blanking);
+      }
+
+      this.isSwitchingArmor = true;
+      self.armor = item.kind;
+      var blanking = setInterval(function () {
+        self.setVisible(toggle());
+
+        count -= 1;
+        if (count === 1) {
+          clearInterval(blanking);
+          self.isSwitchingArmor = false;
+
+          self.changedEquipment();
+        }
+      }, 90);
+    },
+
+    changedEquipment: function () {},
+
+    startInvincibility: function () {
+      var self = this;
+
+      if (this.invincible) {
+        // If the player already has invincibility, just reset its duration.
+        if (this.invincibleTimeout) {
+          clearTimeout(this.invincibleTimeout);
+        }
+      } else {
+        this.invincible = true;
+        //globalGame.playerInvincible(true);
+      }
+
+      this.invincibleTimeout = setTimeout(function () {
+        //self.stopInvincibility();
+        self.idle();
+      }, 15000);
+    },
+
+    stopInvincibility: function () {
+      //globalGame.playerInvincible(false);
+      this.invincible = false;
+
+      if (this.invincibleTimeout) {
+        clearTimeout(this.invincibleTimeout);
+      }
+    },
+
+    equip: function (itemKind) {
+      if (Types.isArmor(itemKind)) {
+        this.equipArmor(itemKind);
+      } else if (Types.isWeapon(itemKind)) {
+        this.equipWeapon(itemKind);
+      }
+    },
+
+    loadFromObject: function (data) {
+      // x and y in server are mapped to gridX and gridY on client
+      this.setGridPosition(data.x, data.y);
+      delete data.x;
+      delete data.y;
+
+      $.extend(this, data);
+    }
+  });
+
+  return Player;
 });

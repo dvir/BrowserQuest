@@ -1,14 +1,13 @@
+define(function () {
 
-define(function() {
-    
-    var Exceptions = {
-        
-        LootException: Class.extend({
-            init: function(message) {
-                this.message = message;
-            }
-        })
-    };
-    
-    return Exceptions;
+  var Exceptions = {
+
+    LootException: Class.extend({
+      init: function (message) {
+        this.message = message;
+      }
+    })
+  };
+
+  return Exceptions;
 });

@@ -1,127 +1,126 @@
+define(['exceptions', 'inventoryitem', 'inventoryitemfactory'], function (Exceptions, InventoryItem, InventoryItemFactory) {
 
-define(['exceptions', 'inventoryitem', 'inventoryitemfactory'], function(Exceptions, InventoryItem, InventoryItemFactory) {
+  var Inventory = Class.extend({
+    init: function (data) {
+      var self = this;
 
-    var Inventory = Class.extend({ 
-        init: function(data) {
-            var self = this;
+      this._size = 12;
+      this._items = [];
 
-            this._size = 12;
-            this._items = [];
-            
-            if (data) {
-                this.loadFromObject(data);
-            }
-        },
+      if (data) {
+        this.loadFromObject(data);
+      }
+    },
 
-        get id() {
-            return this._id;
-        },
+    get id() {
+      return this._id;
+    },
 
-        get size() {
-            return this._size;
-        },
+    get size() {
+      return this._size;
+    },
 
-        add: function(item) {
-        
-        },
+    add: function (item) {
 
-        remove: function(idx) {
-            if (this._items[idx]) {
-                InventoryItemFactory.remove(this._items[idx].id);
-                this._items[idx] = null;
-            }
-        },
+    },
 
-        throwItem: function(idx) {
-            var item = this._items[idx];
-            if (item) {
-                this.remove(idx);
-                globalGame.client.sendThrowItem(item);
-            }
-        },
+    remove: function (idx) {
+      if (this._items[idx]) {
+        InventoryItemFactory.remove(this._items[idx].id);
+        this._items[idx] = null;
+      }
+    },
 
-        find: function(itemId) {
-            for (var i in this._items) {
-                var item = this._items[i];
-                if (item && item.id == itemId) {
-                    return item;
-                }
-            }
+    throwItem: function (idx) {
+      var item = this._items[idx];
+      if (item) {
+        this.remove(idx);
+        globalGame.client.sendThrowItem(item);
+      }
+    },
 
-            return null;
-        },
+    find: function (itemId) {
+      for (var i in this._items) {
+        var item = this._items[i];
+        if (item && item.id == itemId) {
+          return item;
+        }
+      }
 
-        swap: function(first, second) {
-           var temp = this._items[first];
-           this._items[first] = this._items[second];
-           this._items[second] = temp;
+      return null;
+    },
 
-           if (this._items[first]) {
-                this._items[first].slot = first;
-           }
-           if (this._items[second]) {
-                this._items[second].slot = second;
-           }
-           
-           globalGame.client.sendInventorySwap(first, second);
-        },
+    swap: function (first, second) {
+      var temp = this._items[first];
+      this._items[first] = this._items[second];
+      this._items[second] = temp;
 
-        toArray: function() {
-            return this._items;
-        },
+      if (this._items[first]) {
+        this._items[first].slot = first;
+      }
+      if (this._items[second]) {
+        this._items[second].slot = second;
+      }
 
-        loadFromObject: function(data) {
-            if ($.isEmptyObject(data)) {
-                return;
-            }
+      globalGame.client.sendInventorySwap(first, second);
+    },
 
-            this._size = data[0];
-            this.reset();
+    toArray: function () {
+      return this._items;
+    },
 
-            var ids = {};
-            var self = this;
-            $.each(data[1], function(id, item) {
-                if (item) {
-                    self._items[item.slot] = InventoryItemFactory.getCreate(item.id, item);
-                    ids[item.id] = true;
-                }
-            });
+    loadFromObject: function (data) {
+      if ($.isEmptyObject(data)) {
+        return;
+      }
 
-            for (var id in globalInventoryItems) {
-                if (!(id in ids)) {
-                    var inventoryItem = globalInventoryItems[id];
-                    inventoryItem.isDeleted = true;
-                    delete globalInventoryItems[id];
-                }
-            }
+      this._size = data[0];
+      this.reset();
 
-            this.update();
-        },
+      var ids = {};
+      var self = this;
+      $.each(data[1], function (id, item) {
+        if (item) {
+          self._items[item.slot] = InventoryItemFactory.getCreate(item.id, item);
+          ids[item.id] = true;
+        }
+      });
 
-        reset: function() {
-            this._items = [];
-            for (var i = 0; i < this.size; i++) {
-                this._items[i] = null;
-            }
-        },
+      for (var id in globalInventoryItems) {
+        if (!(id in ids)) {
+          var inventoryItem = globalInventoryItems[id];
+          inventoryItem.isDeleted = true;
+          delete globalInventoryItems[id];
+        }
+      }
 
-        serialize: function() {
-            var items = []; 
-            for (var i in this.items) {
-                if (!this.items[i]) {
-                    continue;
-                }
+      this.update();
+    },
 
-                items[i] = this.items[i].getData();
-            }
+    reset: function () {
+      this._items = [];
+      for (var i = 0; i < this.size; i++) {
+        this._items[i] = null;
+      }
+    },
 
-            return [this.size, items];
-        },
+    serialize: function () {
+      var items = [];
+      for (var i in this.items) {
+        if (!this.items[i]) {
+          continue;
+        }
 
-        update: function() {
-            globalGame.updateInventory();
-        },
-    });
+        items[i] = this.items[i].getData();
+      }
 
-    return Inventory;
+      return [this.size, items];
+    },
+
+    update: function () {
+      globalGame.updateInventory();
+    },
+  });
+
+  return Inventory;
 });
