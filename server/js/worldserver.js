@@ -558,9 +558,8 @@ module.exports = World = cls.Class.extend({
     
         entity.combat();
 
-        // @TODO: broadcast only to relevant groups
-        this.pushBroadcast(new Messages.Health(entity));
-        this.pushBroadcast(new Messages.Damage(entity, damage, attacker));
+        this.pushToAdjacentGroups(entity.group, new Messages.Health(entity));
+        this.pushToAdjacentGroups(entity.group, new Messages.Damage(entity, damage, attacker));
 
         // If the entity is about to die
         if(entity.hp <= 0) {
