@@ -27,8 +27,15 @@ define(['character',
             this._xp = 0;
             this._maxXP = 0;
 
-            this.name = name;
-        
+            this.name = name; 
+            this.party = null;
+
+            this.reset();
+        },
+
+        reset: function() {
+            this._super();
+
             // modes
             this.isLootMoving = false;
             this.isSwitchingWeapon = true;

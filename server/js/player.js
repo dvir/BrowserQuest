@@ -10,6 +10,7 @@ var cls = require("./lib/class"),
     Inventory = require("./inventory"),
     Skillbar = require("./skillbar"),
     Spellbook = require("./spellbook"),
+    Party = require("./party"),
     Types = require("../../shared/js/gametypes");
 
 module.exports = Player = Character.extend({
@@ -35,6 +36,7 @@ module.exports = Player = Character.extend({
         this.lastCheckpoint = null;
         this.formatChecker = new FormatChecker();
         this.disconnectTimeout = null;
+        this._invites = {};
 
         this.playerenter_callback = function(isResurrection){
             self.updatePosition(isResurrection);
@@ -117,10 +119,16 @@ module.exports = Player = Character.extend({
                 
                 // Sanitized messages may become empty. No need to broadcast empty chat messages.
                 if(msg && msg !== "") {
-                    msg = msg.substr(0, 200); // Enforce maxlength of chat input
+                    msg = msg.substr(0, 60); // Enforce maxlength of chat input
                     if (channel == "global") {
+                        self.server.pushBroadcast(new Messages.Chat(self, msg, channel));
+                    } else if (channel == "yell") {
                         self.broadcast(new Messages.Chat(self, msg, channel), false);
-                    } else {
+                    } else if (channel == "party") {
+                        if (self.party) {
+                            self.party.broadcast(new Messages.Chat(self, msg, channel).serialize());
+                        }
+                    } else if (channel == "say") {
                         self.broadcastToZone(new Messages.Chat(self, msg, channel), false);
                     }
                 }
@@ -293,6 +301,54 @@ module.exports = Player = Character.extend({
                     self.throwItem(item, target);
                 }
             }
+            else if(action === Types.Messages.PARTY_INVITE) {
+                var inviter = self.server.getPlayerByID(message[1]);
+                var invitee = self.server.getPlayerByID(message[2]);
+       
+                inviter.invite(invitee);
+            }
+            else if(action === Types.Messages.PARTY_KICK) {
+                var player = self.server.getPlayerByID(message[1]);
+       
+                self.kick(player);
+            }
+            else if(action === Types.Messages.PARTY_ACCEPT) {
+                var inviter = self.server.getPlayerByID(message[1]);
+       
+                if (!inviter.hasInvited(self)) {
+                    // no invitation pending for this player
+                    return;
+                }
+
+                if (inviter.party) {
+                    if (!inviter.party.isLeader(inviter)) {
+                        // the inviter is not the party leader and therefore 
+                        // cannot issue any invitation
+                        return;
+                    }
+
+                    inviter.party.join(self);
+                } else {
+                    new Party(inviter, self);
+                }
+
+                inviter.removeInvite(self);
+            }
+            else if(action === Types.Messages.PARTY_LEAVE) {
+                if (self.party) {
+                    self.party.leave(self);
+                }
+            }
+            else if(action === Types.Messages.PARTY_LEADER_CHANGE) {
+                var newLeader = self.server.getPlayerByID(message[1]);
+
+                if (newLeader != self 
+                    && self.party 
+                    && self.party.isLeader(self) 
+                    && self.party.isMember(newLeader)) {
+                   self.party.leader = newLeader; 
+                }
+            }
             else {
                 if(self.message_callback) {
                     self.message_callback(message);
@@ -311,6 +367,45 @@ module.exports = Player = Character.extend({
         });
         
         this.connection.sendUTF8("go"); // Notify client that the HELLO/WELCOME handshake can start
+    },
+
+    kick: function(player) {
+        if (this.party 
+            && this.party.isLeader(this) 
+            && this.party.isMember(player)) {
+            this.party.kick(player);
+        }
+    },
+
+    invite: function(invitee) {
+        if (!this.party 
+            || (!this.party.isFull() && this.party.isLeader(this))) {
+            // automatically remove the invite after 60 seconds
+            var inviteTimeout = setTimeout(function(){
+                this.removeInvite(invitee.id);
+            }.bind(this), 60);
+            this._invites[invitee.id] = {invitee: invitee, timeout: inviteTimeout};
+            invitee.send(new Messages.PartyInvite(this, invitee).serialize());
+        }
+    },
+
+    removeInvite: function(player) {
+        var invitation = this._invites[player.id];
+        if (invitation) {
+            clearTimeout(invitation.timeout);
+            delete this._invites[player.id];
+        }
+    },
+
+    resetInvites: function() {
+        for (var x in this._invites) {
+            clearTimeout(this._invites[x].timeout);
+            delete this._invites[x];
+        }
+    },
+
+    hasInvited: function(player) {
+        return (player.id in this._invites);
     },
     
     destroy: function() {

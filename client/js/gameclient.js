@@ -3,19 +3,23 @@ define(['player',
        'character',
        'chat',
        'spelleffect',
+       'party',
        'mob',
        'item',
        'chest',
        'entityfactory', 
+       'lib/sprintf.min',
        'lib/bison'], function(
            Player, 
            Character,
            Chat,
            SpellEffect,
+           Party,
            Mob,
            Item,
            Chest,
            EntityFactory, 
+           sprintflib,
            BISON) {
 
     var GameClient = Class.extend({
@@ -55,6 +59,12 @@ define(['player',
             this.handlers[Types.Messages.PLAYER_ENTER] = this.receivePlayerEnter;
             this.handlers[Types.Messages.PLAYER_EXIT] = this.receivePlayerExit;
             this.handlers[Types.Messages.PLAYERS] = this.receivePlayers;
+            this.handlers[Types.Messages.PARTY_JOIN] = this.receivePartyJoin;
+            this.handlers[Types.Messages.PARTY_LEAVE] = this.receivePartyLeave;
+            this.handlers[Types.Messages.PARTY_INITIAL_JOIN] = this.receivePartyInitialJoin;
+            this.handlers[Types.Messages.PARTY_INVITE] = this.receivePartyInvite;
+            this.handlers[Types.Messages.PARTY_KICK] = this.receivePartyKick;
+            this.handlers[Types.Messages.PARTY_LEADER_CHANGE] = this.receivePartyLeaderChange;
 
             this.chat = new Chat();
             
@@ -64,6 +74,14 @@ define(['player',
 
         setChatChannel: function(channel) {
             this.chat.setChannel(channel);
+        },
+
+        error: function() {
+            this.chat.insertError(sprintf.apply(null, arguments));
+        },
+
+        notice: function() {
+            this.chat.insertNotice(sprintf.apply(null, arguments));
         },
     
         enable: function() {
@@ -281,7 +299,72 @@ define(['player',
                 }
             }
         },
+
+        receivePartyJoin: function(data) {
+            var player = globalGame.getPlayerByID(data[1]);
+
+            globalGame.player.party.joined(player);
+        },
     
+        receivePartyInitialJoin: function(data) {
+            var leaderID = data[1];
+            var membersIDs = data[2];
+            
+            globalGame.player.party = new Party(leaderID, membersIDs);
+        },
+
+        receivePartyLeave: function(data) {
+            var player = globalGame.getPlayerByID(data[1]);
+
+            globalGame.player.party.left(player);
+        },
+    
+        receivePartyInvite: function(data) {
+            var inviter = globalGame.getPlayerByID(data[1]);
+            var invitee = globalGame.getPlayerByID(data[2]);
+
+            if (invitee == globalGame.player) {
+                if (globalGame.player.party) {
+                    // already in a party.
+                    this.notice(
+                        "You were invited to a party by %s, "
+                       +"but you are already in one. ('/leave' to leave it)",
+                       inviter.name
+                    );
+                    return;
+                }
+
+                this.notice(
+                    "You were invited to a party by %s. "
+                   +"'/accept %s' to join him.", 
+                   inviter.name,
+                   inviter.name
+                );
+                return;
+            }
+
+            // this is a message about the party leader inviting someone to the
+            // party.
+            this.notice(
+                "%s invited %s to join your party.", 
+                inviter.name, 
+                invitee.name
+            );
+        },
+    
+        receivePartyKick: function(data) {
+            var kicker = globalGame.getPlayerByID(data[1]);
+            var kicked = globalGame.getPlayerByID(data[2]);
+
+            globalGame.player.party.kicked(kicker, kicked);
+        },
+
+        receivePartyLeaderChange: function(data) {
+            var player = globalGame.getPlayerByID(data[1]);
+
+            globalGame.player.party.setLeader(player);
+        },
+
         receiveAttack: function(data) {
             var attackerId = data[1], 
                 targetId = data[2];
@@ -323,7 +406,7 @@ define(['player',
         },
 
         handlePlayerEnter: function(data) {
-            var player = globalGame.getPlayer(data.id);
+            var player = globalGame.getPlayerByID(data.id);
             if (player) {
                 // already exists - skip it
                 return;
@@ -379,7 +462,8 @@ define(['player',
                     weapon = data[11];
 
                     // get existing player entity
-                    character = globalGame.getPlayer(id); 
+                    character = globalGame.getPlayerByID(id); 
+                    character.reset();
                 } else {
                     character = EntityFactory.createEntity(kind, id, name);
                 }
@@ -496,16 +580,16 @@ define(['player',
         },
     
         receiveChat: function(data) {
-            var entityId = data[1],
+            var playerID = data[1],
                 message = data[2],
                 channel = data[3];
         
-            var entity = globalGame.getEntityById(entityId);
-            globalGame.createBubble(entityId, message);
-            globalGame.assignBubbleTo(entity);
+            var player = globalGame.getPlayerByID(playerID);
+            globalGame.createBubble(playerID, message);
+            globalGame.assignBubbleTo(player);
             globalGame.audioManager.playSound("chat");
 
-            this.chat.push({entity: entity, name: entity.name, text: message, channel: channel});
+            this.chat.insertMessage(player, player.name, message, channel);
         },
     
         receiveEquipItem: function(data) {
@@ -854,7 +938,31 @@ define(['player',
                               text,
                               channel]);
         },
+
+        sendPartyAccept: function(inviterId) {
+            this.sendMessage([Types.Messages.PARTY_ACCEPT,
+                              inviterId]);
+        },
     
+        sendPartyLeaderChange: function(playerID) {
+            this.sendMessage([Types.Messages.PARTY_LEADER_CHANGE,
+                              playerID]);
+        },
+    
+        sendPartyLeave: function() {
+            this.sendMessage([Types.Messages.PARTY_LEAVE]);
+        },
+    
+        sendPartyInvite: function(playerId) {
+            this.sendMessage([Types.Messages.PARTY_INVITE,
+                              globalGame.player.id,
+                              playerId]);
+        },
+
+        sendPartyKick: function(playerId) {
+            this.sendMessage([Types.Messages.PARTY_KICK,
+                              playerId]);
+        },
         sendLoot: function(item) {
             this.sendMessage([Types.Messages.LOOT,
                               item.id]);

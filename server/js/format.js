@@ -26,6 +26,13 @@ var _ = require('underscore'),
             this.formats[Types.Messages.USESPELL] = ['n', 'o', 'o', 'o'],
             this.formats[Types.Messages.SKILLBAR] = ['o'],
             this.formats[Types.Messages.THROWITEM] = [],
+            this.formats[Types.Messages.PARTY_JOIN] = ['n'],
+            this.formats[Types.Messages.PARTY_INITIAL_JOIN] = ['o'],
+            this.formats[Types.Messages.PARTY_LEAVE] = [],
+            this.formats[Types.Messages.PARTY_LEADER_CHANGE] = ['n'],
+            this.formats[Types.Messages.PARTY_INVITE] = ['n', 'n'],
+            this.formats[Types.Messages.PARTY_KICK] = ['n'],
+            this.formats[Types.Messages.PARTY_ACCEPT] = ['n'],
             this.formats[Types.Messages.RESURRECT] = []
         },
         

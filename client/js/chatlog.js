@@ -23,7 +23,6 @@ define([], function() {
         },
 
         push: function(message) {
-            message.time = new Date().getTime();
             this.messages[this.index] = message;
             this.index = (this.index + 1) % this.max_lines;
         },
@@ -43,5 +42,3 @@ define([], function() {
 
     return ChatLog;
 });
-
-

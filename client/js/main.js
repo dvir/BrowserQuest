@@ -176,7 +176,7 @@ define(['jquery', 'app'], function($, App) {
         	    input = document.getElementById("chatinput");
     		game = new Game(app);
             globalGame = game;
-    		game.setup('#bubbles', canvas, background, foreground, input);
+    		game.setup('#bubbles', canvas, background, foreground, $(input));
     		game.setStorage(app.storage);
     		app.setGame(game);
     		

@@ -43,6 +43,13 @@ Types = {
         PLAYER_ENTER: 39,
         PLAYER_EXIT: 40,
         PLAYERS: 41,
+        PARTY_JOIN: 42,
+        PARTY_INITIAL_JOIN: 43,
+        PARTY_LEAVE: 44,
+        PARTY_INVITE: 45,
+        PARTY_KICK: 46,
+        PARTY_LEADER_CHANGE: 47,
+        PARTY_ACCEPT: 48,
 
         PLACEHOLDER: 10000
     },

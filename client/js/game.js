@@ -79,7 +79,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         setup: function($bubbleContainer, canvas, background, foreground, input) {
     		this.setBubbleManager(new BubbleManager($bubbleContainer));
     		this.setRenderer(new Renderer(this, canvas, background, foreground));
-    		this.setChatInput(input);
+            this.setChatInput(input);
         },
 
         addPlayer: function(player) {
@@ -90,8 +90,24 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             delete this.players[playerID];
         },
 
-        getPlayer: function(playerID) {
+        getPlayerByID: function(playerID) {
             return this.players[playerID];
+        },
+
+        getPlayersByIDs: function(ids) {
+            return _.map(ids, function(id) {
+                return this.getPlayerByID(id);
+            }.bind(this));
+        },
+
+        getPlayerByName: function(name) {
+            for (var i in this.players) {
+                if (this.players[i].name == name) {
+                    return this.players[i];
+                }
+            }
+
+            return null;
         },
 
         updateInventory: function() {
@@ -779,11 +795,18 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             }
         },
 
+        getEntitiesByIDs: function(ids, noError) {
+            return _.map(ids, function(id) {
+                return this.getEntityById(id, noError);
+            }.bind(this));
+        },
+
         connect: function(started_callback) {
             var self = this,
                 connecting = false; // always in dispatcher mode in the build version
     
             this.client = new GameClient(this.host, this.port);
+            this.client.chat.setInput(this.chatinput);
             
             //>>excludeStart("prodHost", pragmas.prodHost);
             var config = this.app.config.local || this.app.config.dev;
@@ -837,7 +860,12 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
         
             this.client.onWelcome(function(data) {
                 // Player
-                self.player = new Hero("player", "");
+                if (self.player) {
+                    self.player.idle();
+                    self.player.removed = false;
+                } else {
+                    self.player = new Hero("player", "");
+                }
 
                 // make events from player to bubble to game
                 self.player.bubbleTo(self);
@@ -849,6 +877,8 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 self.player.isDying = false;
 
                 self.player.loadFromObject(data);
+
+                self.addPlayer(self.player);
 
                 log.info("Received player ID from server : "+ self.player.id);
                 
@@ -1675,6 +1705,7 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 var firstSpaceIndex = message.indexOf(" "); 
                 var command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
                 var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
+                var args = message.substring(1).split(" ");
 
                 if (command == "global" || command == "g") {
                    this.client.setChatChannel("global");
@@ -1682,8 +1713,95 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
                 } else if (command == "say" || command == "s") {
                    this.client.setChatChannel("say");
                    this.client.sendChat(rest);
+                } else if (command == "yell" || command == "y") {
+                   this.client.setChatChannel("yell");
+                   this.client.sendChat(rest);
+                } else if (command == "party" || command == "p") {
+                   if (!this.player.party) {
+                      this.client.error("You are not in a party.");
+                      return;
+                   }
+                   this.client.setChatChannel("party");
+                   this.client.sendChat(rest);
+                } else if (command == "invite") {
+                   var player = this.getPlayerByName(args[1]); 
+                   if (!player) {
+                       this.client.error("Unknown player '%s'.", args[1]);
+                       return;
+                   }
+
+                   if (player == this.player) {
+                        this.client.error("You cannot invite yourself to a party.");
+                        return;
+                   }
+
+                   if (this.player.party) {
+                        if (!this.player.party.isLeader(this.player)) {
+                            this.client.error("You must be the party leader to invite players.");
+                            return;
+                        }
+                        
+                        if (this.player.party.isFull()) {
+                            this.client.error("Your party is full. You cannot invite any one to it.");
+                            return;
+                        }
+                   }
+
+                   this.client.notice("Invited %s to your party.", player.name);
+                   this.client.sendPartyInvite(player.id);
+                } else if (command == "kick") {
+                   var player = this.getPlayerByName(args[1]); 
+                   if (!player) {
+                       this.client.error("Unknown player '%s'.", args[1]);
+                       return;
+                   }
+
+                   if (!this.player.party) {
+                      this.client.error("You are not in a party.");
+                      return
+                   }
+                   
+                   if (!this.player.party.isLeader(this.player)) {
+                       this.client.error("You must be the party leader to kick players.");
+                       return;
+                   }
+                        
+                   if (player == this.player) {
+                        this.client.error("You cannot kick yourself from a party.");
+                        return;
+                   }
+
+                   if (!this.player.party.isMember(player)) {
+                       this.client.error("%s is not a member of your party.");
+                       return;
+                   }
+
+                   this.client.sendPartyKick(player.id);
+                } else if (command == "accept") {
+                   var player = this.getPlayerByName(args[1]); 
+                   if (!player) {
+                       this.client.error("Unknown player '%s'.", args[1]);
+                       return;
+                   }
+
+                   this.client.sendPartyAccept(player.id);
+                } else if (command == "leave") {
+                   this.client.sendPartyLeave();
+                } else if (command == "leader") {
+                   var player = this.getPlayerByName(args[1]); 
+                   if (!player) {
+                       this.client.error("Unknown player '%s'.", args[1]);
+                       return;
+                   }
+
+                   if (!this.player.party.isLeader(this.player)) {
+                       this.client.error("Only the party leader can promote a new leader.");
+                       return;
+                   }
+                        
+                   this.client.sendPartyLeaderChange(player.id);
                 } else {
-                   console.log("Unknown command '%s' given with args '%s'.", command, rest); 
+                   this.client.error("Unknown command '%s' given.", command, rest); 
                 }
 
                 return;

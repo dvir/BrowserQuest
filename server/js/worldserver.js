@@ -123,8 +123,10 @@ module.exports = World = cls.Class.extend({
             });
     
             player.onExit(function() {
-                log.info(player.name + " has left the game.");
-
+                if (player.party) {
+                    player.party.leave(player);
+                }
+                
                 self.pushBroadcast(new Messages.PlayerExit(player), player);
 
                 self.removePlayer(player);
@@ -133,6 +135,8 @@ module.exports = World = cls.Class.extend({
                 if(self.removed_callback) {
                     self.removed_callback();
                 }
+
+                log.info(player.name + " has left the game.");
             });
             
             if(self.added_callback) {
@@ -378,6 +382,14 @@ module.exports = World = cls.Class.extend({
         this.removeEntity(player);
         delete this.players[player.id];
         delete this.outgoingQueues[player.id];
+    },
+
+    getPlayerByID: function(playerID) {
+        if (!(playerID in this.players)) {
+            return null;
+        }
+
+        return this.players[playerID];
     },
     
     addMob: function(mob) {

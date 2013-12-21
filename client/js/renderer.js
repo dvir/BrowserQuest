@@ -669,18 +669,44 @@ define(['camera',
                },
 
                drawChat: function() {
+                   // @TODO: move to a proper config
+                   var showTimestamp = false;
+                   var colors = {global: "orange", party: "cyan", say: "white", yell: "red", error: "#f2db2c", notice: "#f2db2c"};
+                   var channelNamePrefix = {global: "[General] ", party: "[Party] ", say: "", yell: "", error: "", notice: ""};
+                   var channelNamePostfix = {global: "", party: "", say: " says", yell: " yells", error: "", notice: ""};
                    var messages = this.game.client.chat.getMessages();
                    var line_height = 22;
+                   var start_offset = -110;
+
                    for (var i in messages) {
                        var message = messages[i];
-                       var date = new Date(message.time);
-                       var time = ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2);
-                       var channel = message.channel;
-                       var color = "white";
-                       if (message.channel == "global") {
-                            color = "orange"; 
+                       var timestamp = showTimestamp ? "["+message.getTimestamp()+"] " : "";
+                       var channel = message.getChannel();
+
+                       if (channel == "error" || channel == "notice") {
+                           this.drawText(timestamp + message.getText(), 10, start_offset + (i * line_height), false, colors[channel]);
+                       } else {
+                           this.drawText(timestamp + channelNamePrefix[channel] + "["+message.getName()+"]" + channelNamePostfix[channel] + ": "+message.getText(), 10, start_offset + (i * line_height), false, colors[channel]);
                        }
-                       this.drawText("["+time+"] ["+message.name+"]: "+message.text, 10, -110 + (i * line_height), false, color);
+                   }
+               },
+
+               drawParty: function() {
+                   var party = this.game.player.party;
+                   if (!party) {
+                        return;
+                   }
+
+                   var members = party.getMembers();
+                   var line_height = 22;
+                   var start_offset = 200;
+                   this.drawText("Party:", 10, start_offset, false);
+                   var i = 1;
+                   for (var x in members) {
+                       var member = members[x];
+                       var isLeader = party.getLeader() == member;
+                       this.drawText(i + ". " + (isLeader ? "\u2694 " : "") + member.name, 10, start_offset + (i * line_height), false);
+                       i++;
                    }
                },
 
@@ -823,6 +849,7 @@ define(['camera',
                    this.drawCursor();
                    this.drawDebugInfo();
                    this.drawChat();
+                   this.drawParty();
                },
 
                renderFrameMobile: function() {

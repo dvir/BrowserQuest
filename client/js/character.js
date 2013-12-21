@@ -30,6 +30,12 @@ define(['entity',
             this._weapon = null;
             this._armor = null;
 
+            this.reset();
+    	},
+
+        reset: function() {
+            this._super();
+
     		// Position and orientation
     		this.nextGridX = -1;
     		this.nextGridY = -1;
@@ -55,11 +61,14 @@ define(['entity',
        
             // Modes
             this.isDead = false;
+            this.isDying = false;
             this.attackingMode = false;
             this.followingMode = false;
-    	},
+        },
 	
     	clean: function() {
+            this._super();
+
     	    this.forEachAttacker(function(attacker) {
                 attacker.disengage();
                 attacker.idle();
@@ -187,7 +196,7 @@ define(['entity',
     	    var oriented = ['atk', 'walk', 'idle'];
     	        o = this.orientation;
             
-            if(!(this.currentAnimation && this.currentAnimation.name === "death")) { // don't change animation if the character is dying
+            if(!(this.currentAnimation && this.currentAnimation.name === "death" && this.isDying)) { // don't change animation if the character is dying
             	this.flipSpriteX = false;
         	    this.flipSpriteY = false;
 	    

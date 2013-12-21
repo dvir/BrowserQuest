@@ -305,3 +305,79 @@ Messages.Players = Message.extend({
                 playersData];
     }
 });
+
+Messages.PartyJoin = Message.extend({
+    init: function(entity) {
+        this.entity = entity;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_JOIN,
+                this.entity.id];
+    }
+});
+
+Messages.PartyInitialJoin = Message.extend({
+    init: function(party) {
+        this.leaderID = party.leader.id;
+        this.partyList = party.getMembersIDs();
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_INITIAL_JOIN,
+                this.leaderID,
+                this.partyList];
+    }
+});
+
+Messages.PartyLeave = Message.extend({
+    init: function(entity) {
+        this.entity = entity;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_LEAVE,
+                this.entity.id];
+    }
+});
+
+Messages.PartyLeaderChange = Message.extend({
+    init: function(entity) {
+        this.entity = entity;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_LEADER_CHANGE,
+                this.entity.id];
+    }
+});
+
+Messages.PartyInvite = Message.extend({
+    init: function(inviter, invitee) {
+        this.inviter = inviter.id;
+        this.invitee = invitee.id;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_INVITE,
+                this.inviter,
+                this.invitee];
+    }
+});
+
+Messages.PartyKick = Message.extend({
+    init: function(kicker, kicked) {
+        this.kicker = kicker.id;
+        this.kicked = kicked.id;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_KICK,
+                this.kicker,
+                this.kicked];
+    }
+});
+
+Messages.PartyAccept = Message.extend({
+    init: function(inviter) {
+        this.inviter = inviter.id;
+    },
+    serialize: function() {
+        return [Types.Messages.PARTY_ACCEPT,
+                this.inviterId];
+    }
+});

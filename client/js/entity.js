@@ -1,5 +1,5 @@
 
-define(function() {
+define(['lib/underscore.min'], function() {
 
     var Entity = Class.extend({
         data: {
@@ -32,9 +32,19 @@ define(function() {
             this.kind = kind;
 
             // Renderer
+    		this.animations = {};
+
+            // Modes
+            this.isLoaded = false;
+
+            this.reset();
+    	},
+    
+        reset: function() {
+            // Renderer
+            this.removed = false;
     		this.flipSpriteX = false;
         	this.flipSpriteY = false;
-    		this.animations = null;
     		this.currentAnimation = null;
             this.shadowOffsetY = 0;
 		
@@ -42,12 +52,11 @@ define(function() {
     		this.setGridPosition(0, 0);
 		
             // Modes
-            this.isLoaded = false;
             this.isHighlighted = false;
             this.visible = true;
             this.isFading = false;
             this.dirty();
-    	},
+        },
 
         get sprite() {
             return this._sprite;
@@ -134,7 +143,7 @@ define(function() {
             	this.hurtSprite = sprite.getHurtSprite();
             }
 
-    		this.animations = sprite.createAnimations();
+    		_.extend(this.animations, sprite.createAnimations());
 		
     		this.isLoaded = true;
     		if(this.ready_func) {
