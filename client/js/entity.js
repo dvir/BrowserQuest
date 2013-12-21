@@ -22,6 +22,10 @@ define(['lib/underscore.min'], function() {
 
             this.gridX = 0;
             this.gridY = 0;
+
+            // Position
+            this.setGridPosition(0, 0);
+		
 	   
             if (id) {
                 this.id = id;
@@ -47,9 +51,6 @@ define(['lib/underscore.min'], function() {
         	this.flipSpriteY = false;
     		this.currentAnimation = null;
             this.shadowOffsetY = 0;
-		
-    		// Position
-    		this.setGridPosition(0, 0);
 		
             // Modes
             this.isHighlighted = false;

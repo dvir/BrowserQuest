@@ -790,7 +790,13 @@ function(Spell, Skillbar, InfoManager, BubbleManager, Renderer, Map, Animation, 
             if(id in this.entities) {
                 return this.entities[id];
             }
-            else if (!noError) {
+
+            // check if it's a player entity, and if so, don't cry about it
+            if (id in this.players) {
+              return null;
+            }
+
+            if (!noError) {
                 log.error("Unknown entity id : " + id, true);
             }
         },

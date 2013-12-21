@@ -115,11 +115,31 @@ module.exports = World = cls.Class.extend({
             });
 
             player.onBroadcast(function(message, ignoreSelf) {
-                self.pushToAdjacentGroups(player.group, message, ignoreSelf ? player.id : null);
+              var ignore = {};
+              if (ignoreSelf) {
+                ignore[player.id] = true;
+              }
+
+              if (player.party) {
+                var targets = self.pushToPlayerParty(player, message, ignore);
+                _.extend(ignore, targets);
+              }
+
+              self.pushToAdjacentGroups(player.group, message, ignore);
             });
             
             player.onBroadcastToZone(function(message, ignoreSelf) {
-                self.pushToGroup(player.group, message, ignoreSelf ? player.id : null);
+              var ignore = {};
+              if (ignoreSelf) {
+                ignore[player.id] = true;
+              }
+
+              if (player.party) {
+                var targets = self.pushToPlayerParty(player, message, ignore);
+                _.extend(ignore, targets);
+              }
+
+              self.pushToGroup(player.group, message, ignore);
             });
     
             player.onExit(function() {
@@ -289,26 +309,58 @@ module.exports = World = cls.Class.extend({
             this.outgoingQueues[player.id].push(message.serialize());
         } 
     },
+
+    pushToPlayerParty: function(player, message, ignoredPlayersIDs) {
+      return this.pushToParty(player.party, message, ignoredPlayersIDs);
+    },
+
+    pushToParty: function(party, message, ignoredPlayersIDs) {
+      var targets = {};
+
+      _.each(party.getMembers(), function(player) {
+        if (player.id in ignoredPlayersIDs) {
+          return;
+        }
+
+        targets[player.id] = true;
+        this.pushToPlayer(player, message);
+      }.bind(this));
+
+      return targets;
+    },
     
-    pushToGroup: function(groupId, message, ignoredPlayer) {
+    pushToGroup: function(groupId, message, ignoredPlayersIDs) {
         var self = this,
             group = this.groups[groupId];
+
+        // if a non-object player given, assume it's a single id of a player
+        // to exclude from this message and construct a proper list from it.
+        if (!(ignoredPlayersIDs instanceof Object)) {
+          var playersIDs = {};
+          if (ignoredPlayersIDs) {
+            playersIDs[ignoredPlayersIDs] = true; 
+          }
+
+          ignoredPlayersIDs = playersIDs;
+        }
         
         if(group) {
             _.each(group.players, function(playerId) {
-                if(playerId != ignoredPlayer) {
-                    self.pushToPlayer(self.getEntityById(playerId), message);
+                if(playerId in ignoredPlayersIDs) {
+                  return;
                 }
+
+                self.pushToPlayer(self.getEntityById(playerId), message);
             });
         } else {
             log.error("groupId: "+groupId+" is not a valid group");
         }
     },
     
-    pushToAdjacentGroups: function(groupId, message, ignoredPlayer) {
+    pushToAdjacentGroups: function(groupId, message, ignoredPlayersIDs) {
         var self = this;
         self.map.forEachAdjacentGroup(groupId, function(id) {
-            self.pushToGroup(id, message, ignoredPlayer);
+            self.pushToGroup(id, message, ignoredPlayersIDs);
         });
     },
     
@@ -323,11 +375,22 @@ module.exports = World = cls.Class.extend({
         player.recentlyLeftGroups = [];
     },
     
-    pushBroadcast: function(message, ignoredPlayer) {
+    pushBroadcast: function(message, ignoredPlayersIDs) {
+        if (!(ignoredPlayersIDs instanceof Object)) {
+          var playersIDs = {};
+          if (ignoredPlayersIDs) {
+            playersIDs[ignoredPlayersIDs] = true; 
+          }
+
+          ignoredPlayersIDs = playersIDs;
+        }
+
         for (var id in this.outgoingQueues) {
-            if (id != ignoredPlayer) {
-                this.outgoingQueues[id].push(message.serialize());
+            if (id in ignoredPlayersIDs) {
+              continue;
             }
+
+            this.outgoingQueues[id].push(message.serialize());
         }
     },
     

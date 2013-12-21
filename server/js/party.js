@@ -112,6 +112,10 @@ module.exports = Party = Class.extend({
         return Object.keys(this._members);
     },
 
+    getMembers: function() {
+        return this._members;
+    },
+
     isFull: function() {
         return this._membersCount == this._capacity;
     },

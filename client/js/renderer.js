@@ -1,19 +1,23 @@
 
-define(['camera', 
+define([
+       'camera', 
         'item', 
         'character', 
         'player', 
         'spell',
         'spelleffect',
-        'timer'], 
-       function(Camera, 
-                Item, 
-                Character, 
-                Player, 
-                Spell,
-                SpellEffect,
-                Timer) {
-
+        'timer',
+        'lib/sprintf.min'
+       ], 
+       function(
+         Camera, 
+         Item, 
+         Character, 
+         Player, 
+         Spell,
+         SpellEffect,
+         Timer
+       ) {
            var Renderer = Class.extend({
                init: function(game, canvas, background, foreground) {
                    this.game = game;
@@ -705,7 +709,8 @@ define(['camera',
                    for (var x in members) {
                        var member = members[x];
                        var isLeader = party.getLeader() == member;
-                       this.drawText(i + ". " + (isLeader ? "\u2694 " : "") + member.name, 10, start_offset + (i * line_height), false);
+                       var namePostfix = sprintf(" (%d, %d)", member.gridX, member.gridY); 
+                       this.drawText(i + ". " + (isLeader ? "\u2694 " : "") + member.name + namePostfix, 10, start_offset + (i * line_height), false);
                        i++;
                    }
                },

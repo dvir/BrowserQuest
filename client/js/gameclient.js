@@ -235,6 +235,13 @@ define(['player',
                     entity.disengage();
                     entity.idle();
                     globalGame.makeCharacterGoTo(entity, x, y);
+                } else {
+                  // maybe it's a player location update
+                  // check if it's a player entity
+                  var player = globalGame.getPlayerByID(id);
+                  if (player) {
+                    player.setGridPosition(x, y); 
+                  }
                 }
             }
         },
@@ -589,7 +596,14 @@ define(['player',
             globalGame.assignBubbleTo(player);
             globalGame.audioManager.playSound("chat");
 
-            this.chat.insertMessage(player, player.name, message, channel);
+            var namePrefix = "";
+            if (channel == "party"
+                && globalGame.player.party 
+                && globalGame.player.party.isLeader(player)) {
+              namePrefix = "\u2694 "; 
+            }
+
+            this.chat.insertMessage(player, namePrefix + player.name, message, channel);
         },
     
         receiveEquipItem: function(data) {
