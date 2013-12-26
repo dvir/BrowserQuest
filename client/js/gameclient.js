@@ -28,9 +28,6 @@ define(['player',
       this.host = host;
       this.port = port;
 
-      this.connected_callback = null;
-      this.movement_callback = null;
-
       this.handlers = [];
       this.handlers[Types.Messages.WELCOME] = this.receiveWelcome;
       this.handlers[Types.Messages.MOVE] = this.receiveMove;
@@ -93,8 +90,7 @@ define(['player',
     },
 
     connect: function (dispatcherMode) {
-      var url = "ws://" + this.host + ":" + this.port + "/",
-        self = this;
+      var url = "ws://" + this.host + ":" + this.port + "/";
 
       log.info("Trying to connect to server : " + url);
 
@@ -109,32 +105,30 @@ define(['player',
           var reply = JSON.parse(e.data);
 
           if (reply.status === 'OK') {
-            self.dispatched_callback(reply.host, reply.port);
+            this.trigger("Dispatched", reply.host, reply.port);
           } else if (reply.status === 'FULL') {
             alert("BrowserQuest is currently at maximum player population. Please retry later.");
           } else {
             alert("Unknown error while connecting to BrowserQuest.");
           }
-        };
+        }.bind(this);
       } else {
         this.connection.onopen = function (e) {
-          log.info("Connected to server " + self.host + ":" + self.port);
-        };
+          log.info("Connected to server " + this.host + ":" + this.port);
+        }.bind(this);
 
         this.connection.onmessage = function (e) {
           if (e.data === "go") {
-            if (self.connected_callback) {
-              self.connected_callback();
-            }
+            this.trigger("Connected");
             return;
           }
           if (e.data === 'timeout') {
-            self.isTimeout = true;
+            this.isTimeout = true;
             return;
           }
 
-          self.receiveMessage(e.data);
-        };
+          this.receiveMessage(e.data);
+        }.bind(this);
 
         this.connection.onerror = function (e) {
           log.error(e, true);
@@ -144,12 +138,12 @@ define(['player',
           log.debug("Connection closed");
           $('#container').addClass('error');
 
-          if (self.isTimeout) {
-            self.disconnected("You have been disconnected for being inactive for too long");
+          if (this.isTimeout) {
+            this.disconnected("You have been disconnected for being inactive for too long");
           } else {
-            self.disconnected("The connection to BrowserQuest has been lost");
+            this.disconnected("The connection to BrowserQuest has been lost");
           }
-        };
+        }.bind(this);
       }
     },
 
@@ -201,11 +195,9 @@ define(['player',
     },
 
     receiveActionBatch: function (actions) {
-      var self = this;
-
       _.each(actions, function (action) {
-        self.receiveAction(action);
-      });
+        this.receiveAction(action);
+      }.bind(this));
     },
 
     receiveWelcome: function (data) {
@@ -215,9 +207,7 @@ define(['player',
         y = data[4],
         hp = data[5];
 
-      if (this.welcome_callback) {
-        this.welcome_callback(id, name, x, y, hp);
-      }
+      this.trigger("Welcome", id, name, x, y, hp);
     },
 
     receiveMove: function (data) {
@@ -741,9 +731,7 @@ define(['player',
     receiveList: function (data) {
       data.shift();
 
-      if (this.list_callback) {
-        this.list_callback(data);
-      }
+      this.trigger("EntityList", data);
     },
 
     receiveDestroy: function (data) {
@@ -812,27 +800,11 @@ define(['player',
       globalGame.player.loadInventory(dataObject);
     },
 
-    onDispatched: function (callback) {
-      this.dispatched_callback = callback;
-    },
-
-    onConnected: function (callback) {
-      this.connected_callback = callback;
-    },
-
     disconnected: function (message) {
       if (globalGame.player) {
         globalGame.player.die();
       }
       globalGame.disconnected(message);
-    },
-
-    onWelcome: function (callback) {
-      this.welcome_callback = callback;
-    },
-
-    onEntityList: function (callback) {
-      this.list_callback = callback;
     },
 
     sendInventory: function (inventory) {

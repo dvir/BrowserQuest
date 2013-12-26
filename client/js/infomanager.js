@@ -10,33 +10,28 @@ define(['../../shared/js/gametypes'], function () {
     addDamageInfo: function (value, x, y, type) {
       var time = this.game.currentTime,
         id = time + "" + Math.abs(value) + "" + x + "" + y,
-        self = this,
         info = new DamageInfo(id, value, x, y, DamageInfo.DURATION, type);
 
-      info.onDestroy(function (id) {
-        self.destroyQueue.push(id);
-      });
+      info.on("Destroy", function (id) {
+        this.destroyQueue.push(id);
+      }.bind(this));
       this.infos[id] = info;
     },
 
     forEachInfo: function (callback) {
-      var self = this;
-
       _.each(this.infos, function (info, id) {
         callback(info);
       });
     },
 
     update: function (time) {
-      var self = this;
-
       this.forEachInfo(function (info) {
         info.update(time);
       });
 
       _.each(this.destroyQueue, function (id) {
-        delete self.infos[id];
-      });
+        delete this.infos[id];
+      }.bind(this));
       this.destroyQueue = [];
     }
   });
@@ -97,12 +92,12 @@ define(['../../shared/js/gametypes'], function () {
     tick: function () {
       this.y -= 1;
       switch (this.direction) {
-      case Types.Orientations.LEFT:
-        this.x -= 1;
-        break;
-      case Types.Orientations.RIGHT:
-        this.x += 1;
-        break;
+        case Types.Orientations.LEFT:
+          this.x -= 1;
+          break;
+        case Types.Orientations.RIGHT:
+          this.x += 1;
+          break;
       }
       this.opacity -= 0.07;
       if (this.opacity < 0) {
@@ -110,14 +105,8 @@ define(['../../shared/js/gametypes'], function () {
       }
     },
 
-    onDestroy: function (callback)  {
-      this.destroy_callback = callback;
-    },
-
     destroy: function () {
-      if (this.destroy_callback) {
-        this.destroy_callback(this.id);
-      }
+      this.trigger("Destroy", this.id);
     }
   });
 

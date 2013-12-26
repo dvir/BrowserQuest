@@ -23,18 +23,16 @@ define(['jquery', 'animation', 'sprites'], function ($, Animation, sprites) {
     },
 
     load: function () {
-      var self = this;
-
       this.image = new Image();
       this.image.src = this.filepath;
 
       this.image.onload = function () {
-        self.isLoaded = true;
+        this.isLoaded = true;
 
-        if (self.onload_func) {
-          self.onload_func();
+        if (this.onload_func) {
+          this.onload_func();
         }
-      };
+      }.bind(this);
     },
 
     createAnimations: function () {

@@ -42,7 +42,7 @@ define(['entity'], function (Entity) {
       return true;
     },
 
-    onLoot: function (player) {
+    looted: function (player) {
       if (this.type === "weapon") {
         player.lootedWeapon(this);
       } else if (this.type === "armor") {

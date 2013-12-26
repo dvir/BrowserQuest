@@ -58,8 +58,51 @@ Class.extend = function(prop) {
     // The dummy class constructor
     Class = function () {
         // All construction is actually done in the init method
-        if ( !initializing && this.init )
-            this.init.apply(this, arguments);
+        if (!initializing) {
+            if (!this.bubbleToObjects) this.bubbleToObjects = [];
+            if (!this.callbacks) this.callbacks = {};
+
+            this.on = function(names, callback) {
+                if (!(names instanceof Object)) {
+                  names = [names];
+                }
+
+                for (var x in names) {
+                  var name = names;
+
+                  if (!this.callbacks.hasOwnProperty(name)) {
+                      this.callbacks[name] = [];
+                  }
+                  this.callbacks[name].push(callback);
+                }
+            };
+            
+            this.trigger = function(name) {
+                if (this.callbacks.hasOwnProperty(name)) {
+                    for (var i = 0; i < this.callbacks[name].length; i++) {
+                        this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
+                    }
+                }
+
+                for (var i = 0; i < this.bubbleToObjects.length; i++) {
+                    this.bubbleToObjects[i].trigger(name);
+                }
+            };
+
+            this.bubbleTo = function(object) {
+                this.bubbleToObjects.push(object);
+            };
+
+            if (this.data) {
+                this.data = _.extend({}, prototype.data, this.data);
+            }
+            if (this.callbacks) {
+                this.callbacks = _.extend({}, prototype.callbacks, this.callbacks);
+            }
+            if (this.init) {
+                this.init.apply(this, arguments);
+            }
+        }
     }
     
     // Populate our constructed prototype object

@@ -1,5 +1,6 @@
 var Area = require('./area'),
   _ = require('underscore'),
+  Messages = require('./message'),
   Types = require("../../shared/js/gametypes");
 
 module.exports = MobArea = Area.extend({
@@ -24,42 +25,41 @@ module.exports = MobArea = Area.extend({
       pos = this._getRandomPositionInsideArea(),
       mob = new Mob('1' + this.id + '' + k + '' + this.entities.length, k, pos.x, pos.y);
 
-    mob.onMove(this.world.onMobMoveCallback.bind(this.world));
+    mob.on("Move", function (mob) {
+      this.pushToAdjacentGroups(mob.group, new Messages.Move(mob));
+      this.handleEntityGroupMembership(mob);
+    }.bind(this.world));
 
     return mob;
   },
 
   respawnMob: function (mob, delay) {
-    var self = this;
-
     this.removeFromArea(mob);
 
     setTimeout(function () {
-      var pos = self._getRandomPositionInsideArea();
+      var pos = this._getRandomPositionInsideArea();
 
       mob.x = pos.x;
       mob.y = pos.y;
       mob.isDead = false;
-      self.addToArea(mob);
-      self.world.addMob(mob);
-    }, delay);
+      this.addToArea(mob);
+      this.world.addMob(mob);
+    }.bind(this), delay);
   },
 
   initRoaming: function (mob) {
-    var self = this;
-
     setInterval(function () {
-      _.each(self.entities, function (mob) {
+      _.each(this.entities, function (mob) {
         var canRoam = (Utils.random(20) === 1),
           pos;
 
         if (canRoam) {
           if (!mob.hasTarget() && !mob.isDead) {
-            pos = self._getRandomPositionInsideArea();
+            pos = this._getRandomPositionInsideArea();
             mob.move(pos.x, pos.y);
           }
         }
-      });
+      }.bind(this));
     }, 500);
   },
 

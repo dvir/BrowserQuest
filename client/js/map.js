@@ -25,8 +25,7 @@ define(['jquery', 'area'], function ($, Area) {
     },
 
     _loadMap: function (useWorker) {
-      var self = this,
-        filepath = "maps/world_client.json";
+      var filepath = "maps/world_client.json";
 
       if (useWorker) {
         log.info("Loading map with web worker.");
@@ -35,21 +34,21 @@ define(['jquery', 'area'], function ($, Area) {
 
         worker.onmessage = function (event) {
           var map = event.data;
-          self._initMap(map);
-          self.grid = map.grid;
-          self.plateauGrid = map.plateauGrid;
-          self.mapLoaded = true;
-          self._checkReady();
-        };
+          this._initMap(map);
+          this.grid = map.grid;
+          this.plateauGrid = map.plateauGrid;
+          this.mapLoaded = true;
+          this._checkReady();
+        }.bind(this);
       } else {
         log.info("Loading map via Ajax.");
         $.get(filepath, function (data) {
-          self._initMap(data);
-          self._generateCollisionGrid();
-          self._generatePlateauGrid();
-          self.mapLoaded = true;
-          self._checkReady();
-        }, 'json');
+          this._initMap(data);
+          this._generateCollisionGrid();
+          this._generatePlateauGrid();
+          this.mapLoaded = true;
+          this._checkReady();
+        }.bind(this), 'json');
       }
     },
 
@@ -90,30 +89,29 @@ define(['jquery', 'area'], function ($, Area) {
     },
 
     _getDoors: function (map) {
-      var doors = {},
-        self = this;
+      var doors = {};
 
       _.each(map.doors, function (door) {
         var o;
 
         switch (door.to) {
-        case 'u':
-          o = Types.Orientations.UP;
-          break;
-        case 'd':
-          o = Types.Orientations.DOWN;
-          break;
-        case 'l':
-          o = Types.Orientations.LEFT;
-          break;
-        case 'r':
-          o = Types.Orientations.RIGHT;
-          break;
-        default:
-          o = Types.Orientations.DOWN;
+          case 'u':
+            o = Types.Orientations.UP;
+            break;
+          case 'd':
+            o = Types.Orientations.DOWN;
+            break;
+          case 'l':
+            o = Types.Orientations.LEFT;
+            break;
+          case 'r':
+            o = Types.Orientations.RIGHT;
+            break;
+          default:
+            o = Types.Orientations.DOWN;
         }
 
-        doors[self.GridPositionToTileIndex(door.x, door.y)] = {
+        doors[this.GridPositionToTileIndex(door.x, door.y)] = {
           x: door.tx,
           y: door.ty,
           orientation: o,
@@ -121,13 +119,12 @@ define(['jquery', 'area'], function ($, Area) {
           cameraY: door.tcy,
           portal: door.p === 1,
         };
-      });
+      }.bind(this));
 
       return doors;
     },
 
     _loadTileset: function (filepath) {
-      var self = this;
       var tileset = new Image();
 
       tileset.src = filepath;
@@ -135,19 +132,19 @@ define(['jquery', 'area'], function ($, Area) {
       log.info("Loading tileset: " + filepath);
 
       tileset.onload = function () {
-        if (tileset.width % self.tilesize > 0) {
-          throw Error("Tileset size should be a multiple of " + self.tilesize);
+        if (tileset.width % this.tilesize > 0) {
+          throw Error("Tileset size should be a multiple of " + this.tilesize);
         }
         log.info("Map tileset loaded.");
 
-        self.tilesetCount -= 1;
-        if (self.tilesetCount === 0) {
+        this.tilesetCount -= 1;
+        if (this.tilesetCount === 0) {
           log.debug("All map tilesets loaded.")
 
-          self.tilesetsLoaded = true;
-          self._checkReady();
+          this.tilesetsLoaded = true;
+          this._checkReady();
         }
-      };
+      }.bind(this);
 
       return tileset;
     },
@@ -196,8 +193,7 @@ define(['jquery', 'area'], function ($, Area) {
     },
 
     _generateCollisionGrid: function () {
-      var tileIndex = 0,
-        self = this;
+      var tileIndex = 0;
 
       this.grid = [];
       for (var j, i = 0; i < this.height; i++) {
@@ -208,16 +204,17 @@ define(['jquery', 'area'], function ($, Area) {
       }
 
       _.each(this.collisions, function (tileIndex) {
-        var pos = self.tileIndexToGridPosition(tileIndex + 1);
-        self.grid[pos.y][pos.x] = 1;
-      });
+        var pos = this.tileIndexToGridPosition(tileIndex + 1);
+        this.grid[pos.y][pos.x] = 1;
+      }.bind(this));
 
       _.each(this.blocking, function (tileIndex) {
-        var pos = self.tileIndexToGridPosition(tileIndex + 1);
-        if (self.grid[pos.y] !== undefined) {
-          self.grid[pos.y][pos.x] = 1;
+        var pos = this.tileIndexToGridPosition(tileIndex + 1);
+        if (this.grid[pos.y] !== undefined) {
+          this.grid[pos.y][pos.x] = 1;
         }
-      });
+      }.bind(this));
+
       log.info("Collision grid generated.");
     },
 

@@ -15,7 +15,6 @@ module.exports = Mob = Character.extend({
     this.weapon = Properties[Types.getKindAsString(this.kind)].weapon;
 
     this.baseHP = Properties[Types.getKindAsString(this.kind)].hp;
-
     this.hp = this.maxHP;
 
     this.hatelist = [];
@@ -30,7 +29,6 @@ module.exports = Mob = Character.extend({
     this.clearTarget();
     this.updateHitPoints();
     this.resetPosition();
-
     this.handleRespawn();
   },
 
@@ -51,12 +49,6 @@ module.exports = Mob = Character.extend({
         hate: points
       });
     }
-
-    /*
-        log.debug("Hatelist : "+this.id);
-        _.each(this.hatelist, function(obj) {
-            log.debug(obj.id + " -> " + obj.hate);
-        });*/
 
     if (this.returnTimeout) {
       // Prevent the mob from returning to its spawning position
@@ -107,27 +99,21 @@ module.exports = Mob = Character.extend({
   },
 
   handleRespawn: function () {
-    var delay = 30000,
-      self = this;
+    var delay = 30000;
 
     if (this.area && this.area instanceof MobArea) {
       // Respawn inside the area if part of a MobArea
       this.area.respawnMob(this, delay);
-    } else {
-      if (this.area && this.area instanceof ChestArea) {
-        this.area.removeFromArea(this);
-      }
-
-      setTimeout(function () {
-        if (self.respawn_callback) {
-          self.respawn_callback();
-        }
-      }, delay);
+      return;
     }
-  },
 
-  onRespawn: function (callback) {
-    this.respawn_callback = callback;
+    if (this.area && this.area instanceof ChestArea) {
+      this.area.removeFromArea(this);
+    }
+
+    setTimeout(function () {
+      this.trigger("Respawn");
+    }.bind(this), delay);
   },
 
   resetPosition: function () {
@@ -135,26 +121,19 @@ module.exports = Mob = Character.extend({
   },
 
   returnToSpawningPosition: function (waitDuration) {
-    var self = this,
-      delay = waitDuration || 4000;
+    var delay = waitDuration || 4000;
 
     this.clearTarget();
 
     this.returnTimeout = setTimeout(function () {
-      self.resetPosition();
-      self.move(self.x, self.y);
-    }, delay);
-  },
-
-  onMove: function (callback) {
-    this.move_callback = callback;
+      this.resetPosition();
+      this.move(this.x, this.y);
+    }.bind(this), delay);
   },
 
   move: function (x, y) {
     this.setPosition(x, y);
-    if (this.move_callback) {
-      this.move_callback(this);
-    }
+    this.trigger("Move", this);
   },
 
   updateHitPoints: function () {

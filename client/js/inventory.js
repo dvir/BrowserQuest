@@ -2,8 +2,6 @@ define(['exceptions', 'inventoryitem', 'inventoryitemfactory'], function (Except
 
   var Inventory = Class.extend({
     init: function (data) {
-      var self = this;
-
       this._size = 12;
       this._items = [];
 
@@ -78,13 +76,12 @@ define(['exceptions', 'inventoryitem', 'inventoryitemfactory'], function (Except
       this.reset();
 
       var ids = {};
-      var self = this;
       $.each(data[1], function (id, item) {
         if (item) {
-          self._items[item.slot] = InventoryItemFactory.getCreate(item.id, item);
+          this._items[item.slot] = InventoryItemFactory.getCreate(item.id, item);
           ids[item.id] = true;
         }
-      });
+      }.bind(this));
 
       for (var id in globalInventoryItems) {
         if (!(id in ids)) {

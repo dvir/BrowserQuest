@@ -462,23 +462,23 @@ define([
       },
 
       drawEntities: function (dirtyOnly) {
-        var self = this;
-
         this.game.forEachVisibleEntityByDepth(function (entity) {
-          if (entity.isLoaded) {
-            if (dirtyOnly) {
-              if (entity.isDirty) {
-                self.drawEntity(entity);
-
-                entity.isDirty = false;
-                entity.oldDirtyRect = entity.dirtyRect;
-                entity.dirtyRect = null;
-              }
-            } else {
-              self.drawEntity(entity);
-            }
+          if (!entity.isLoaded) {
+            return;
           }
-        });
+
+          if (dirtyOnly) {
+            if (entity.isDirty) {
+              this.drawEntity(entity);
+
+              entity.isDirty = false;
+              entity.oldDirtyRect = entity.dirtyRect;
+              entity.dirtyRect = null;
+            }
+          } else {
+            this.drawEntity(entity);
+          }
+        }.bind(this));
       },
 
       drawDirtyEntities: function () {
@@ -490,22 +490,21 @@ define([
       },
 
       clearDirtyRects: function () {
-        var self = this,
-          count = 0;
+        var count = 0;
 
         this.game.forEachVisibleEntityByDepth(function (entity) {
           if (entity.isDirty && entity.oldDirtyRect) {
-            self.clearDirtyRect(entity.oldDirtyRect);
+            this.clearDirtyRect(entity.oldDirtyRect);
             count += 1;
           }
-        });
+        }.bind(this));
 
         this.game.forEachAnimatedTile(function (tile) {
           if (tile.isDirty) {
-            self.clearDirtyRect(tile.dirtyRect);
+            this.clearDirtyRect(tile.dirtyRect);
             count += 1;
           }
-        });
+        }.bind(this));
 
         if (this.game.clearTarget && this.lastTargetPos) {
           var last = this.lastTargetPos;
@@ -515,34 +514,30 @@ define([
           this.game.clearTarget = false;
           count += 1;
         }
-
-        if (count > 0) {
-          //log.debug("count:"+count);
-        }
       },
 
       getEntityBoundingRect: function (entity) {
-        var rect = {},
-          s = this.scale,
-          spr;
+        var rect = {};
+        var sprite;
 
         if (entity instanceof Player && entity.hasWeapon()) {
           var weapon = this.game.sprites[Types.getKindAsString(entity.weapon)];
-          spr = weapon;
+          sprite = weapon;
         } else {
-          spr = this.game.sprites[entity.getSpriteName()];
+          sprite = this.game.sprites[entity.getSpriteName()];
         }
 
-        if (spr) {
-          rect.x = (entity.x + spr.offsetX - this.camera.x) * s;
-          rect.y = (entity.y + spr.offsetY - this.camera.y) * s;
-          rect.w = spr.width * s;
-          rect.h = spr.height * s;
+        if (sprite) {
+          rect.x = (entity.x + sprite.offsetX - this.camera.x) * this.scale;
+          rect.y = (entity.y + sprite.offsetY - this.camera.y) * this.scale;
+          rect.w = sprite.width * this.scale;
+          rect.h = sprite.height * this.scale;
           rect.left = rect.x;
           rect.right = rect.x + rect.w;
           rect.top = rect.y;
           rect.bottom = rect.y + rect.h;
         }
+
         return rect;
       },
 
@@ -617,34 +612,30 @@ define([
       },
 
       drawTerrain: function () {
-        var self = this,
-          m = this.game.map,
-          tilesetwidth = this.tileset.width / m.tilesize;
+        var tilesetwidth = this.tileset.width / this.game.map.tilesize;
 
         this.game.forEachVisibleTile(function (id, index) {
-          if (!m.isHighTile(id) && !m.isAnimatedTile(id)) { // Don't draw unnecessary tiles
-            self.drawTile(self.background, id, self.tileset, tilesetwidth, m.width, index);
+          if (!this.game.map.isHighTile(id) && !this.game.map.isAnimatedTile(id)) { // Don't draw unnecessary tiles
+            this.drawTile(this.background, id, this.tileset, tilesetwidth, this.game.map.width, index);
           }
-        }, 1);
+        }.bind(this), 1);
       },
 
       drawAnimatedTiles: function (dirtyOnly) {
-        var self = this,
-          m = this.game.map,
-          tilesetwidth = this.tileset.width / m.tilesize;
+        var tilesetwidth = this.tileset.width / this.game.map.tilesize;
 
         this.animatedTileCount = 0;
         this.game.forEachAnimatedTile(function (tile) {
           if (dirtyOnly) {
             if (tile.isDirty) {
-              self.drawTile(self.context, tile.id, self.tileset, tilesetwidth, m.width, tile.index);
+              this.drawTile(this.context, tile.id, this.tileset, tilesetwidth, this.game.map.width, tile.index);
               tile.isDirty = false;
             }
           } else {
-            self.drawTile(self.context, tile.id, self.tileset, tilesetwidth, m.width, tile.index);
-            self.animatedTileCount += 1;
+            this.drawTile(this.context, tile.id, this.tileset, tilesetwidth, this.game.map.width, tile.index);
+            this.animatedTileCount += 1;
           }
-        });
+        }.bind(this));
       },
 
       drawDirtyAnimatedTiles: function () {
@@ -652,17 +643,15 @@ define([
       },
 
       drawHighTiles: function (ctx) {
-        var self = this,
-          m = this.game.map,
-          tilesetwidth = this.tileset.width / m.tilesize;
+        var tilesetwidth = this.tileset.width / this.game.map.tilesize;
 
         this.highTileCount = 0;
         this.game.forEachVisibleTile(function (id, index) {
-          if (m.isHighTile(id)) {
-            self.drawTile(ctx, id, self.tileset, tilesetwidth, m.width, index);
-            self.highTileCount += 1;
+          if (this.game.map.isHighTile(id)) {
+            this.drawTile(ctx, id, this.tileset, tilesetwidth, this.game.map.width, index);
+            this.highTileCount += 1;
           }
-        }, 1);
+        }.bind(this), 1);
       },
 
       drawBackground: function (ctx, color) {
@@ -765,22 +754,22 @@ define([
       },
 
       drawCombatInfo: function () {
-        var self = this;
-
         switch (this.scale) {
-        case 2:
-          this.setFontSize(20);
-          break;
-        case 3:
-          this.setFontSize(30);
-          break;
+          case 2:
+            this.setFontSize(20);
+            break;
+          case 3:
+            this.setFontSize(30);
+            break;
         }
+
         this.game.infoManager.forEachInfo(function (info) {
-          self.context.save();
-          self.context.globalAlpha = info.opacity;
-          self.drawText(info.value, (info.x + 8) * self.scale, Math.floor(info.y * self.scale), true, info.fillColor, info.strokeColor);
-          self.context.restore();
-        });
+          this.context.save();
+          this.context.globalAlpha = info.opacity;
+          this.drawText(info.value, (info.x + 8) * this.scale, Math.floor(info.y * this.scale), true, info.fillColor, info.strokeColor);
+          this.context.restore();
+        }.bind(this));
+
         this.initFont();
       },
 

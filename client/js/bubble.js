@@ -49,8 +49,7 @@ define(['jquery', 'timer'], function ($, Timer) {
     },
 
     update: function (time) {
-      var self = this,
-        bubblesToDelete = [];
+      var bubblesToDelete = [];
 
       _.each(this.bubbles, function (bubble) {
         if (bubble.isOver(time)) {
@@ -60,13 +59,12 @@ define(['jquery', 'timer'], function ($, Timer) {
       });
 
       _.each(bubblesToDelete, function (id) {
-        delete self.bubbles[id];
-      });
+        delete this.bubbles[id];
+      }.bind(this));
     },
 
     clean: function () {
-      var self = this,
-        bubblesToDelete = [];
+      var bubblesToDelete = [];
 
       _.each(this.bubbles, function (bubble) {
         bubble.destroy();
@@ -74,8 +72,8 @@ define(['jquery', 'timer'], function ($, Timer) {
       });
 
       _.each(bubblesToDelete, function (id) {
-        delete self.bubbles[id];
-      });
+        delete this.bubbles[id];
+      }.bind(this));
 
       this.bubbles = {};
     },

@@ -7,8 +7,6 @@ path = require('path'),
 
 module.exports = Map = cls.Class.extend({
   init: function (filepath) {
-    var self = this;
-
     this.isLoaded = false;
 
     path.exists(filepath, function (exists) {
@@ -20,9 +18,9 @@ module.exports = Map = cls.Class.extend({
       fs.readFile(filepath, function (err, file) {
         var json = JSON.parse(file.toString());
 
-        self.initMap(json);
-      });
-    });
+        this.initMap(json);
+      }.bind(this));
+    }.bind(this));
   },
 
   initMap: function (map) {
@@ -136,15 +134,15 @@ module.exports = Map = cls.Class.extend({
   },
 
   getAdjacentGroupPositions: function (id) {
-    var self = this,
-      position = this.GroupIdToGroupPosition(id),
-      x = position.x,
-      y = position.y,
-      // surrounding groups
-      list = [pos(x - 1, y - 1), pos(x, y - 1), pos(x + 1, y - 1),
-        pos(x - 1, y), pos(x, y), pos(x + 1, y),
-        pos(x - 1, y + 1), pos(x, y + 1), pos(x + 1, y + 1)
-      ];
+    var position = this.GroupIdToGroupPosition(id);
+    var x = position.x;
+    var y = position.y;
+
+    // surrounding groups
+    var list = [pos(x - 1, y - 1), pos(x, y - 1), pos(x + 1, y - 1),
+      pos(x - 1, y), pos(x, y), pos(x + 1, y),
+      pos(x - 1, y + 1), pos(x, y + 1), pos(x + 1, y + 1)
+    ];
 
     // groups connected via doors
     _.each(this.connectedGroups[id], function (position) {
@@ -157,8 +155,8 @@ module.exports = Map = cls.Class.extend({
     });
 
     return _.reject(list, function (pos) {
-      return pos.x < 0 || pos.y < 0 || pos.x >= self.groupWidth || pos.y >= self.groupHeight;
-    });
+      return pos.x < 0 || pos.y < 0 || pos.x >= this.groupWidth || pos.y >= this.groupHeight;
+    }.bind(this));
   },
 
   forEachAdjacentGroup: function (groupId, callback) {
@@ -170,35 +168,31 @@ module.exports = Map = cls.Class.extend({
   },
 
   initConnectedGroups: function (doors) {
-    var self = this;
-
     this.connectedGroups = {};
     _.each(doors, function (door) {
-      var groupId = self.getGroupIdFromPosition(door.x, door.y),
-        connectedGroupId = self.getGroupIdFromPosition(door.tx, door.ty),
-        connectedPosition = self.GroupIdToGroupPosition(connectedGroupId);
+      var groupId = this.getGroupIdFromPosition(door.x, door.y),
+        connectedGroupId = this.getGroupIdFromPosition(door.tx, door.ty),
+        connectedPosition = this.GroupIdToGroupPosition(connectedGroupId);
 
-      if (groupId in self.connectedGroups) {
-        self.connectedGroups[groupId].push(connectedPosition);
+      if (groupId in this.connectedGroups) {
+        this.connectedGroups[groupId].push(connectedPosition);
       } else {
-        self.connectedGroups[groupId] = [connectedPosition];
+        this.connectedGroups[groupId] = [connectedPosition];
       }
-    });
+    }.bind(this));
   },
 
   initCheckpoints: function (cpList) {
-    var self = this;
-
     this.checkpoints = {};
     this.startingAreas = [];
 
     _.each(cpList, function (cp) {
       var checkpoint = new Checkpoint(cp.id, cp.x, cp.y, cp.w, cp.h);
-      self.checkpoints[checkpoint.id] = checkpoint;
+      this.checkpoints[checkpoint.id] = checkpoint;
       if (cp.s === 1) {
-        self.startingAreas.push(checkpoint);
+        this.startingAreas.push(checkpoint);
       }
-    });
+    }.bind(this));
   },
 
   getCheckpoint: function (id) {

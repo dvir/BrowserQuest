@@ -119,73 +119,70 @@ module.exports = Inventory = DBEntity.extend({
   },
 
   load: function (player, callback) {
-    var self = this;
-    self.player = player;
+    this.player = player;
 
     Inventories.findOne({
-      playerId: self.player.getId()
+      playerId: this.player.getId()
     }, function (err, dbEntity) {
       if (err) {
-        log.debug("Failed fetching inventory for player id '" + self.player.getId() + "'. Error: " + err);
+        log.debug("Failed fetching inventory for player id '" + this.player.getId() + "'. Error: " + err);
         return;
       }
 
       if (dbEntity) {
         log.debug("Found previous inventory record.");
       } else {
-        log.debug("Creating new inventory record for player id '" + self.player.getId() + "'");
+        log.debug("Creating new inventory record for player id '" + this.player.getId() + "'");
         var dbEntity = new Inventories({
-          playerId: self.player.getId(),
+          playerId: this.player.getId(),
           size: 12
         });
         dbEntity.save(function (err) {
           if (err) {
-            log.debug("Failed saving inventory for player id '" + self.player.getId() + "'. Error: " + err);
+            log.debug("Failed saving inventory for player id '" + this.player.getId() + "'. Error: " + err);
           }
-        });
+        }.bind(this));
       }
 
-      self.setDBEntity(dbEntity, callback);
-    });
+      this.setDBEntity(dbEntity, callback);
+    }.bind(this));
   },
 
   loadFromDB: function (callback) {
     if (!this.dbEntity) return;
 
-    var self = this;
-
     this._super();
 
-    if (!self.data) self.data = {};
+    if (!this.data) this.data = {};
 
-    Utils.Mixin(self.data, {
-      playerId: self.dbEntity.playerId,
-      size: self.dbEntity.size,
-      id: self.dbEntity._id
+    Utils.Mixin(this.data, {
+      playerId: this.dbEntity.playerId,
+      size: this.dbEntity.size,
+      id: this.dbEntity._id
     });
 
-    self.items = {};
+    this.items = {};
 
     // load items
     Items.find({
-      inventoryId: self.id,
+      inventoryId: this.id,
       amount: {
         $gte: 1
       }
     }, function (err, items) {
       if (err) {
-        log.debug("Error loading items for inventory '" + self.id + "'");
+        log.debug("Error loading items for inventory '" + this.id + "'");
         return;
       }
 
       items.forEach(function (item) {
-        self.items[item.slot] = new InventoryItem(self, item);
-      });
+        this.items[item.slot] = new InventoryItem(this, item);
+      }.bind(this));
 
       if (callback) {
         callback();
       }
-    });
+    }.bind(this));
   },
 
   save: function () {

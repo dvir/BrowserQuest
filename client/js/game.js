@@ -65,7 +65,7 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         this.sprites = {};
 
         // tile animation
-        this.animatedTiles = null;
+        this.animatedTiles = [];
 
         // debug
         this.debugPathing = false;
@@ -159,23 +159,20 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       loadMap: function () {
-        var self = this;
-
         this.map = new Map(!this.renderer.upscaledRendering, this);
 
         this.map.ready(function () {
           log.info("Map loaded.");
-          var tilesetIndex = self.renderer.upscaledRendering ? 0 : self.renderer.scale - 1;
-          self.renderer.setTileset(self.map.tilesets[tilesetIndex]);
-        });
+          var tilesetIndex = this.renderer.upscaledRendering ? 0 : this.renderer.scale - 1;
+          this.renderer.setTileset(this.map.tilesets[tilesetIndex]);
+        }.bind(this));
       },
 
       initPlayer: function () {
-        var self = this;
         this.player.setStorage(this.storage);
         this.player.loadFromStorage(function () {
-          self.updateBars();
-        });
+          this.updateBars();
+        }.bind(this));
 
         this.player.setSprite(this.sprites["clotharmor"]);
         log.debug("Finished initPlayer");
@@ -208,26 +205,20 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       initHurtSprites: function () {
-        var self = this;
-
         Types.forEachArmorKind(function (kind, kindName) {
-          self.sprites[kindName].createHurtSprite();
-        });
+          this.sprites[kindName].createHurtSprite();
+        }.bind(this));
       },
 
       initSilhouettes: function () {
-        var self = this;
-
         Types.forEachMobOrNpcKind(function (kind, kindName) {
-          self.sprites[kindName].createSilhouette();
-        });
-        self.sprites["chest"].createSilhouette();
-        self.sprites["item-cake"].createSilhouette();
+          this.sprites[kindName].createSilhouette();
+        }.bind(this));
+        this.sprites["chest"].createSilhouette();
+        this.sprites["item-cake"].createSilhouette();
       },
 
       initAchievements: function () {
-        var self = this;
-
         this.achievements = {
           A_TRUE_WARRIOR: {
             id: 1,
@@ -244,8 +235,8 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
             name: "Angry Rats",
             desc: "Kill 10 rats",
             isCompleted: function () {
-              return self.storage.getRatCount() >= 10;
-            }
+              return this.storage.getRatCount() >= 10;
+            }.bind(this)
           },
           SMALL_TALK: {
             id: 4,
@@ -282,8 +273,8 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
             name: "Skull Collector",
             desc: "Kill 10 skeletons",
             isCompleted: function () {
-              return self.storage.getSkeletonCount() >= 10;
-            }
+              return this.storage.getSkeletonCount() >= 10;
+            }.bind(this)
           },
           NINJA_LOOT: {
             id: 11,
@@ -300,24 +291,24 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
             name: "Hunter",
             desc: "Kill 50 enemies",
             isCompleted: function () {
-              return self.storage.getTotalKills() >= 50;
-            }
+              return this.storage.getTotalKills() >= 50;
+            }.bind(this)
           },
           STILL_ALIVE: {
             id: 14,
             name: "Still Alive",
             desc: "Revive your character five times",
             isCompleted: function () {
-              return self.storage.getTotalRevives() >= 5;
-            }
+              return this.storage.getTotalRevives() >= 5;
+            }.bind(this)
           },
           MEATSHIELD: {
             id: 15,
             name: "Meatshield",
             desc: "Take 5,000 points of damage",
             isCompleted: function () {
-              return self.storage.getTotalDamageTaken() >= 5000;
-            }
+              return this.storage.getTotalDamageTaken() >= 5000;
+            }.bind(this)
           },
           HOT_SPOT: {
             id: 16,
@@ -389,8 +380,6 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       setSpriteScale: function (scale) {
-        var self = this;
-
         if (this.renderer.upscaledRendering) {
           this.sprites = this.spritesets[0];
         } else {
@@ -401,8 +390,8 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
             if (entity instanceof Item) {
               kindString = "item-" + kindString;
             }
-            entity.setSprite(self.sprites[kindString]);
-          });
+            entity.setSprite(this.sprites[kindString]);
+          }.bind(this));
           this.initHurtSprites();
           this.initShadows();
           this.initCursors();
@@ -473,8 +462,6 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       addEntity: function (entity) {
-        var self = this;
-
         if (this.entities[entity.id] === undefined) {
           this.entities[entity.id] = entity;
           this.registerEntityPosition(entity);
@@ -485,11 +472,11 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
 
           if (this.renderer.mobile || this.renderer.tablet) {
             entity.on("dirty", function () {
-              if (self.camera.isVisible(this)) {
-                this.dirtyRect = self.renderer.getEntityBoundingRect(this);
-                self.checkOtherDirtyRects(this.dirtyRect, this, this.gridX, this.gridY);
+              if (this.camera.isVisible(this)) {
+                this.dirtyRect = this.renderer.getEntityBoundingRect(this);
+                this.checkOtherDirtyRects(this.dirtyRect, this, this.gridX, this.gridY);
               }
-            });
+            }.bind(this));
           }
         } else {
           log.error("This entity already exists : " + entity.id + " (" + entity.kind + ")");
@@ -598,21 +585,17 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
        *
        */
       initAnimatedTiles: function () {
-        var self = this,
-          m = this.map;
-
         this.animatedTiles = [];
         this.forEachVisibleTile(function (id, index) {
-          if (m.isAnimatedTile(id)) {
-            var tile = new AnimatedTile(id, m.getTileAnimationLength(id), m.getTileAnimationDelay(id), index),
-              pos = self.map.tileIndexToGridPosition(tile.index);
+          if (this.map.isAnimatedTile(id)) {
+            var tile = new AnimatedTile(id, this.map.getTileAnimationLength(id), this.map.getTileAnimationDelay(id), index),
+              pos = this.map.tileIndexToGridPosition(tile.index);
 
             tile.x = pos.x;
             tile.y = pos.y;
-            self.animatedTiles.push(tile);
+            this.animatedTiles.push(tile);
           }
-        }, 1);
-        //log.info("Initialized animated tiles.");
+        }.bind(this), 1);
       },
 
       addToRenderingGrid: function (entity, x, y) {
@@ -714,15 +697,12 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       initMusicAreas: function () {
-        var self = this;
         _.each(this.map.musicAreas, function (area) {
-          self.audioManager.addArea(area.x, area.y, area.w, area.h, area.id);
-        });
+          this.audioManager.addArea(area.x, area.y, area.w, area.h, area.id);
+        }.bind(this));
       },
 
       run: function (started_callback) {
-        var self = this;
-
         this.loadSprites();
         this.setUpdater(new Updater(this));
         this.camera = this.renderer.camera;
@@ -730,38 +710,40 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         this.setSpriteScale(this.renderer.scale);
 
         var wait = setInterval(function () {
-          if (self.map.isLoaded && self.spritesLoaded()) {
-            self.ready = true;
-            log.debug('All sprites loaded.');
-
-            self.loadAudio();
-
-            self.initMusicAreas();
-            self.initAchievements();
-            self.initCursors();
-            self.initAnimations();
-            self.initShadows();
-            self.initHurtSprites();
-
-            if (!self.renderer.mobile && !self.renderer.tablet && self.renderer.upscaledRendering) {
-              self.initSilhouettes();
-            }
-
-            self.initEntityGrid();
-            self.initItemGrid();
-            self.initPathingGrid();
-            self.initRenderingGrid();
-
-            self.setPathfinder(new Pathfinder(self.map.width, self.map.height));
-
-            //self.initPlayer();
-            self.setCursor("hand");
-
-            self.connect(started_callback);
-
-            clearInterval(wait);
+          if (!this.map.isLoaded || !this.spritesLoaded()) {
+            return;
           }
-        }, 100);
+
+          this.ready = true;
+          log.debug('All sprites loaded.');
+
+          this.loadAudio();
+
+          this.initMusicAreas();
+          this.initAchievements();
+          this.initCursors();
+          this.initAnimations();
+          this.initShadows();
+          this.initHurtSprites();
+
+          if (!this.renderer.mobile && !this.renderer.tablet && this.renderer.upscaledRendering) {
+            this.initSilhouettes();
+          }
+
+          this.initEntityGrid();
+          this.initItemGrid();
+          this.initPathingGrid();
+          this.initRenderingGrid();
+
+          this.setPathfinder(new Pathfinder(this.map.width, this.map.height));
+
+          //this.initPlayer();
+          this.setCursor("hand");
+
+          this.connect(started_callback);
+
+          clearInterval(wait);
+        }.bind(this), 100);
       },
 
       tick: function () {
@@ -815,8 +797,7 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       connect: function (started_callback) {
-        var self = this,
-          connecting = false; // always in dispatcher mode in the build version
+        var connecting = false; // always in dispatcher mode in the build version
 
         this.client = new GameClient(this.host, this.port);
         this.client.chat.setInput(this.chatinput);
@@ -835,95 +816,94 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         }
         //>>includeEnd("prodHost");
 
-        this.client.onDispatched(function (host, port) {
+        this.client.on("Dispatched", function (host, port) {
           log.debug("Dispatched to game server " + host + ":" + port);
 
-          self.client.host = host;
-          self.client.port = port;
-          self.player.isDying = false;
-          self.client.connect(); // connect to actual game server
-        });
+          this.client.host = host;
+          this.client.port = port;
+          this.player.isDying = false;
+          this.client.connect(); // connect to actual game server
+        }.bind(this));
 
-        this.client.onConnected(function () {
+        this.client.on("Connected", function () {
           log.info("Starting client/server handshake");
 
-          self.playerName = self.username;
-          self.started = true;
+          this.playerName = this.username;
+          this.started = true;
 
-          self.sendHello();
-        });
+          this.sendHello();
+        }.bind(this));
 
-        this.client.onEntityList(function (list) {
-          var entityIds = _.pluck(self.entities, 'id'),
+        this.client.on("EntityList", function (list) {
+          var entityIds = _.pluck(this.entities, 'id'),
             knownIds = _.intersection(entityIds, list),
             newIds = _.difference(list, knownIds);
 
-          self.obsoleteEntities = _.reject(self.entities, function (entity) {
-            return _.include(knownIds, entity.id) || entity.id === self.player.id;
-          });
+          this.obsoleteEntities = _.reject(this.entities, function (entity) {
+            return _.include(knownIds, entity.id) || entity.id === this.player.id;
+          }.bind(this));
 
           // Destroy entities outside of the player's zone group
-          self.removeObsoleteEntities();
+          this.removeObsoleteEntities();
 
           // Ask the server for spawn information about unknown entities
           if (_.size(newIds) > 0) {
-            self.client.sendWho(newIds);
+            this.client.sendWho(newIds);
           }
-        });
+        }.bind(this));
 
-        this.client.onWelcome(function (data) {
+        this.client.on("Welcome", function (data) {
           // Player
-          if (self.player) {
-            self.player.idle();
-            self.player.removed = false;
+          if (this.player) {
+            this.player.idle();
+            this.player.removed = false;
           } else {
-            self.player = new Hero("player", "");
+            this.player = new Hero("player", "");
           }
 
           // make events from player to bubble to game
-          self.player.bubbleTo(self);
+          this.player.bubbleTo(this);
 
-          self.app.initBars();
+          this.app.initBars();
           log.debug("initiated bars");
 
-          self.player.isDead = false;
-          self.player.isDying = false;
+          this.player.isDead = false;
+          this.player.isDying = false;
 
-          self.player.loadFromObject(data);
+          this.player.loadFromObject(data);
 
-          self.addPlayer(self.player);
+          this.addPlayer(this.player);
 
-          log.info("Received player ID from server : " + self.player.id);
+          log.info("Received player ID from server : " + this.player.id);
 
-          self.updateBars();
-          self.resetCamera();
-          self.updatePlateauMode();
-          self.audioManager.updateMusic();
+          this.updateBars();
+          this.resetCamera();
+          this.updatePlateauMode();
+          this.audioManager.updateMusic();
 
-          self.addEntity(self.player);
-          self.player.dirtyRect = self.renderer.getEntityBoundingRect(self.player);
+          this.addEntity(this.player);
+          this.player.dirtyRect = this.renderer.getEntityBoundingRect(this.player);
 
-          self.initPlayer();
-          self.player.idle();
+          this.initPlayer();
+          this.player.idle();
 
           setTimeout(function () {
-            self.tryUnlockingAchievement("STILL_ALIVE");
-          }, 1500);
+            this.tryUnlockingAchievement("STILL_ALIVE");
+          }.bind(this), 1500);
 
-          if (!self.storage.hasAlreadyPlayed()) {
-            self.storage.initPlayer(self.player.name);
-            self.storage.savePlayer(self.renderer.getPlayerImage(),
-              self.player);
-            self.showNotification("Welcome to BrowserQuest!");
+          if (!this.storage.hasAlreadyPlayed()) {
+            this.storage.initPlayer(this.player.name);
+            this.storage.savePlayer(this.renderer.getPlayerImage(), this.player);
+            this.showNotification("Welcome to BrowserQuest!");
           } else {
-            self.showNotification("Welcome back to BrowserQuest!");
+            this.showNotification("Welcome back to BrowserQuest!");
           }
 
-          if (self.hasNeverStarted) {
-            self.start();
+          if (this.hasNeverStarted) {
+            this.start();
             started_callback();
           }
-        });
+        }.bind(this));
       },
 
       /**
@@ -1153,18 +1133,17 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
        * Note: This is used by the Renderer to know in which order to render entities.
        */
       forEachVisibleEntityByDepth: function (callback) {
-        var self = this,
-          m = this.map;
+        var m = this.map;
 
         this.camera.forEachVisiblePosition(function (x, y) {
           if (!m.isOutOfBounds(x, y)) {
-            if (self.renderingGrid[y][x]) {
-              _.each(self.renderingGrid[y][x], function (entity) {
+            if (this.renderingGrid[y][x]) {
+              _.each(this.renderingGrid[y][x], function (entity) {
                 callback(entity);
               });
             }
           }
-        }, this.renderer.mobile ? 0 : 2);
+        }.bind(this), this.renderer.mobile ? 0 : 2);
       },
 
       /**
@@ -1184,35 +1163,32 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
        *
        */
       forEachVisibleTile: function (callback, extra) {
-        var self = this,
-          m = this.map;
-
-        if (m.isLoaded) {
-          this.forEachVisibleTileIndex(function (tileIndex) {
-            if (_.isArray(m.data[tileIndex])) {
-              _.each(m.data[tileIndex], function (id) {
-                callback(id - 1, tileIndex);
-              });
-            } else {
-              if (_.isNaN(m.data[tileIndex] - 1)) {
-                //throw Error("Tile number for index:"+tileIndex+" is NaN");
-              } else {
-                callback(m.data[tileIndex] - 1, tileIndex);
-              }
-            }
-          }, extra);
+        if (!this.map.isLoaded) {
+          return;
         }
+
+        this.forEachVisibleTileIndex(function (tileIndex) {
+          if (_.isArray(this.map.data[tileIndex])) {
+            _.each(this.map.data[tileIndex], function (id) {
+              callback(id - 1, tileIndex);
+            });
+          } else {
+            if (_.isNaN(this.map.data[tileIndex] - 1)) {
+              //throw Error("Tile number for index:"+tileIndex+" is NaN");
+            } else {
+              callback(this.map.data[tileIndex] - 1, tileIndex);
+            }
+          }
+        }.bind(this), extra);
       },
 
       /**
        *
        */
       forEachAnimatedTile: function (callback) {
-        if (this.animatedTiles) {
-          _.each(this.animatedTiles, function (tile) {
-            callback(tile);
-          });
-        }
+        _.each(this.animatedTiles, function (tile) {
+          callback(tile);
+        });
       },
 
       /**
@@ -1322,23 +1298,19 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
        * The path will pass through any entity present in the ignore list.
        */
       findPath: function (character, x, y, ignoreList) {
-        var self = this,
-          grid = this.pathingGrid;
-        path = [],
-        isPlayer = (character === this.player);
-
         if (this.map.isColliding(x, y)) {
-          return path;
+          return [];
         }
 
+        var path = [];
         if (this.pathfinder && character) {
           if (ignoreList) {
             _.each(ignoreList, function (entity) {
-              self.pathfinder.ignoreEntity(entity);
-            });
+              this.pathfinder.ignoreEntity(entity);
+            }.bind(this));
           }
 
-          path = this.pathfinder.findPath(grid, character, x, y, false);
+          path = this.pathfinder.findPath(this.pathingGrid, character, x, y, false);
 
           if (ignoreList) {
             this.pathfinder.clearIgnoreList();
@@ -1346,6 +1318,7 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         } else {
           log.error("Error while finding the path to " + x + ", " + y + " for " + character.id);
         }
+
         return path;
       },
 
@@ -1477,18 +1450,18 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       getFreeAdjacentNonDiagonalPosition: function (entity) {
-        var self = this,
-          result = null;
+        var result = null;
 
         entity.forEachAdjacentNonDiagonalPosition(function (x, y, orientation) {
-          if (!result && !self.map.isColliding(x, y) && !self.isMobAt(x, y)) {
+          if (!result && !this.map.isColliding(x, y) && !this.isMobAt(x, y)) {
             result = {
               x: x,
               y: y,
               o: orientation
             };
           }
-        });
+        }.bind(this));
+        
         return result;
       },
 
@@ -1568,9 +1541,8 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       /**
        *
        */
-      onCharacterUpdate: function (character) {
-        var time = this.currentTime,
-          self = this;
+      updateCharacter: function (character) {
+        var time = this.currentTime;
 
         // If mob has finished moving to a different tile in order to avoid stacking, attack again from the new position.
         if (character.previousTarget && !character.isMoving() && character instanceof Mob) {
@@ -1606,10 +1578,11 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
                 this.client.sendHurt(character);
               }
             }
-          } else {
-            if (character.hasTarget() && character.isDiagonallyAdjacent(character.target) && character.target instanceof Player && !character.target.isMoving()) {
-              character.follow(character.target);
-            }
+          } else if (character.hasTarget() 
+                     && character.isDiagonallyAdjacent(character.target) 
+                     && character.target instanceof Player 
+                     && !character.target.isMoving()) {
+            character.follow(character.target);
           }
         }
       },
@@ -1905,10 +1878,6 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         this.app.initEquipmentIcons();
       },
 
-      onNbPlayersChange: function (callback) {
-        this.nbplayers_callback = callback;
-      },
-
       playerInvincible: function (state) {
         if (state) {
           $('#player > .hitpoints').toggleClass('invincible', state);
@@ -1932,51 +1901,49 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       teleport: function (dest) {
-        var self = this;
+        this.player.setGridPosition(dest.x, dest.y);
+        this.player.nextGridX = dest.x;
+        this.player.nextGridY = dest.y;
+        this.player.turnTo(dest.orientation);
+        this.client.sendTeleport(dest.x, dest.y);
 
-        self.player.setGridPosition(dest.x, dest.y);
-        self.player.nextGridX = dest.x;
-        self.player.nextGridY = dest.y;
-        self.player.turnTo(dest.orientation);
-        self.client.sendTeleport(dest.x, dest.y);
-
-        if (self.renderer.mobile && dest.cameraX && dest.cameraY) {
-          self.camera.setGridPosition(dest.cameraX, dest.cameraY);
-          self.resetZone();
+        if (this.renderer.mobile && dest.cameraX && dest.cameraY) {
+          this.camera.setGridPosition(dest.cameraX, dest.cameraY);
+          this.resetZone();
         } else {
           if (dest.portal) {
-            self.assignBubbleTo(self.player);
+            this.assignBubbleTo(this.player);
           } else {
-            self.camera.focusEntity(self.player);
-            self.resetZone();
+            this.camera.focusEntity(this.player);
+            this.resetZone();
           }
         }
 
-        if (_.size(self.player.attackers) > 0) {
+        if (_.size(this.player.attackers) > 0) {
           setTimeout(function () {
-            self.tryUnlockingAchievement("COWARD");
-          }, 500);
+            this.tryUnlockingAchievement("COWARD");
+          }.bind(this), 500);
         }
-        self.player.forEachAttacker(function (attacker) {
+        this.player.forEachAttacker(function (attacker) {
           attacker.disengage();
           attacker.idle();
         });
 
-        self.updatePlateauMode();
+        this.updatePlateauMode();
 
-        self.checkUndergroundAchievement();
+        this.checkUndergroundAchievement();
 
-        if (self.renderer.mobile || self.renderer.tablet) {
+        if (this.renderer.mobile || this.renderer.tablet) {
           // When rendering with dirty rects, clear the whole screen when entering a door.
-          self.renderer.clearScreen(self.renderer.context);
+          this.renderer.clearScreen(this.renderer.context);
         }
 
         if (dest.portal) {
-          self.audioManager.playSound("teleport");
+          this.audioManager.playSound("teleport");
         }
 
-        if (!self.player.isDead) {
-          self.audioManager.updateMusic();
+        if (!this.player.isDead) {
+          this.audioManager.updateMusic();
         }
       },
 
@@ -2013,18 +1980,17 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
       },
 
       removeObsoleteEntities: function () {
-        var nb = _.size(this.obsoleteEntities),
-          self = this;
+        var nb = _.size(this.obsoleteEntities);
 
         if (nb > 0) {
           _.each(this.obsoleteEntities, function (entity) {
-            if (entity.id != self.player.id) { // never remove yourself
-              self.removeEntity(entity);
+            if (entity.id != this.player.id) { // never remove yourself
+              this.removeEntity(entity);
             }
-          });
+          }.bind(this));
           log.debug("Removed " + nb + " entities: " + _.pluck(_.reject(this.obsoleteEntities, function (id) {
-            return id === self.player.id
-          }), 'id'));
+            return id === this.player.id;
+          }.bind(this)), 'id'));
           this.obsoleteEntities = null;
         }
       },

@@ -18,13 +18,12 @@ define(['entity'], function (Entity) {
       this.stopBlinking();
       this.setSprite(globalGame.sprites["death"]);
 
-      var self = this;
       this.setAnimation("death", 120, 1, function () {
-        log.info(self.id + " was removed");
-        globalGame.removeEntity(self);
-        globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
+        log.info(this.id + " was removed");
+        globalGame.removeEntity(this);
+        globalGame.removeFromRenderingGrid(this, this.gridX, this.gridY);
         globalGame.previousClickPosition = {};
-      });
+      }.bind(this));
     }
   });
 

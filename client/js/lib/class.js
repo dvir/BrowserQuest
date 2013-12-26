@@ -71,11 +71,19 @@ Class.extend = function(prop) {
             if (!this.bubbleToObjects) this.bubbleToObjects = [];
             if (!this.callbacks) this.callbacks = {};
 
-            this.on = function(name, callback) {
-                if (!this.callbacks.hasOwnProperty(name)) {
-                    this.callbacks[name] = [];
+            this.on = function(names, callback) {
+                if (!(names instanceof Object)) {
+                  names = [names];
                 }
-                this.callbacks[name].push(callback);
+
+                for (var x in names) {
+                  var name = names;
+
+                  if (!this.callbacks.hasOwnProperty(name)) {
+                      this.callbacks[name] = [];
+                  }
+                  this.callbacks[name].push(callback);
+                }
             };
             
             this.trigger = function(name) {

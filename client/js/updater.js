@@ -19,19 +19,18 @@ define(['character', 'timer'], function (Character, Timer) {
     },
 
     updateCharacters: function () {
-      var self = this;
-
       this.game.forEachEntity(function (entity) {
         var isCharacter = entity instanceof Character;
 
         if (entity.isLoaded) {
           if (isCharacter) {
-            self.updateCharacter(entity);
-            self.game.onCharacterUpdate(entity);
+            this.updateCharacter(entity);
+            this.game.updateCharacter(entity);
           }
-          self.updateEntityFading(entity);
+
+          this.updateEntityFading(entity);
         }
-      });
+      }.bind(this));
     },
 
     updatePlayerAggro: function () {
@@ -60,23 +59,14 @@ define(['character', 'timer'], function (Character, Timer) {
     },
 
     updateTransitions: function () {
-      var self = this,
-        m = null,
-        z = this.game.currentZoning;
-
       this.game.forEachEntity(function (entity) {
-        m = entity.movement;
-        if (m) {
-          if (m.inProgress) {
-            m.step(self.game.currentTime);
-          }
+        if (entity.movement && entity.movement.inProgress) {
+          entity.movement.step(this.game.currentTime);
         }
-      });
+      }.bind(this));
 
-      if (z) {
-        if (z.inProgress) {
-          z.step(this.game.currentTime);
-        }
+      if (this.game.currentZoning && this.game.currentZoning.inProgress) {
+        this.game.currentZoning.step(this.game.currentTime);
       }
     },
 
@@ -127,14 +117,13 @@ define(['character', 'timer'], function (Character, Timer) {
     },
 
     updateCharacter: function (c) {
-      var self = this;
-
       // Estimate of the movement distance for one update
       var tick = Math.round(16 / Math.round((c.moveSpeed / (1000 / this.game.renderer.FPS))));
 
       if (c.isMoving() && c.movement.inProgress === false) {
         if (c.orientation === Types.Orientations.LEFT) {
-          c.movement.start(this.game.currentTime,
+          c.movement.start(
+            this.game.currentTime,
             function (x) {
               c.x = x;
               c.moved();
@@ -146,9 +135,11 @@ define(['character', 'timer'], function (Character, Timer) {
             },
             c.x - tick,
             c.x - 16,
-            c.moveSpeed);
+            c.moveSpeed
+          );
         } else if (c.orientation === Types.Orientations.RIGHT) {
-          c.movement.start(this.game.currentTime,
+          c.movement.start(
+            this.game.currentTime,
             function (x) {
               c.x = x;
               c.moved();
@@ -160,9 +151,11 @@ define(['character', 'timer'], function (Character, Timer) {
             },
             c.x + tick,
             c.x + 16,
-            c.moveSpeed);
+            c.moveSpeed
+          );
         } else if (c.orientation === Types.Orientations.UP) {
-          c.movement.start(this.game.currentTime,
+          c.movement.start(
+            this.game.currentTime,
             function (y) {
               c.y = y;
               c.moved();
@@ -174,9 +167,11 @@ define(['character', 'timer'], function (Character, Timer) {
             },
             c.y - tick,
             c.y - 16,
-            c.moveSpeed);
+            c.moveSpeed
+          );
         } else if (c.orientation === Types.Orientations.DOWN) {
-          c.movement.start(this.game.currentTime,
+          c.movement.start(
+            this.game.currentTime,
             function (y) {
               c.y = y;
               c.moved();
@@ -188,7 +183,8 @@ define(['character', 'timer'], function (Character, Timer) {
             },
             c.y + tick,
             c.y + 16,
-            c.moveSpeed);
+            c.moveSpeed
+          );
         }
       }
     },
@@ -197,40 +193,35 @@ define(['character', 'timer'], function (Character, Timer) {
       var t = this.game.currentTime;
 
       this.game.forEachEntity(function (entity) {
-        var anim = entity.currentAnimation;
-
-        if (anim) {
-          if (anim.update(t)) {
-            entity.dirty();
-          }
+        if (entity.currentAnimation && entity.currentAnimation.update(t)) {
+          entity.dirty();
         }
       });
 
-      var sparks = this.game.sparksAnimation;
-      if (sparks) {
-        sparks.update(t);
+      if (this.game.sparksAnimation) {
+        this.game.sparksAnimation.update(t);
       }
 
-      var target = this.game.targetAnimation;
-      if (target) {
-        target.update(t);
+      if (this.game.targetAnimation) {
+        this.game.targetAnimation.update(t);
       }
     },
 
     updateAnimatedTiles: function () {
-      var self = this,
-        t = this.game.currentTime;
+      var t = this.game.currentTime;
 
       this.game.forEachAnimatedTile(function (tile) {
-        if (tile.animate(t)) {
-          tile.isDirty = true;
-          tile.dirtyRect = self.game.renderer.getTileBoundingRect(tile);
-
-          if (self.game.renderer.mobile || self.game.renderer.tablet) {
-            self.game.checkOtherDirtyRects(tile.dirtyRect, tile, tile.x, tile.y);
-          }
+        if (!tile.animate(t)) {
+          return;
         }
-      });
+        
+        tile.isDirty = true;
+        tile.dirtyRect = this.game.renderer.getTileBoundingRect(tile);
+
+        if (this.game.renderer.mobile || this.game.renderer.tablet) {
+          this.game.checkOtherDirtyRects(tile.dirtyRect, tile, tile.x, tile.y);
+        }
+      }.bind(this));
     },
 
     updateChatBubbles: function () {

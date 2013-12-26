@@ -3,11 +3,9 @@ define(['item'], function (Item) {
     init: function (kind, data) {
       this._super(0, kind);
 
-      var self = this;
-
       if (data) {
-        self.loadFromObject(data);
-        globalInventoryItems[data.id] = self;
+        this.loadFromObject(data);
+        globalInventoryItems[data.id] = this;
       }
     },
 

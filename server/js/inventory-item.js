@@ -32,12 +32,11 @@ module.exports = InventoryItem = Entity.extend({
     if (this.kind === Types.Entities.FIREPOTION) {
       this.player.broadcast(this.player.equip(Types.Entities.FIREFOX));
       this.amount--;
-      var self = this;
       this.player.firepotionTimeout = setTimeout(function () {
         // return to normal after 15 sec
-        self.player.broadcast(self.player.equip(self.player.armor));
-        self.player.firepotionTimeout = null;
-      }, 15000);
+        this.player.broadcast(this.player.equip(this.player.armor));
+        this.player.firepotionTimeout = null;
+      }.bind(this), 15000);
     } else if (Types.isHealingItem(this.kind)) {
       var amount;
 
@@ -157,15 +156,14 @@ module.exports = InventoryItem = Entity.extend({
     this.dbEntity.slot = this.data.slot;
     this.dbEntity.barSlot = this.data.barSlot;
 
-    var self = this;
     this._super(function () {
-      self.inventory.loadFromDB(function () {
-        self.inventory.player.syncInventory();
+      this.inventory.loadFromDB(function () {
+        this.inventory.player.syncInventory();
 
         if (callback) {
           callback();
         }
-      });
-    });
+      }.bind(this));
+    }.bind(this));
   }
 });

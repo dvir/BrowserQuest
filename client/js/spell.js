@@ -10,8 +10,6 @@ define(['spelleffect',
 
   var Spell = Class.extend({
     init: function (kind, target) {
-      var self = this;
-
       this.kind = kind;
       this._cooldown = 1;
       this._castTime = 1;

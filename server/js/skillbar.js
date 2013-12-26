@@ -74,51 +74,48 @@ module.exports = Skillbar = DBEntity.extend({
   remove: function (item) {},
 
   load: function (player, callback) {
-    var self = this;
-    self.player = player;
+    this.player = player;
 
     Skillbars.findOne({
-      playerId: self.player.getId()
+      playerId: this.player.getId()
     }, function (err, dbEntity) {
       if (err) {
-        log.debug("Failed fetching skillbar for player id '" + self.player.getId() + "'. Error: " + err);
+        log.debug("Failed fetching skillbar for player id '" + this.player.getId() + "'. Error: " + err);
         return;
       }
 
       if (dbEntity) {
         log.debug("Found previous skillbar record.");
       } else {
-        log.debug("Creating new skillbar record for player id '" + self.player.getId() + "'");
+        log.debug("Creating new skillbar record for player id '" + this.player.getId() + "'");
         var dbEntity = new Skillbars({
-          playerId: self.player.getId(),
+          playerId: this.player.getId(),
           size: 12,
           slots: []
         });
         dbEntity.save(function (err) {
           if (err) {
-            log.debug("Failed saving skillbar for player id '" + self.player.getId() + "'. Error: " + err);
+            log.debug("Failed saving skillbar for player id '" + this.player.getId() + "'. Error: " + err);
           }
-        });
+        }.bind(this));
       }
 
-      self.setDBEntity(dbEntity, callback);
-    });
+      this.setDBEntity(dbEntity, callback);
+    }.bind(this));
   },
 
   loadFromDB: function (callback) {
     if (!this.dbEntity) return;
 
-    var self = this;
-
     this._super();
 
-    if (!self.data) self.data = {};
+    if (!this.data) this.data = {};
 
-    Utils.Mixin(self.data, {
-      playerId: self.dbEntity.playerId,
-      size: self.dbEntity.size,
-      slots: self.dbEntity.slots,
-      id: self.dbEntity._id
+    Utils.Mixin(this.data, {
+      playerId: this.dbEntity.playerId,
+      size: this.dbEntity.size,
+      slots: this.dbEntity.slots,
+      id: this.dbEntity._id
     });
 
     if (callback) {

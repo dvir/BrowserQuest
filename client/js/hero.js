@@ -42,13 +42,12 @@ define(['character',
       this.stopBlinking();
       this.setSprite(globalSprites["death"]);
 
-      var self = this;
       this.animate("death", 120, 1, function () {
-        log.info(self.id + " was removed");
+        log.info(this.id + " was removed");
 
         setTimeout(function () {
-          globalGame.removeEntity(self);
-          globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
+          globalGame.removeEntity(this);
+          globalGame.removeFromRenderingGrid(this, this.gridX, this.gridY);
 
           globalGame.audioManager.fadeOutCurrentMusic();
           globalGame.audioManager.playSound("death");
@@ -76,7 +75,7 @@ define(['character',
           globalGame.hoveringCollidingTile = false;
 
           globalGame.playerDeath();
-        }, 1000);
+        }.bind(this), 1000);
       });
 
       this.forEachAttacker(function (attacker) {
@@ -86,12 +85,11 @@ define(['character',
     },
 
     checkAggro: function () {
-      var self = this;
       globalGame.forEachMob(function (mob) {
-        if (mob.isAggressive && !mob.isAttacking() && self.isNear(mob, mob.aggroRange)) {
-          self.aggro(mob);
+        if (mob.isAggressive && !mob.isAttacking() && this.isNear(mob, mob.aggroRange)) {
+          this.aggro(mob);
         }
-      });
+      }.bind(this));
     },
 
     aggro: function (character) {
@@ -120,14 +118,13 @@ define(['character',
         globalGame.enqueueZoningFrom(this.gridX, this.gridY);
       }
 
-      var self = this;
       this.forEachAttacker(function (attacker) {
         if (attacker.isAdjacent(attacker.target)) {
           attacker.lookAtTarget();
         } else {
-          attacker.follow(self);
+          attacker.follow(this);
         }
-      });
+      }.bind(this));
 
       if ((this.gridX <= 85 && this.gridY <= 179 && this.gridY > 178) ||  (this.gridX <= 85 && this.gridY <= 266 && this.gridY > 265)) {
         globalGame.tryUnlockingAchievement("INTO_THE_WILD");
@@ -201,12 +198,11 @@ define(['character',
         globalGame.audioManager.playSound("chest");
       }
 
-      var self = this;
       this.forEachAttacker(function (attacker) {
-        if (!attacker.isAdjacentNonDiagonal(self)) {
-          attacker.follow(self);
+        if (!attacker.isAdjacentNonDiagonal(this)) {
+          attacker.follow(this);
         }
-      });
+      }.bind(this));
 
       globalGame.unregisterEntityPosition(this);
       globalGame.registerEntityPosition(this);
@@ -261,8 +257,6 @@ define(['character',
     },
 
     startInvincibility: function () {
-      var self = this;
-
       if (this.invincible) {
         // If the player already has invincibility, just reset its duration.
         if (this.invincibleTimeout) {
@@ -274,9 +268,9 @@ define(['character',
       }
 
       this.invincibleTimeout = setTimeout(function () {
-        self.stopInvincibility();
-        self.idle();
-      }, 15000);
+        this.stopInvincibility();
+        this.idle();
+      }.bind(this), 15000);
     },
 
     stopInvincibility: function () {

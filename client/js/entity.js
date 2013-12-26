@@ -8,7 +8,9 @@ define(['lib/underscore.min'], function () {
     },
 
     init: function (id, kind) {
-      var self = this;
+      this.id = id || Math.floor(Math.random() * 100000 + 100000);
+
+      this.kind = kind;
 
       this.interactable = true;
 
@@ -18,24 +20,12 @@ define(['lib/underscore.min'], function () {
 
       // Renderer
       this.nameOffsetY = -10;
-
-      this.gridX = 0;
-      this.gridY = 0;
+      this.animations = {};
 
       // Position
+      this.gridX = 0;
+      this.gridY = 0;
       this.setGridPosition(0, 0);
-
-
-      if (id) {
-        this.id = id;
-      } else {
-        this.id = Math.floor(Math.random() * 100000 + 100000);
-      }
-
-      this.kind = kind;
-
-      // Renderer
-      this.animations = {};
 
       // Modes
       this.isLoaded = false;
@@ -180,8 +170,6 @@ define(['lib/underscore.min'], function () {
     },
 
     setAnimation: function (name, speed, count, onEndCount) {
-      var self = this;
-
       if (this.isLoaded) {
         if (this.currentAnimation && this.currentAnimation.name === name) {
           return;
@@ -197,8 +185,8 @@ define(['lib/underscore.min'], function () {
           }
           this.currentAnimation.setSpeed(speed);
           this.currentAnimation.setCount(count ? count : 0, onEndCount || function () {
-            self.idle();
-          });
+            this.idle();
+          }.bind(this));
         }
       } else {
         this.log_error("Not ready for animation");
@@ -321,7 +309,6 @@ define(['lib/underscore.min'], function () {
       callback(this.gridX, this.gridY - 1, Types.Orientations.UP);
       callback(this.gridX + 1, this.gridY, Types.Orientations.RIGHT);
       callback(this.gridX, this.gridY + 1, Types.Orientations.DOWN);
-
     },
 
     fadeIn: function (currentTime) {
@@ -330,11 +317,9 @@ define(['lib/underscore.min'], function () {
     },
 
     blink: function (speed, callback) {
-      var self = this;
-
       this.blinking = setInterval(function () {
-        self.toggleVisibility();
-      }, speed);
+        this.toggleVisibility();
+      }.bind(this), speed);
     },
 
     stopBlinking: function () {

@@ -76,17 +76,16 @@ define(['lib/astar'], function (AStar) {
     },
 
     applyIgnoreList_: function (ignored) {
-      var self = this,
-        x, y, g;
+      var x, y, g;
 
       _.each(this.ignored, function (entity) {
         x = entity.isMoving() ? entity.nextGridX : entity.gridX;
         y = entity.isMoving() ? entity.nextGridY : entity.gridY;
 
         if (x >= 0 && y >= 0) {
-          self.grid[y][x] = ignored ? 0 : 1;
+          this.grid[y][x] = ignored ? 0 : 1;
         }
-      });
+      }.bind(this));
     },
 
     clearIgnoreList: function () {

@@ -14,8 +14,6 @@ var cls = require("./lib/class"),
 
 module.exports = Player = Character.extend({
   init: function (connection, worldServer) {
-    var self = this;
-
     this.server = worldServer;
     this.connection = connection;
 
@@ -37,79 +35,72 @@ module.exports = Player = Character.extend({
     this.disconnectTimeout = null;
     this._invites = {};
 
-    this.playerenter_callback = function (isResurrection) {
-      self.updatePosition(isResurrection);
-      self.send([Types.Messages.WELCOME, self.getData()]);
-      self.hasEnteredGame = true;
-      self.isDead = false;
-
-      self.server.addPlayer(self, function () {
-        self.server.enter_callback(self);
-      });
-    };
-
-    this.connection.listen(function (message) {
+    this.connection.on("Message", function (message) {
       var action = parseInt(message[0]);
 
-      log.debug("Received (" + self.connection.id + "): " + message);
+      log.debug("Received (" + this.connection.id + "): " + message);
       if (!check(message)) {
-        self.connection.close("Invalid " + Types.getMessageTypeAsString(action) + " message format: " + message);
+        this.connection.close("Invalid " + Types.getMessageTypeAsString(action) + " message format: " + message);
         return;
       }
 
-      if (!self.hasEnteredGame && action !== Types.Messages.HELLO) { // HELLO must be the first message
-        self.connection.close("Invalid handshake message: " + message);
+      if (!this.hasEnteredGame && action !== Types.Messages.HELLO) { // HELLO must be the first message
+        this.connection.close("Invalid handshake message: " + message);
         return;
       }
-      if (self.hasEnteredGame && !self.isDead && action === Types.Messages.HELLO) { // HELLO can be sent only once
-        self.connection.close("Cannot initiate handshake twice: " + message);
+      if (this.hasEnteredGame && !this.isDead && action === Types.Messages.HELLO) { // HELLO can be sent only once
+        this.connection.close("Cannot initiate handshake twice: " + message);
         return;
       }
 
-      self.resetTimeout();
+      this.resetTimeout();
 
       if (action === Types.Messages.RESURRECT) {
-        self.hp = self.maxHP / 20;
-        self.playerenter_callback(true);
+        this.hp = this.maxHP / 20;
+        this.enter(true);
       } else if (action === Types.Messages.HELLO) {
         var name = Utils.sanitize(message[1]);
 
         // If name was cleared by the sanitizer, give a default name.
         // Always ensure that the name is not longer than a maximum length.
         // (also enforced by the maxlength attribute of the name input element).
-        self.name = (name === "") ? "lorem ipsum" : name.substr(0, 15);
+        this.name = (name === "") ? "lorem ipsum" : name.substr(0, 15);
 
-        self.kind = Types.Entities.PLAYER;
-        self.orientation = Utils.randomOrientation();
+        this.kind = Types.Entities.PLAYER;
+        this.orientation = Utils.randomOrientation();
 
         // find previous player with this id
         Players.findOne({
-          name: self.name
+          name: this.name
         }, function (err, dbPlayer) {
+          if (err) {
+            return;
+          }
+
           if (dbPlayer) {
             log.debug("Found previous player record '" + dbPlayer.name + "'");
           } else {
-            log.debug("Creating new player record '" + self.name + "'");
+            log.debug("Creating new player record '" + this.name + "'");
             var dbPlayer = new Players({
-              name: self.name,
-              xp: self.xp,
-              level: self.level,
-              hp: self.hp,
+              name: this.name,
+              xp: this.xp,
+              level: this.level,
+              hp: this.hp,
               armor: 21,
               weapon: 60,
-              x: self.x,
-              y: self.y
+              x: this.x,
+              y: this.y
             });
             dbPlayer.save();
           }
 
-          self.setDBEntity(dbPlayer, self.playerenter_callback);
-        });
+          this.setDBEntity(dbPlayer, this.enter.bind(this));
+        }.bind(this));
       } else if (action === Types.Messages.WHO) {
         message.shift();
-        self.server.pushSpawnsToPlayer(self, message);
+        this.server.pushSpawnsToPlayer(this, message);
       } else if (action === Types.Messages.ZONE) {
-        self.zone_callback();
+        this.trigger("Zone");
       } else if (action === Types.Messages.CHAT) {
         var msg = Utils.sanitize(message[1]);
         var channel = message[2];
@@ -118,110 +109,104 @@ module.exports = Player = Character.extend({
         if (msg && msg !== "") {
           msg = msg.substr(0, 60); // Enforce maxlength of chat input
           if (channel == "global") {
-            self.server.pushBroadcast(new Messages.Chat(self, msg, channel));
+            this.server.pushBroadcast(new Messages.Chat(this, msg, channel));
           } else if (channel == "yell") {
-            self.broadcast(new Messages.Chat(self, msg, channel), false);
+            this.broadcast(new Messages.Chat(this, msg, channel), false);
           } else if (channel == "party") {
-            if (self.party) {
-              self.party.broadcast(new Messages.Chat(self, msg, channel).serialize());
+            if (this.party) {
+              this.party.broadcast(new Messages.Chat(this, msg, channel).serialize());
             }
           } else if (channel == "say") {
-            self.broadcastToZone(new Messages.Chat(self, msg, channel), false);
+            this.broadcastToZone(new Messages.Chat(this, msg, channel), false);
           }
         }
       } else if (action === Types.Messages.MOVE) {
-        if (self.move_callback) {
-          var x = message[1],
-            y = message[2];
+        var x = message[1],
+          y = message[2];
 
-          if (self.server.isValidPosition(x, y)) {
-            self.setPosition(x, y);
-            self.clearTarget();
+        if (this.server.isValidPosition(x, y)) {
+          this.setPosition(x, y);
+          this.clearTarget();
 
-            self.broadcast(new Messages.Move(self), true);
-            self.move_callback(self.x, self.y);
-          }
+          this.broadcast(new Messages.Move(this), true);
+          this.trigger("Move", this.x, this.y);
         }
       } else if (action === Types.Messages.LOOTMOVE) {
-        if (self.lootmove_callback) {
-          self.setPosition(message[1], message[2]);
+        this.setPosition(message[1], message[2]);
 
-          var item = self.server.getEntityById(message[3]);
-          if (item) {
-            self.clearTarget();
+        var item = this.server.getEntityById(message[3]);
+        if (item) {
+          this.clearTarget();
 
-            self.broadcast(new Messages.LootMove(self, item), true);
-            self.lootmove_callback(self.x, self.y);
-          }
+          this.broadcast(new Messages.LootMove(this, item), true);
+          this.trigger("LootMove", this.x, this.y);
         }
       } else if (action === Types.Messages.AGGRO) {
-        if (self.move_callback) {
-          self.server.handleMobHate(message[1], self.id, 5);
-        }
+        this.server.handleMobHate(message[1], this.id, 5);
       } else if (action === Types.Messages.ATTACK) {
-        var mob = self.server.getEntityById(message[1]);
+        var mob = this.server.getEntityById(message[1]);
 
         if (mob) {
-          self.setTarget(mob);
-          self.server.broadcastAttacker(self);
+          this.setTarget(mob);
+          this.server.broadcastAttacker(this);
         }
       } else if (action === Types.Messages.HIT) {
-        var target = self.server.getEntityById(message[1]);
+        var target = this.server.getEntityById(message[1]);
         if (target) {
-          var dmg = Formulas.dmg(self.weaponLevel, target.armorLevel);
+          var dmg = Formulas.dmg(this.weaponLevel, target.armorLevel);
 
           if (dmg > 0) {
-            target.receiveDamage(dmg, self.id);
+            target.receiveDamage(dmg, this.id);
 
             if (target instanceof Mob) {
-              self.server.handleMobHate(target.id, self.id, dmg);
+              this.server.handleMobHate(target.id, this.id, dmg);
             }
 
-            self.server.handleHurtEntity(target, self, dmg);
+            this.server.handleHurtEntity(target, this, dmg);
           }
         }
       } else if (action === Types.Messages.HURT) {
-        var mob = self.server.getEntityById(message[1]);
-        if (mob && self.hp > 0) {
-          var damage = Formulas.dmg(mob.weaponLevel, self.armorLevel);
-          self.hp -= damage;
-          self.server.handleHurtEntity(self, mob, damage);
+        var mob = this.server.getEntityById(message[1]);
+        if (mob && this.hp > 0) {
+          var damage = Formulas.dmg(mob.weaponLevel, this.armorLevel);
+          this.hp -= damage;
+          this.server.handleHurtEntity(this, mob, damage);
 
-          if (self.hp <= 0) {
-            self.isDead = true;
-            if (self.firepotionTimeout) {
-              clearTimeout(self.firepotionTimeout);
+          if (this.hp <= 0) {
+            this.isDead = true;
+            if (this.firepotionTimeout) {
+              clearTimeout(this.firepotionTimeout);
             }
           }
         }
       } else if (action === Types.Messages.LOOT) {
-        var item = self.server.getEntityById(message[1]);
+        var item = this.server.getEntityById(message[1]);
         if (item) {
           if (Types.isItem(item.kind)) {
-            self.lootedItem(item);
+            this.lootedItem(item);
           }
         }
       } else if (action === Types.Messages.TELEPORT) {
         var x = message[1],
           y = message[2];
-        if (self.server.isValidPosition(x, y)) {
-          self.setPosition(x, y);
-          self.clearTarget();
+        if (this.server.isValidPosition(x, y)) {
+          this.setPosition(x, y);
+          this.clearTarget();
 
-          self.broadcast(new Messages.Teleport(self));
+          this.broadcast(new Messages.Teleport(this));
 
-          self.server.handlePlayerVanish(self);
-          self.server.pushRelevantEntityListTo(self);
+          this.server.handlePlayerVanish(this);
+          this.server.pushRelevantEntityListTo(this);
         }
       } else if (action === Types.Messages.OPEN) {
-        var chest = self.server.getEntityById(message[1]);
+        var chest = this.server.getEntityById(message[1]);
         if (chest && chest instanceof Chest) {
-          self.server.handleOpenedChest(chest, self);
+          this.server.handleOpenedChest(chest, this);
         }
       } else if (action === Types.Messages.CHECK) {
-        var checkpoint = self.server.map.getCheckpoint(message[1]);
+        var checkpoint = this.server.map.getCheckpoint(message[1]);
         if (checkpoint) {
-          self.lastCheckpoint = checkpoint;
+          this.lastCheckpoint = checkpoint;
         }
       } else if (action === Types.Messages.INVENTORY) {
 
@@ -233,15 +218,15 @@ module.exports = Player = Character.extend({
         //                Items.update({_id: inventoryItemId}, {$set: data});
         data._id = inventoryItemId;
         Items.save(data, function () {
-          self.inventory.loadFromDB();
-        });
+          this.inventory.loadFromDB();
+        }.bind(this));
       } else if (action === Types.Messages.INVENTORYSWAP) {
         var first = message[1],
           second = message[2];
-        self.inventory.swap(first, second);
+        this.inventory.swap(first, second);
       } else if (action === Types.Messages.USEITEM) {
         var id = message[1];
-        var item = self.inventory.find(id);
+        var item = this.inventory.find(id);
         if (item) {
           item.use();
         }
@@ -251,20 +236,20 @@ module.exports = Player = Character.extend({
           orientation = message[3],
           trackingId = message[4];
 
-        var target = self.server.getEntityById(targetId, true);
-        self.spellbook.use(spellId, target, orientation, trackingId);
+        var target = this.server.getEntityById(targetId, true);
+        this.spellbook.use(spellId, target, orientation, trackingId);
       } else if (action === Types.Messages.SKILLBAR) {
         var slots = message[1];
 
         if (slots) {
           data = {
             slots: slots,
-            playerId: self.getId(),
+            playerId: this.getId(),
             size: 12
           };
 
           Skillbars.findOneAndUpdate({
-            playerId: self.getId()
+            playerId: this.getId()
           }, data, {
             upsert: true
           }, DB.defaultCallback);
@@ -275,28 +260,28 @@ module.exports = Player = Character.extend({
         if (message[2]) {
           targetId = message[2];
         }
-        var item = self.inventory.find(id);
-        var target = self;
+        var item = this.inventory.find(id);
+        var target = this;
         if (targetId) {
-          self.server.getEntityById(targetId);
+          this.server.getEntityById(targetId);
         }
 
         if (item) {
-          self.throwItem(item, target);
+          this.throwItem(item, target);
         }
       } else if (action === Types.Messages.PARTY_INVITE) {
-        var inviter = self.server.getPlayerByID(message[1]);
-        var invitee = self.server.getPlayerByID(message[2]);
+        var inviter = this.server.getPlayerByID(message[1]);
+        var invitee = this.server.getPlayerByID(message[2]);
 
         inviter.invite(invitee);
       } else if (action === Types.Messages.PARTY_KICK) {
-        var player = self.server.getPlayerByID(message[1]);
+        var player = this.server.getPlayerByID(message[1]);
 
-        self.kick(player);
+        this.kick(player);
       } else if (action === Types.Messages.PARTY_ACCEPT) {
-        var inviter = self.server.getPlayerByID(message[1]);
+        var inviter = this.server.getPlayerByID(message[1]);
 
-        if (!inviter.hasInvited(self)) {
+        if (!inviter.hasInvited(this)) {
           // no invitation pending for this player
           return;
         }
@@ -308,38 +293,35 @@ module.exports = Player = Character.extend({
             return;
           }
 
-          inviter.party.join(self);
+          inviter.party.join(this);
         } else {
-          new Party(inviter, self);
+          new Party(inviter, this);
         }
 
-        inviter.removeInvite(self);
+        inviter.removeInvite(this);
       } else if (action === Types.Messages.PARTY_LEAVE) {
-        if (self.party) {
-          self.party.leave(self);
+        if (this.party) {
+          this.party.leave(this);
         }
       } else if (action === Types.Messages.PARTY_LEADER_CHANGE) {
-        var newLeader = self.server.getPlayerByID(message[1]);
+        var newLeader = this.server.getPlayerByID(message[1]);
 
-        if (newLeader != self && self.party && self.party.isLeader(self) && self.party.isMember(newLeader)) {
-          self.party.leader = newLeader;
+        if (newLeader != this && this.party && this.party.isLeader(this) && this.party.isMember(newLeader)) {
+          this.party.leader = newLeader;
         }
       } else {
-        if (self.message_callback) {
-          self.message_callback(message);
-        }
+        console.error("Unknown message received:");
+        console.error(message);
       }
-    });
+    }.bind(this));
 
-    this.connection.onClose(function () {
-      if (self.firepotionTimeout) {
-        clearTimeout(self.firepotionTimeout);
+    this.connection.on("Close", function () {
+      if (this.firepotionTimeout) {
+        clearTimeout(this.firepotionTimeout);
       }
-      clearTimeout(self.disconnectTimeout);
-      if (self.exit_callback) {
-        self.exit_callback();
-      }
-    });
+      clearTimeout(this.disconnectTimeout);
+      this.trigger("exit");
+    }.bind(this));
 
     this.connection.sendUTF8("go"); // Notify client that the HELLO/WELCOME handshake can start
   },
@@ -384,16 +366,14 @@ module.exports = Player = Character.extend({
   },
 
   destroy: function () {
-    var self = this;
-
     this.forEachAttacker(function (mob) {
       mob.clearTarget();
-    });
+    }.bind(this));
     this.attackers = {};
 
     this.forEachHater(function (mob) {
-      mob.forgetPlayer(self.id);
-    });
+      mob.forgetPlayer(this.id);
+    }.bind(this));
     this.haters = {};
   },
 
@@ -418,47 +398,11 @@ module.exports = Player = Character.extend({
   },
 
   broadcast: function (message, ignoreSelf) {
-    if (this.broadcast_callback) {
-      this.broadcast_callback(message, ignoreSelf === undefined ? false : ignoreSelf);
-    }
+    this.trigger("Broadcast", message, ignoreSelf === undefined ? false : ignoreSelf);
   },
 
   broadcastToZone: function (message, ignoreSelf) {
-    if (this.broadcastzone_callback) {
-      this.broadcastzone_callback(message, ignoreSelf === undefined ? false : ignoreSelf);
-    }
-  },
-
-  onExit: function (callback) {
-    this.exit_callback = callback;
-  },
-
-  onMove: function (callback) {
-    this.move_callback = callback;
-  },
-
-  onLootMove: function (callback) {
-    this.lootmove_callback = callback;
-  },
-
-  onZone: function (callback) {
-    this.zone_callback = callback;
-  },
-
-  onOrient: function (callback) {
-    this.orient_callback = callback;
-  },
-
-  onMessage: function (callback) {
-    this.message_callback = callback;
-  },
-
-  onBroadcast: function (callback) {
-    this.broadcast_callback = callback;
-  },
-
-  onBroadcastToZone: function (callback) {
-    this.broadcastzone_callback = callback;
+    this.trigger("BroadcastToZone", message, ignoreSelf === undefined ? false : ignoreSelf);
   },
 
   equip: function (item) {
@@ -505,7 +449,6 @@ module.exports = Player = Character.extend({
   },
 
   lootedItem: function (item) {
-    var self = this;
     var newItem = this.inventory.add(item);
     if (newItem) {
       log.debug(this.name + " looted " + Types.getKindAsString(item.kind));
@@ -571,14 +514,34 @@ module.exports = Player = Character.extend({
   },
 
   updatePosition: function (isResurrection) {
-    if (this.requestpos_callback) {
-      var pos = this.requestpos_callback(isResurrection);
-      this.setPosition(pos.x, pos.y);
+    var pos = this.requestPosition(isResurrection);
+    this.setPosition(pos.x, pos.y);
+  },
+
+  requestPosition: function (isResurrection) {
+    if (isResurrection && this.lastCheckpoint) {
+      return this.lastCheckpoint.getRandomPosition();
+    }
+
+    if (this.x == 0 && this.y == 0) {
+      return this.server.map.getRandomStartingPosition();
+    } else {
+      return {
+        x: this.x,
+        y: this.y
+      };
     }
   },
 
-  onRequestPosition: function (callback) {
-    this.requestpos_callback = callback;
+  enter: function (isResurrection) {
+    this.updatePosition(isResurrection);
+    this.send([Types.Messages.WELCOME, this.getData()]);
+    this.hasEnteredGame = true;
+    this.isDead = false;
+
+    this.server.addPlayer(this, function () {
+      this.server.entered(this);
+    }.bind(this));
   },
 
   resetTimeout: function () {
@@ -600,8 +563,6 @@ module.exports = Player = Character.extend({
   loadFromDB: function (callback) {
     if (!this.dbEntity) return;
 
-    var self = this;
-
     this._super();
 
     Utils.Mixin(this.data, {
@@ -617,8 +578,8 @@ module.exports = Player = Character.extend({
 
     this.spellbook = new Spellbook(this);
     this.inventory = new Inventory(this, function () {
-      self.skillbar = new Skillbar(self, callback);
-    });
+      this.skillbar = new Skillbar(this, callback);
+    }.bind(this));
   },
 
   save: function () {

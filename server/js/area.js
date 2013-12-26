@@ -31,9 +31,9 @@ module.exports = Area = cls.Class.extend({
     var i = _.indexOf(_.pluck(this.entities, 'id'), entity.id);
     this.entities.splice(i, 1);
 
-    if (this.isEmpty() && this.hasCompletelyRespawned && this.empty_callback) {
+    if (this.isEmpty() && this.hasCompletelyRespawned) {
       this.hasCompletelyRespawned = false;
-      this.empty_callback();
+      this.trigger("Empty");
     }
   },
 
@@ -63,9 +63,5 @@ module.exports = Area = cls.Class.extend({
 
   isFull: function () {
     return !this.isEmpty() && (this.nbEntities === _.size(this.entities));
-  },
-
-  onEmpty: function (callback) {
-    this.empty_callback = callback;
   }
 });

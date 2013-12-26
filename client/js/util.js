@@ -1,9 +1,8 @@
-Function.prototype.bind = function (bind) {
-  var self = this;
+Function.prototype._bind = function (bind) {
   return function () {
     var args = Array.prototype.slice.call(arguments);
-    return self.apply(bind || null, args);
-  };
+    return this.apply(bind || null, args);
+  }.bind(this);
 };
 
 var isInt = function (n) {

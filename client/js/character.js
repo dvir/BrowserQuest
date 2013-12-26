@@ -21,7 +21,6 @@ define(['entity',
     },
 
     init: function (id, kind) {
-      var self = this;
       this._super(id, kind);
 
       this._hp = 0;
@@ -81,14 +80,13 @@ define(['entity',
     },
 
     getNearestEnemies: function (entities) {
-      var self = this;
       entities = _.reject(entities, function (entity) {
-        return (self == entity || false == self.isHostile(entity) || entity.isDead);
-      });
+        return (this == entity || false == this.isHostile(entity) || entity.isDead);
+      }.bind(this));
 
       entities = _.sortBy(entities, function (entity) {
-        return self.distanceTo(entity);
-      });
+        return this.distanceTo(entity);
+      }.bind(this));
 
       return entities;
     },
@@ -280,12 +278,11 @@ define(['entity',
           this.lookAtTarget();
         }
 
-        var self = this;
         this.forEachAttacker(function (attacker) {
-          if (!attacker.isAdjacentNonDiagonal(self) && attacker.id !== self.id) {
-            attacker.follow(self);
+          if (!attacker.isAdjacentNonDiagonal(this) && attacker.id !== this.id) {
+            attacker.follow(this);
           }
-        });
+        }.bind(this));
 
         globalGame.unregisterEntityPosition(this);
         globalGame.registerEntityPosition(this);
@@ -392,14 +389,13 @@ define(['entity',
       if (!this.isDying) {
         globalGame.registerEntityDualPosition(this);
 
-        var self = this;
         this.forEachAttacker(function (attacker) {
           if (attacker.isAdjacent(attacker.target)) {
             attacker.lookAtTarget();
           } else {
-            attacker.follow(self);
+            attacker.follow(this);
           }
-        });
+        }.bind(this));
       }
     },
 
@@ -584,8 +580,6 @@ define(['entity',
      * Removes the current attack target.
      */
     removeTarget: function () {
-      var self = this;
-
       if (this.target) {
         if (this.target instanceof Character) {
           this.target.removeAttacker(this);
@@ -651,13 +645,12 @@ define(['entity',
       this.isDying = true;
       this.setSprite(globalGame.sprites["death"]);
 
-      var self = this;
       this.animate("death", 120, 1, function () {
-        log.info(self.id + " was removed");
+        log.info(this.id + " was removed");
 
-        globalGame.removeEntity(self);
-        globalGame.removeFromRenderingGrid(self, self.gridX, self.gridY);
-      });
+        globalGame.removeEntity(this);
+        globalGame.removeFromRenderingGrid(this, this.gridX, this.gridY);
+      }.bind(this));
 
       this.forEachAttacker(function (attacker) {
         attacker.disengage();
@@ -687,8 +680,6 @@ define(['entity',
     },
 
     hurt: function () {
-      var self = this;
-
       this.stopHurting();
       this.sprite = this.hurtSprite;
       this.hurting = setTimeout(this.stopHurting.bind(this), 75);

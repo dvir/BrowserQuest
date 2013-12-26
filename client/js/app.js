@@ -36,8 +36,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     tryStartingGame: function (username, starting_callback) {
-      var self = this,
-        $play = this.$playButton;
+      var $play = this.$playButton;
 
       if (username !== '') {
         if (!this.ready || !this.canStartGame()) {
@@ -48,16 +47,16 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
           this.$playDiv.unbind('click');
           var watchCanStart = setInterval(function () {
             log.debug("waiting...");
-            if (self.canStartGame()) {
+            if (this.canStartGame()) {
               setTimeout(function () {
-                if (!self.isMobile) {
+                if (!this.isMobile) {
                   $play.removeClass('loading');
                 }
-              }, 1500);
+              }.bind(this), 1500);
               clearInterval(watchCanStart);
-              self.startGame(username, starting_callback);
+              this.startGame(username, starting_callback);
             }
-          }, 100);
+          }.bind(this), 100);
         } else {
           this.$playDiv.unbind('click');
           this.startGame(username, starting_callback);
@@ -66,55 +65,54 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     startGame: function (username, starting_callback) {
-      var self = this;
-
       if (starting_callback) {
         starting_callback();
       }
       this.hideIntro(function () {
-        if (!self.isDesktop) {
+        if (!this.isDesktop) {
           // On mobile and tablet we load the map after the player has clicked
           // on the PLAY button instead of loading it in a web worker.
-          self.game.loadMap();
+          this.game.loadMap();
         }
-        self.start(username);
-      });
+        this.start(username);
+      }.bind(this));
     },
 
     start: function (username) {
-      var self = this,
-        firstTimePlaying = !self.storage.hasAlreadyPlayed();
+      var firstTimePlaying = !this.storage.hasAlreadyPlayed();
 
-      if (username && !this.game.started) {
-        var optionsSet = false,
-          config = this.config;
-
-        //>>includeStart("devHost", pragmas.devHost);
-        if (config.local) {
-          log.debug("Starting game with local dev config.");
-          this.game.setServerOptions(config.local.host, config.local.port, username);
-        } else {
-          log.debug("Starting game with default dev config.");
-          this.game.setServerOptions(config.dev.host, config.dev.port, username);
-        }
-        optionsSet = true;
-        //>>includeEnd("devHost");
-
-        //>>includeStart("prodHost", pragmas.prodHost);
-        if (!optionsSet) {
-          log.debug("Starting game with build config.");
-          this.game.setServerOptions(config.build.host, config.build.port, username);
-        }
-        //>>includeEnd("prodHost");
-
-        this.center();
-        this.game.run(function () {
-          $('body').addClass('started');
-          if (firstTimePlaying) {
-            self.toggleInstructions();
-          }
-        });
+      if (!username || this.game.started) {
+        return;
       }
+
+      var optionsSet = false;
+      var config = this.config;
+
+      //>>includeStart("devHost", pragmas.devHost);
+      if (config.local) {
+        log.debug("Starting game with local dev config.");
+        this.game.setServerOptions(config.local.host, config.local.port, username);
+      } else {
+        log.debug("Starting game with default dev config.");
+        this.game.setServerOptions(config.dev.host, config.dev.port, username);
+      }
+      optionsSet = true;
+      //>>includeEnd("devHost");
+
+      //>>includeStart("prodHost", pragmas.prodHost);
+      if (!optionsSet) {
+        log.debug("Starting game with build config.");
+        this.game.setServerOptions(config.build.host, config.build.port, username);
+      }
+      //>>includeEnd("prodHost");
+
+      this.center();
+      this.game.run(function () {
+        $('body').addClass('started');
+        if (firstTimePlaying) {
+          this.toggleInstructions();
+        }
+      }.bind(this));
     },
 
     setMouseCoordinates: function (event) {
@@ -180,12 +178,11 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     initTargetBar: function () {
-      var self = this;
       var $target = $("#target");
 
       this.game.on("TargetChange", function () {
-        var scale = self.game.renderer.getScaleFactor();
-        var target = self.game.player.target;
+        var scale = this.game.renderer.getScaleFactor();
+        var target = this.game.player.target;
 
         if (!target) {
           $target.hide();
@@ -197,7 +194,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
         target.on("change", function () {
           healthbar.update();
         });
-      });
+      }.bind(this));
     },
 
     toggleButton: function () {
@@ -256,15 +253,14 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     resetPage: function () {
-      var self = this,
-        $achievements = $('#achievements');
+      var $achievements = $('#achievements');
 
       if ($achievements.hasClass('active')) {
         $achievements.bind(TRANSITIONEND, function () {
-          $achievements.removeClass('page' + self.currentPage).addClass('page1');
-          self.currentPage = 1;
+          $achievements.removeClass('page' + this.currentPage).addClass('page1');
+          this.currentPage = 1;
           $achievements.unbind(TRANSITIONEND);
-        });
+        }.bind(this));
       }
     },
 
@@ -276,7 +272,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     updateInventory: function () {
-      var self = this;
+      var app = this;
       var scale = this.game.renderer.getScaleFactor();
       var inventory = this.game.player.inventory;
       var $inventory = $("#inventory"),
@@ -306,8 +302,8 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
             // @TODO: allow throwing toward another player
             // throw it on the ground
             inventory.throwItem($(this).data("slot").toInt());
-            self.updateInventory();
-            self.updateSkillbar();
+            app.updateInventory();
+            app.updateSkillbar();
           }
         }).on("mousedown", function (e) {
           if (e.which == 3) { // right mouse button
@@ -347,7 +343,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
           inventory.swap($dragSrc.data("slot").toInt(), $currentDiv.data("slot").toInt());
 
           $dragSrc = null;
-          self.updateInventory();
+          app.updateInventory();
         });
 
         if (item) { // might be an empty slot
@@ -367,7 +363,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     updateSkillbar: function () {
-      var self = this;
+      var app = this;
       var scale = this.game.renderer.getScaleFactor();
       var skillbar = this.game.player.skillbar;
       var $skillbar = $("#skillbar"),
@@ -395,8 +391,8 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
 
             // let it "fall" off skillbar
             skillbar.remove($(this).data("slot").toInt());
-            self.updateInventory();
-            self.updateSkillbar();
+            app.updateInventory();
+            app.updateSkillbar();
           }
         });
 
@@ -441,7 +437,7 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
           }
 
           $dragSrc = null;
-          self.updateSkillbar();
+          app.updateSkillbar();
         });
 
         $list.append($skillSlot);
@@ -538,13 +534,13 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     initAchievementList: function (achievements) {
-      var self = this,
-        $lists = $('#lists'),
-        $page = $('#page-tmpl'),
-        $achievement = $('#achievement-tmpl'),
-        page = 0,
-        count = 0,
-        $p = null;
+      var app = this;
+      var $lists = $('#lists');
+      var $page = $('#page-tmpl');
+      var $achievement = $('#achievement-tmpl');
+      var page = 0;
+      var count = 0;
+      var $p = null;
 
       _.each(achievements, function (achievement) {
         count++;
@@ -553,14 +549,14 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
         $a.removeAttr('id');
         $a.addClass('achievement' + count);
         if (!achievement.hidden) {
-          self.setAchievementData($a, achievement.name, achievement.desc);
+          app.setAchievementData($a, achievement.name, achievement.desc);
         }
         $a.find('.twitter').attr('href', 'http://twitter.com/share?url=http%3A%2F%2Fbrowserquest.mozilla.org&text=I%20unlocked%20the%20%27' + achievement.name + '%27%20achievement%20on%20Mozilla%27s%20%23BrowserQuest%21&related=glecollinet:Creators%20of%20BrowserQuest%2Cwhatthefranck');
         $a.show();
         $a.find('a').click(function () {
           var url = $(this).attr('href');
 
-          self.openPopup('twitter', url);
+          app.openPopup('twitter', url);
           return false;
         });
 
@@ -578,11 +574,9 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     initUnlockedAchievements: function (ids) {
-      var self = this;
-
       _.each(ids, function (id) {
-        self.displayUnlockedAchievement(id);
-      });
+        this.displayUnlockedAchievement(id);
+      }.bind(this));
       $('#unlocked-achievements').text(ids.length);
     },
 
@@ -696,32 +690,35 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     animateParchment: function (origin, destination) {
-      var self = this,
-        $parchment = $('#parchment'),
-        duration = 1;
+      var $parchment = $('#parchment');
+      var duration = 1;
 
       if (this.isMobile) {
         $parchment.removeClass(origin).addClass(destination);
-      } else {
-        if (this.isParchmentReady) {
-          if (this.isTablet) {
-            duration = 0;
-          }
-          this.isParchmentReady = !this.isParchmentReady;
-
-          $parchment.toggleClass('animate');
-          $parchment.removeClass(origin);
-
-          setTimeout(function () {
-            $('#parchment').toggleClass('animate');
-            $parchment.addClass(destination);
-          }, duration * 1000);
-
-          setTimeout(function () {
-            self.isParchmentReady = !self.isParchmentReady;
-          }, duration * 1000);
-        }
+        return;
       }
+
+      if (!this.isParchmentReady) {
+        return;
+      }
+
+      if (this.isTablet) {
+        duration = 0;
+      }
+
+      this.isParchmentReady = !this.isParchmentReady;
+
+      $parchment.toggleClass('animate');
+      $parchment.removeClass(origin);
+
+      setTimeout(function () {
+        $('#parchment').toggleClass('animate');
+        $parchment.addClass(destination);
+      }.bind(this), duration * 1000);
+
+      setTimeout(function () {
+        this.isParchmentReady = !this.isParchmentReady;
+      }.bind(this), duration * 1000);
     },
 
     animateMessages: function () {
@@ -739,8 +736,8 @@ define(['jquery', 'storage', 'healthbar', '../../shared/js/gametypes'], function
     },
 
     showMessage: function (message) {
-      var $wrapper = $('#notifications div'),
-        $message = $('#notifications #message2');
+      var $wrapper = $('#notifications div');
+      var $message = $('#notifications #message2');
 
       this.animateMessages();
       $message.text(message);

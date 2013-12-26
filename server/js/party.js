@@ -79,8 +79,7 @@ module.exports = Party = Class.extend({
 
     this.broadcast(
       new Messages.PartyJoin(entity).serialize(),
-      /* skip self */
-      entity
+      /* skip self */ entity
     );
     entity.send(new Messages.PartyInitialJoin(this).serialize());
   },

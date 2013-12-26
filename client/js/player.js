@@ -60,7 +60,7 @@ define(['character',
 
     loot: function (item) {
       log.info('Player ' + this.id + ' has looted ' + item.id);
-      item.onLoot(this);
+      item.looted(this);
     },
 
     /**
@@ -121,9 +121,8 @@ define(['character',
     },
 
     switchWeapon: function (item) {
-      var count = 14,
-        value = false,
-        self = this;
+      var count = 14;
+      var value = false;
 
       var toggle = function () {
         value = !value;
@@ -137,25 +136,24 @@ define(['character',
       this.switchingWeapon = true;
       var blanking = setInterval(function () {
         if (toggle()) {
-          self.weapon = item.kind;
+          this.weapon = item.kind;
         } else {
-          self.weapon = null;
+          this.weapon = null;
         }
 
         count -= 1;
         if (count === 1) {
           clearInterval(blanking);
-          self.switchingWeapon = false;
+          this.switchingWeapon = false;
 
-          self.changedEquipment();
+          this.changedEquipment();
         }
-      }, 90);
+      }.bind(this), 90);
     },
 
     switchArmor: function (item) {
-      var count = 14,
-        value = false,
-        self = this;
+      var count = 14;
+      var value = false;
 
       var toggle = function () {
         value = !value;
@@ -167,25 +165,23 @@ define(['character',
       }
 
       this.isSwitchingArmor = true;
-      self.armor = item.kind;
+      this.armor = item.kind;
       var blanking = setInterval(function () {
-        self.setVisible(toggle());
+        this.setVisible(toggle());
 
         count -= 1;
         if (count === 1) {
           clearInterval(blanking);
-          self.isSwitchingArmor = false;
+          this.isSwitchingArmor = false;
 
-          self.changedEquipment();
+          this.changedEquipment();
         }
-      }, 90);
+      }.bind(this), 90);
     },
 
     changedEquipment: function () {},
 
     startInvincibility: function () {
-      var self = this;
-
       if (this.invincible) {
         // If the player already has invincibility, just reset its duration.
         if (this.invincibleTimeout) {
@@ -197,9 +193,9 @@ define(['character',
       }
 
       this.invincibleTimeout = setTimeout(function () {
-        //self.stopInvincibility();
-        self.idle();
-      }, 15000);
+        //this.stopInvincibility();
+        this.idle();
+      }.bind(this), 15000);
     },
 
     stopInvincibility: function () {

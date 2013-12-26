@@ -121,7 +121,7 @@ define(['item'], function (Item) {
         this._name = "Fire Potion";
       },
 
-      onLoot: function (player) {
+      looted: function (player) {
         player.startInvincibility();
       },
     }),

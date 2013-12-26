@@ -128,9 +128,8 @@ define(['exceptions',
 
         // find the first available slot and place
         // the skill in it
-        var self = this;
-        for (var key in self._skills) {
-          if (!self._skills[key]) {
+        for (var key in this._skills) {
+          if (!this._skills[key]) {
             this.set(key, skill);
             return;
           }
@@ -160,7 +159,6 @@ define(['exceptions',
 
         this.reset();
 
-        var self = this;
         $.each(data, function (id, slot) {
           var skill;
           if (Types.getType(slot.kind) == "spell") {
@@ -170,9 +168,9 @@ define(['exceptions',
           }
 
           if (skill) {
-            self._skills[slot.slot] = new SkillSlot(skill);
+            this._skills[slot.slot] = new SkillSlot(skill);
           }
-        });
+        }.bind(this));
 
         this.update();
       },

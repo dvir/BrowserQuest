@@ -31,17 +31,16 @@ module.exports = DBEntity = cls.Class.extend({
   save: function (callback) {
     if (!this.dbEntity || !this.isDirty) return;
 
-    var self = this;
-    self.dbEntity.save(function (err) {
+    this.dbEntity.save(function (err) {
       if (err) {
         log.debug("error saving: " + err);
-      } else {
-        self.isDirty = false;
-        if (callback) {
-          callback();
-        }
-      }
-    });
+        return;
+      } 
 
+      this.isDirty = false;
+      if (callback) {
+        callback();
+      }
+    }.bind(this));
   }
 });

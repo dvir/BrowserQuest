@@ -47,51 +47,50 @@ module.exports = Spell = Entity.extend({
       server.handleMobHate(target.id, attacker.id, dmg);
       server.handleHurtEntity(target, attacker, dmg);
     } else if (this.spellType == "directional") {
-      var self = this;
-      server.addEntity(self);
-      server.moveEntity(self, attacker.x, attacker.y);
-      self.travelDistance = 0;
-      self.interval = setInterval(function () {
-        if (self.travelDistance > self.range) {
-          clearInterval(self.interval);
-          clearTimeout(self.timeout);
-          server.removeEntity(self);
+      server.addEntity(this);
+      server.moveEntity(this, attacker.x, attacker.y);
+      this.travelDistance = 0;
+      this.interval = setInterval(function () {
+        if (this.travelDistance > this.range) {
+          clearInterval(this.interval);
+          clearTimeout(this.timeout);
+          server.removeEntity(this);
           return;
         }
 
-        if (server.groups[self.group]) {
-          var entities = server.groups[self.group].entities;
+        if (server.groups[this.group]) {
+          var entities = server.groups[this.group].entities;
 
           entities = _.reject(entities, function (entity) {
-            return (!(entity instanceof Mob)) || self.distanceTo(entity) > self.radius;
-          });
+            return (!(entity instanceof Mob)) || this.distanceTo(entity) > this.radius;
+          }.bind(this));
 
           if (_.size(entities) > 0) {
             var entity = _.min(entities, function (entity) {
-              return self.distanceTo(entity);
-            });
+              return this.distanceTo(entity);
+            }.bind(this));
 
-            var dmg = self.dmg;
+            var dmg = this.dmg;
             entity.receiveDamage(dmg, attacker.id);
             server.handleMobHate(entity.id, attacker.id, dmg);
             server.handleHurtEntity(entity, attacker, dmg);
 
-            clearInterval(self.interval);
-            clearTimeout(self.timeout);
-            server.removeEntity(self);
+            clearInterval(this.interval);
+            clearTimeout(this.timeout);
+            server.removeEntity(this);
             return;
           }
         }
 
-        var pos = self.moveSteps(1, orientation);
-        server.moveEntity(self, pos.x, pos.y);
-        self.travelDistance++;
-      }, 80);
+        var pos = this.moveSteps(1, orientation);
+        server.moveEntity(this, pos.x, pos.y);
+        this.travelDistance++;
+      }.bind(this), 80);
 
-      self.timeout = setTimeout(function () {
-        clearInterval(self.interval);
-        server.removeEntity(self);
-      }, 3000);
+      this.timeout = setTimeout(function () {
+        clearInterval(this.interval);
+        server.removeEntity(this);
+      }.bind(this), 3000);
     } else if (this.spellType == "aoe") {
       // area of effect 
       // there are two options - AOE around attacker, or AOE around target
@@ -119,9 +118,8 @@ module.exports = Spell = Entity.extend({
         return (!(entity instanceof Mob)) || centerEntity.distanceTo(entity) > radius;
       });
 
-      var self = this;
+      var dmg = this.dmg;
       _.forEach(entities, function (entity) {
-        var dmg = self.dmg;
         entity.receiveDamage(dmg, attacker.id);
         server.handleMobHate(entity.id, attacker.id, dmg);
         server.handleHurtEntity(entity, attacker, dmg);

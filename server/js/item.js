@@ -15,12 +15,10 @@ module.exports = Item = Entity.extend({
   },
 
   handleDespawn: function (params) {
-    var self = this;
-
     this.blinkTimeout = setTimeout(function () {
       params.blinkCallback();
-      self.despawnTimeout = setTimeout(params.despawnCallback, params.blinkingDuration);
-    }, params.beforeBlinkDelay);
+      this.despawnTimeout = setTimeout(params.despawnCallback, params.blinkingDuration);
+    }.bind(this), params.beforeBlinkDelay);
   },
 
   destroy: function () {
@@ -41,15 +39,8 @@ module.exports = Item = Entity.extend({
   },
 
   scheduleRespawn: function (delay) {
-    var self = this;
     setTimeout(function () {
-      if (self.respawn_callback) {
-        self.respawn_callback();
-      }
-    }, delay);
-  },
-
-  onRespawn: function (callback) {
-    this.respawn_callback = callback;
+      this.trigger("Respawn");
+    }.bind(this), delay);
   }
 });
