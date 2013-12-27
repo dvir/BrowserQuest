@@ -46,7 +46,6 @@ define(['player',
       this.handlers[Types.Messages.LIST] = this.receiveList;
       this.handlers[Types.Messages.DESTROY] = this.receiveDestroy;
       this.handlers[Types.Messages.KILL] = this.receiveKill;
-      this.handlers[Types.Messages.HP] = this.receiveHitPoints;
       this.handlers[Types.Messages.BLINK] = this.receiveBlink;
       this.handlers[Types.Messages.XP] = this.receiveXP;
       this.handlers[Types.Messages.LEVEL] = this.receiveLevel;
@@ -745,14 +744,6 @@ define(['player',
           globalGame.removeEntity(entity);
         }
         log.debug("Entity was destroyed: " + entity.id);
-      }
-    },
-
-    receiveHitPoints: function (data) {
-      var maxHp = data[1];
-
-      if (this.hp_callback) {
-        this.hp_callback(maxHp);
       }
     },
 

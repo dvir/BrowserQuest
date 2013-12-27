@@ -24,7 +24,6 @@ Types = {
         WHO: 20,
         ZONE: 21,
         DESTROY: 22,
-        HP: 23,
         BLINK: 24,
         OPEN: 25,
         CHECK: 26,

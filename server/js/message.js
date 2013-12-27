@@ -73,16 +73,6 @@ Messages.Attack = Message.extend({
   }
 });
 
-Messages.HitPoints = Message.extend({
-  init: function (maxHitPoints) {
-    this.maxHitPoints = maxHitPoints;
-  },
-  serialize: function () {
-    return [Types.Messages.HP,
-      this.maxHitPoints];
-  }
-});
-
 Messages.EquipItem = Message.extend({
   init: function (player, itemKind) {
     this.playerId = player.id;
