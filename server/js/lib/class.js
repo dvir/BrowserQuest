@@ -68,7 +68,7 @@ Class.extend = function(prop) {
                 }
 
                 for (var x in names) {
-                  var name = names;
+                  var name = names[x];
 
                   if (!this.callbacks.hasOwnProperty(name)) {
                       this.callbacks[name] = [];
