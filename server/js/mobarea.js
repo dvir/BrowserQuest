@@ -60,7 +60,7 @@ module.exports = MobArea = Area.extend({
           }
         }
       }.bind(this));
-    }, 500);
+    }.bind(this), 500);
   },
 
   createReward: function () {

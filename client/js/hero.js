@@ -76,7 +76,7 @@ define(['character',
 
           globalGame.playerDeath();
         }.bind(this), 1000);
-      });
+      }.bind(this));
 
       this.forEachAttacker(function (attacker) {
         attacker.disengage();
