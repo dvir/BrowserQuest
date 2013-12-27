@@ -861,11 +861,14 @@ define([
         this.context.restore();
 
         // Overlay UI elements
+        // NOTE: keep the order, as this defines the layers of the frame.
+        // for example, drawing the cursor should happen last so it appears above all UI elements.
         this.drawMapInfo();
-        this.drawCursor();
         this.drawDebugInfo();
         this.drawChat();
         this.drawParty();
+
+        this.drawCursor();
       },
 
       renderFrameMobile: function () {
