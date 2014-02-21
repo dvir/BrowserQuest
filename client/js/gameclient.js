@@ -62,6 +62,14 @@ define(['player',
       this.handlers[Types.Messages.PARTY_KICK] = this.receivePartyKick;
       this.handlers[Types.Messages.PARTY_LEADER_CHANGE] = this.receivePartyLeaderChange;
 
+      this.handlers[Types.Messages.GUILD_INVITE] = this.receiveGuildInvite;
+      this.handlers[Types.Messages.GUILD_KICK] = this.receiveGuildKick;
+      this.handlers[Types.Messages.GUILD_MEMBERS] = this.receiveGuildMembers;
+
+      this.handlers[Types.Messages.COMMAND_NOTICE] = this.receiveCommandNotice;
+      this.handlers[Types.Messages.COMMAND_ERROR] = this.receiveCommandError;
+      this.handlers[Types.Messages.ERROR] = this.receiveError;
+
       this.chat = new Chat();
 
       this.useBison = false;
@@ -359,6 +367,65 @@ define(['player',
       var player = globalGame.getPlayerByID(data[1]);
 
       globalGame.player.party.setLeader(player);
+    },
+
+    receiveGuildInvite: function (data) {
+      var inviterName = data[1];
+      var guildName = data[2];
+
+      this.notice(
+        "You were invited to join the guild '%s' by %s. '/gaccept %s' to accept.",
+        guildName,
+        inviterName,
+        inviterName
+      );
+      return;
+    },
+
+    receiveGuildKick: function (data) {
+      var kickerName = data[1];
+      var kickedName = data[2];
+
+      if (kickedName == globalGame.player.name) {
+        this.notice(
+          "You were kicked from the guild by %s.",
+          kickerName
+        );
+      } else {
+        this.notice(
+          "%s was kicked from the guild by %s.",
+          kickedName,
+          kickerName
+        );
+      }
+    },
+
+    receiveGuildMembers: function (data) {
+      var members = data[1];
+      this.notice("Members of %s:", globalGame.player.guild.name);
+      for (var i in members) {
+        this.notice(
+          "%s (%s)%s",
+          members[i].name,
+          members[i].rank,
+          members[i].online ? " - Online" : ""
+        );
+      }
+    },
+
+    receiveCommandNotice: function (data) {
+      var noticeMessage = data[1];
+      this.notice(noticeMessage);
+    },
+
+    receiveCommandError: function (data) {
+      var errorMessage = data[1];
+      this.error(errorMessage);
+    },
+
+    receiveError: function (data) {
+      var errorMessage = data[1];
+      this.error(errorMessage);
     },
 
     receiveAttack: function (data) {
@@ -948,6 +1015,49 @@ define(['player',
         playerId
       ]);
     },
+
+    sendGuildCreate: function (name) {
+      this.sendMessage([Types.Messages.GUILD_CREATE,
+        name
+      ]);
+    },
+
+    sendGuildAccept: function (name) {
+      this.sendMessage([Types.Messages.GUILD_ACCEPT,
+        name
+      ]);
+    },
+
+    sendGuildLeaderChange: function (name) {
+      this.sendMessage([Types.Messages.GUILD_LEADER_CHANGE,
+        name
+      ]);
+    },
+
+    sendGuildQuit: function () {
+      this.sendMessage([Types.Messages.GUILD_QUIT]);
+    },
+
+    sendGuildInvite: function (name) {
+      this.sendMessage([Types.Messages.GUILD_INVITE,
+        name
+      ]);
+    },
+
+    sendGuildKick: function (name) {
+      this.sendMessage([Types.Messages.GUILD_KICK,
+        name
+      ]);
+    },
+
+    sendGuildOnline: function () {
+      this.sendMessage([Types.Messages.GUILD_ONLINE]);
+    },
+
+    sendGuildMembers: function () {
+      this.sendMessage([Types.Messages.GUILD_MEMBERS]);
+    },
+
     sendLoot: function (item) {
       this.sendMessage([Types.Messages.LOOT,
         item.id

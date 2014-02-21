@@ -33,7 +33,8 @@ module.exports = Player = Character.extend({
     this.lastCheckpoint = null;
     this.formatChecker = new FormatChecker();
     this.disconnectTimeout = null;
-    this._invites = {};
+    this._partyInvites = {};
+    this._guildInvites = {};
 
     this.connection.on("Message", function (message) {
       var action = parseInt(message[0]);
@@ -70,9 +71,10 @@ module.exports = Player = Character.extend({
         this.orientation = Utils.randomOrientation();
 
         // find previous player with this id
-        Players.findOne({
-          name: this.name
-        }, function (err, dbPlayer) {
+        Players
+        .findOne({name: this.name})
+        .populate('guild')
+        .exec(function (err, dbPlayer) {
           if (err) {
             return;
           }
@@ -115,6 +117,10 @@ module.exports = Player = Character.extend({
           } else if (channel == "party") {
             if (this.party) {
               this.party.broadcast(new Messages.Chat(this, msg, channel).serialize());
+            }
+          } else if (channel == "guild") {
+            if (this.guild) {
+              this.guild.broadcast(this.server, new Messages.Chat(this, msg, channel).serialize());
             }
           } else if (channel == "say") {
             this.broadcastToZone(new Messages.Chat(this, msg, channel), false);
@@ -273,7 +279,7 @@ module.exports = Player = Character.extend({
         var inviter = this.server.getPlayerByID(message[1]);
         var invitee = this.server.getPlayerByID(message[2]);
 
-        inviter.invite(invitee);
+        inviter.partyInvite(invitee);
       } else if (action === Types.Messages.PARTY_KICK) {
         var player = this.server.getPlayerByID(message[1]);
 
@@ -281,7 +287,7 @@ module.exports = Player = Character.extend({
       } else if (action === Types.Messages.PARTY_ACCEPT) {
         var inviter = this.server.getPlayerByID(message[1]);
 
-        if (!inviter.hasInvited(this)) {
+        if (!inviter.hasPartyInvited(this)) {
           // no invitation pending for this player
           return;
         }
@@ -298,7 +304,7 @@ module.exports = Player = Character.extend({
           new Party(inviter, this);
         }
 
-        inviter.removeInvite(this);
+        inviter.removePartyInvite(this);
       } else if (action === Types.Messages.PARTY_LEAVE) {
         if (this.party) {
           this.party.leave(this);
@@ -309,9 +315,167 @@ module.exports = Player = Character.extend({
         if (newLeader != this && this.party && this.party.isLeader(this) && this.party.isMember(newLeader)) {
           this.party.leader = newLeader;
         }
+      } else if (action === Types.Messages.GUILD_CREATE) {
+        var name = message[1];
+
+        if (this.guild) {
+          // already have a guild!
+          this.sendCommandError("You are already in a guild.");
+          return;
+        }
+
+        if (name.length > Guilds.nameMaxLength()) {
+          this.sendCommandError("The maximum length for a guild name is " + Guilds.nameMaxLength() + " characters.");
+          return;
+        }
+
+        Guilds.isAvailableName(name, function (isAvailable) {
+          if (!isAvailable) {
+            // guild name is taken. let the player know
+            this.sendCommandError("Guild name '"+name+"' is taken.");
+            return;
+          }
+
+          Guilds.create(name, this, function(guild) {
+            this.guild = guild;
+            this.sendCommandNotice("Created guild '"+name+"'.");                   
+          }.bind(this));
+        }.bind(this));
+      } else if (action === Types.Messages.GUILD_QUIT) {
+        if (!this.guild) {
+          // cannot gquit when not in a guild
+          this.sendCommandError("You are not in a guild.");
+          return;
+        }
+
+        this.guild.removeMember(this, function() { 
+          this.guild = null; 
+          this.sendCommandNotice("You have left the guild.");                   
+        }.bind(this));
+      } else if (action === Types.Messages.GUILD_ONLINE) {
+        this.send(new Messages.GuildOnline(this.guild).serialize());
+      } else if (action === Types.Messages.GUILD_INVITE) {
+        if (!this.guild) {
+          // cannot ginvite when not in a guild
+          this.sendCommandError("You are not in a guild.");
+          return;
+        }
+
+        if (!this.guild.isLeader(this)) {
+          // the inviter is not the guild leader and therefore 
+          // cannot issue any invitation
+          this.sendCommandError("You are not the guild leader.");
+          return;
+        }
+
+        var name = message[1];
+        var player = this.server.getPlayerByName(name);
+
+        if (!player) {
+          this.sendCommandError("Cannot invite an offline player to the guild.");
+          return;
+        }
+
+        if (player.guild) {
+          this.sendCommandError(name+" is already in a guild.");
+          return;
+        }
+
+        this.guildInvite(player);
+        this.sendCommandNotice(name+" has been invited to join '"+this.guild.name+"'.");
+      } else if (action === Types.Messages.GUILD_KICK) {
+        var name = message[1];
+        var player = this.server.getPlayerByName(name);
+
+        if (!player) {
+          this.sendCommandError("Unknown player '"+name+"'");
+          return;
+        }
+        if (!this.guild) {
+          // cannot gkick when not in a guild
+          this.sendCommandError("You are not in a guild.");
+          return;
+        }
+        if (!this.guild.isLeader(this)) {
+          this.sendCommandError("You are not the guild leader.");
+          return;
+        }
+        if (player == this) {
+          this.sendCommandError("You cannot kick yourself from a guild.");
+          return;
+        }
+        if (!this.guild.isMember(player)) {
+          this.sendCommandError(name+" is not a member of your guild.");
+          return;
+        }
+
+        this.guild.kick(this, player, function (guild) {
+          player.guild = null;
+          guild.broadcast(this.server, new Messages.GuildKick(this, player).serialize());
+          player.send(new Messages.GuildKick(this, player).serialize());
+        }.bind(this));
+      } else if (action === Types.Messages.GUILD_LEADER_CHANGE) {
+        var name = message[1];
+        var player = this.server.getPlayerByName(name);
+
+        if (!player) {
+          this.sendCommandError("Unknown player '"+name+"'");
+          return;
+        }
+        if (!this.guild) {
+          // cannot gleader when not in a guild
+          this.sendCommandError("You are not in a guild.");
+          return;
+        }
+        if (!this.guild.isLeader(this)) {
+          this.sendCommandError("You are not the guild leader.");
+          return;
+        }
+        if (player == this) {
+          this.sendCommandError("You are already the guild leader.");
+          return;
+        }
+        if (!this.guild.isMember(player)) {
+          this.sendCommandError(name+" is not a member of your guild.");
+          return;
+        }
+
+        this.guild.setLeader(player);
+      } else if (action === Types.Messages.GUILD_ACCEPT) {
+        var name = message[1];
+        var inviter = this.server.getPlayerByName(name);
+
+        if (!inviter.hasGuildInvited(this)) {
+          // no invitation pending for this player
+          return;
+        }
+
+        if (inviter.guild) {
+          if (!inviter.guild.isLeader(inviter)) {
+            // the inviter is not the guild leader and therefore 
+            // cannot issue any invitation
+            return;
+          }
+
+          inviter.guild.addMember(this, function(_, guild) {
+            this.guild = guild;
+            this.sendCommandNotice("You have joined the guild '"+guild.name+"'");                   
+          }.bind(this));
+        }
+
+        inviter.removePartyInvite(this);
+      } else if (action === Types.Messages.GUILD_MEMBERS) {
+        if (!this.guild) {
+          this.sendCommandError("You are not in a guild.");
+          return;
+        }
+
+        this.guild.getMembersPlayers(function(members) {
+          this.send(new Messages.GuildMembers(members).serialize());
+        }.bind(this));
       } else {
-        console.error("Unknown message received:");
-        console.error(message);
+        log.error("Unknown message received:");
+        log.error(message);
       }
     }.bind(this));
 
@@ -332,13 +496,13 @@ module.exports = Player = Character.extend({
     }
   },
 
-  invite: function (invitee) {
+  partyInvite: function (invitee) {
     if (!this.party || (!this.party.isFull() && this.party.isLeader(this))) {
       // automatically remove the invite after 60 seconds
       var inviteTimeout = setTimeout(function () {
-        this.removeInvite(invitee.id);
+        this.removePartyInvite(invitee.id);
       }.bind(this), 60);
-      this._invites[invitee.id] = {
+      this._partyInvites[invitee.id] = {
         invitee: invitee,
         timeout: inviteTimeout
       };
@@ -346,23 +510,56 @@ module.exports = Player = Character.extend({
     }
   },
 
-  removeInvite: function (player) {
-    var invitation = this._invites[player.id];
+  removePartyInvite: function (player) {
+    var invitation = this._partyInvites[player.id];
     if (invitation) {
       clearTimeout(invitation.timeout);
-      delete this._invites[player.id];
+      delete this._partyInvites[player.id];
     }
   },
 
-  resetInvites: function () {
-    for (var x in this._invites) {
-      clearTimeout(this._invites[x].timeout);
-      delete this._invites[x];
+  resetPartyInvites: function () {
+    for (var x in this._partyInvites) {
+      clearTimeout(this._partyInvites[x].timeout);
+      delete this._partyInvites[x];
     }
   },
 
-  hasInvited: function (player) {
-    return (player.id in this._invites);
+  hasPartyInvited: function (player) {
+    return (player.id in this._partyInvites);
+  },
+
+  guildInvite: function (invitee) {
+    if (!this.guild || (!this.guild.isFull() && this.guild.isLeader(this))) {
+      // automatically remove the invite after 60 seconds
+      var inviteTimeout = setTimeout(function () {
+        this.removeGuildInvite(invitee.id);
+      }.bind(this), 60);
+      this._guildInvites[invitee.id] = {
+        invitee: invitee,
+        timeout: inviteTimeout
+      };
+      invitee.send(new Messages.GuildInvite(this, this.guild).serialize());
+    }
+  },
+
+  removeGuildInvite: function (player) {
+    var invitation = this._guildInvites[player.id];
+    if (invitation) {
+      clearTimeout(invitation.timeout);
+      delete this._guildInvites[player.id];
+    }
+  },
+
+  resetGuildInvites: function () {
+    for (var x in this._guildInvites) {
+      clearTimeout(this._guildInvites[x].timeout);
+      delete this._guildInvites[x];
+    }
+  },
+
+  hasGuildInvited: function (player) {
+    return (player.id in this._guildInvites);
   },
 
   destroy: function () {
@@ -395,6 +592,18 @@ module.exports = Player = Character.extend({
   send: function (message) {
     log.debug("Sent (" + this.connection.id + "): " + message);
     this.connection.send(message);
+  },
+
+  sendCommandNotice: function (notice) {
+    this.send(new Messages.CommandNotice(notice).serialize());
+  },
+
+  sendCommandError: function (error) {
+    this.send(new Messages.CommandError(error).serialize());
+  },
+
+  sendError: function (error) {
+    this.send(new Messages.Error(error).serialize());
   },
 
   broadcast: function (message, ignoreSelf) {
@@ -506,6 +715,16 @@ module.exports = Player = Character.extend({
     return this.level * 100;
   },
 
+  set guild(guild) {
+    this.data.guild = guild;
+    this.isDirty = true;
+    this.save();
+    this.sync();
+  },
+  get guild() {
+    return this.data.guild;
+  },
+
   levelUp: function () {
     this.level++;
     this.hp = this.maxHP;
@@ -573,7 +792,8 @@ module.exports = Player = Character.extend({
       weapon: this.dbEntity.weapon,
       armor: this.dbEntity.armor,
       x: this.dbEntity.x,
-      y: this.dbEntity.y
+      y: this.dbEntity.y,
+      guild: this.dbEntity.guild
     });
 
     this.spellbook = new Spellbook(this);
@@ -594,6 +814,7 @@ module.exports = Player = Character.extend({
     this.dbEntity.armor = this.data.armor;
     this.dbEntity.x = this.data.x;
     this.dbEntity.y = this.data.y;
+    this.dbEntity.guild = (this.data.guild ? this.data.guild._id : null);
 
     this._super();
     this.inventory.save();

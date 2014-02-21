@@ -29,6 +29,7 @@ define(['character',
 
       this.name = name;
       this.party = null;
+      this.guild = null;
 
       this.reset();
     },

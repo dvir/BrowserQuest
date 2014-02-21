@@ -1703,7 +1703,7 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
           var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
           var args = message.substring(1).split(" ");
 
-          if (command == "global" || command == "g") {
+          if (command == "global") {
             this.client.setChatChannel("global");
             this.client.sendChat(rest);
           } else if (command == "say" || command == "s") {
@@ -1718,6 +1718,13 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
               return;
             }
             this.client.setChatChannel("party");
+            this.client.sendChat(rest);
+          } else if (command == "guild" || command == "g") {
+            if (!this.player.guild) {
+              this.client.error("You are not in a guild.");
+              return;
+            }
+            this.client.setChatChannel("guild");
             this.client.sendChat(rest);
           } else if (command == "invite") {
             var player = this.getPlayerByName(args[1]);
@@ -1796,6 +1803,50 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
             }
 
             this.client.sendPartyLeaderChange(player.id);
+          } else if (command == "gcreate") {
+            var name = rest;
+            if (!name) {
+              this.client.error("Syntax: /gcreate <Guild Name>");
+              return;
+            }
+
+            this.client.sendGuildCreate(name);
+          } else if (command == "ginvite") {
+            var name = args[1];
+            if (!name) {
+              this.client.error("Syntax: /ginvite <Player Name>");
+              return;
+            }
+
+            this.client.sendGuildInvite(name);
+          } else if (command == "gkick") {
+            var name = args[1];
+            if (!name) {
+              this.client.error("Syntax: /gkick <Player Name>");
+              return;
+            }
+
+            this.client.sendGuildKick(name);
+          } else if (command == "gaccept") {
+            var name = args[1];
+            if (!name) {
+              this.client.error("Syntax: /gaccept <Player Name>");
+              return;
+            }
+
+            this.client.sendGuildAccept(name);
+          } else if (command == "gquit") {
+            this.client.sendGuildQuit();
+          } else if (command == "gleader") {
+            var name = args[1];
+            if (!name) {
+              this.client.error("Syntax: /gleader <Player Name>");
+              return;
+            }
+
+            this.client.sendGuildLeaderChange(name);
+          } else if (command == "gmembers") {
+            this.client.sendGuildMembers();
           } else {
             this.client.error("Unknown command '%s' given.", command, rest);
           }

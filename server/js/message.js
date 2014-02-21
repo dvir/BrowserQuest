@@ -367,10 +367,134 @@ Messages.PartyKick = Message.extend({
 
 Messages.PartyAccept = Message.extend({
   init: function (inviter) {
-    this.inviter = inviter.id;
+    this.inviterID = inviter.id;
   },
   serialize: function () {
     return [Types.Messages.PARTY_ACCEPT,
-      this.inviterId];
+      this.inviterID];
+  }
+});
+
+Messages.GuildJoin = Message.extend({
+  init: function (entity) {
+    this.entity = entity;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_JOIN,
+      this.entity.id];
+  }
+});
+
+Messages.GuildOnline = Message.extend({
+  init: function (guild) {
+    this.guildList = guild.getMembersIDs();
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_ONLINE,
+      this.guildList];
+  }
+});
+
+Messages.GuildQuit = Message.extend({
+  init: function (entity) {
+    this.entity = entity;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_QUIT,
+      this.entity.id];
+  }
+});
+
+Messages.GuildLeaderChange = Message.extend({
+  init: function (entity) {
+    this.entity = entity;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_LEADER_CHANGE,
+      this.entity.id];
+  }
+});
+
+Messages.GuildInvite = Message.extend({
+  init: function (inviter, guild) {
+    this.inviterName = inviter.name;
+    this.guildName = guild.name;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_INVITE,
+      this.inviterName,
+      this.guildName
+    ];
+  }
+});
+
+Messages.GuildKick = Message.extend({
+  init: function (kicker, kicked) {
+    this.kickerName = kicker.name;
+    this.kickedName = kicked.name;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_KICK,
+      this.kickerName,
+      this.kickedName];
+  }
+});
+
+Messages.GuildAccept = Message.extend({
+  init: function (inviter) {
+    this.inviterID = inviter.id;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_ACCEPT,
+      this.inviterID];
+  }
+});
+
+Messages.GuildMembers = Message.extend({
+  init: function (members) {
+    this.members = [];
+    for (var i in members) {
+      var member = members[i];
+      var player = member.player;
+      this.members.push({
+        name: player.name, 
+        rank: member.rank, 
+        online: player.online
+      });
+    }
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_MEMBERS,
+      this.members];
+  }
+});
+
+Messages.CommandNotice = Message.extend({
+  init: function (notice) {
+    this.notice = notice;
+  },
+  serialize: function () {
+    return [Types.Messages.COMMAND_NOTICE,
+      this.notice];
+  }
+});
+
+Messages.CommandError = Message.extend({
+  init: function (error) {
+    this.error = error;
+  },
+  serialize: function () {
+    return [Types.Messages.COMMAND_ERROR,
+      this.error];
+  }
+});
+
+Messages.Error = Message.extend({
+  init: function (error) {
+    this.error = error;
+  },
+  serialize: function () {
+    return [Types.Messages.ERROR,
+      this.error];
   }
 });

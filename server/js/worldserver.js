@@ -31,6 +31,8 @@ module.exports = World = cls.Class.extend({
 
     this.entities = {};
     this.players = {};
+    this.playersByDBID = {};
+    this.playersByName = {};
     this.mobs = {};
     this.attackers = {};
     this.items = {};
@@ -381,12 +383,19 @@ module.exports = World = cls.Class.extend({
 
   addPlayer: function (player, callback) {
     this.players[player.id] = player;
+
+    // maps between db player entities and server entities
+    this.playersByDBID[player.getDBEntity()._id] = player;
+    this.playersByName[player.name] = player;
+
     this.outgoingQueues[player.id] = [];
     this.addEntity(player, callback);
   },
 
   removePlayer: function (player) {
     this.removeEntity(player);
+    delete this.playersByDBID[player.getDBEntity()._id];
+    delete this.playersByName[player.name];
     delete this.players[player.id];
     delete this.outgoingQueues[player.id];
   },
@@ -397,6 +406,22 @@ module.exports = World = cls.Class.extend({
     }
 
     return this.players[playerID];
+  },
+
+  getPlayerByDBID: function (dbID) {
+    if (!(dbID in this.playersByDBID)) {
+      return null;
+    }
+
+    return this.playersByDBID[dbID];
+  },
+
+  getPlayerByName: function (name) {
+    if (!(name in this.playersByName)) {
+      return null;
+    }
+
+    return this.playersByName[name];
   },
 
   addMob: function (mob) {

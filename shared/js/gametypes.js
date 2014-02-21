@@ -49,8 +49,19 @@ Types = {
         PARTY_KICK: 46,
         PARTY_LEADER_CHANGE: 47,
         PARTY_ACCEPT: 48,
+        GUILD_JOIN: 49,
+        GUILD_ONLINE: 50,
+        GUILD_QUIT: 51,
+        GUILD_INVITE: 52,
+        GUILD_KICK: 53,
+        GUILD_LEADER_CHANGE: 54,
+        GUILD_ACCEPT: 55,
+        GUILD_CREATE: 56,
+        GUILD_MEMBERS: 57,
 
-        PLACEHOLDER: 10000
+        COMMAND_NOTICE: 9998,
+        COMMAND_ERROR: 9999,
+        ERROR: 10000
     },
     
     Entities: {

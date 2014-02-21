@@ -32,7 +32,19 @@ var _ = require('underscore'),
       this.formats[Types.Messages.PARTY_INVITE] = ['n', 'n'],
       this.formats[Types.Messages.PARTY_KICK] = ['n'],
       this.formats[Types.Messages.PARTY_ACCEPT] = ['n'],
-      this.formats[Types.Messages.RESURRECT] = []
+      this.formats[Types.Messages.GUILD_JOIN] = ['s'],
+      this.formats[Types.Messages.GUILD_ONLINE] = ['o'],
+      this.formats[Types.Messages.GUILD_QUIT] = [],
+      this.formats[Types.Messages.GUILD_LEADER_CHANGE] = ['s'],
+      this.formats[Types.Messages.GUILD_INVITE] = ['s'],
+      this.formats[Types.Messages.GUILD_KICK] = ['s'],
+      this.formats[Types.Messages.GUILD_ACCEPT] = ['s'],
+      this.formats[Types.Messages.GUILD_CREATE] = ['s'],
+      this.formats[Types.Messages.GUILD_MEMBERS] = [],
+      this.formats[Types.Messages.RESURRECT] = [],
+      this.formats[Types.Messages.COMMAND_NOTICE] = ['s'],
+      this.formats[Types.Messages.COMMAND_ERROR] = ['s'],
+      this.formats[Types.Messages.ERROR] = ['s']
     },
 
     check: function (msg) {

@@ -14,6 +14,13 @@ module.exports = DBEntity = cls.Class.extend({
     }
   },
 
+  getDBEntity: function () {
+    if (!this.dbEntity) {
+      log.debug("Called getDBEntity for a null dbEntity");
+    }
+    return this.dbEntity;
+  },
+
   setDBEntity: function (dbEntity, callback) {
     this.dbEntity = dbEntity;
 
@@ -28,7 +35,10 @@ module.exports = DBEntity = cls.Class.extend({
     }
   },
 
-  save: function (callback) {
+  save: function (isDirty, callback) {
+    if (isDirty) {
+      this.isDirty = isDirty;
+    }
     if (!this.dbEntity || !this.isDirty) return;
 
     this.dbEntity.save(function (err) {

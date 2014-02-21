@@ -7,16 +7,297 @@ var cls = require("./lib/class"),
 // ======= DB SCHEMAS ========
 
 playerSchema = mongoose.Schema({
+  online: {type: Boolean, default: false},
   name: String,
   x: Number,
   y: Number,
-  xp: Number,
-  level: Number,
-  hp: Number,
+  xp: {type: Number, default: 0},
+  level: {type: Number, default: 1},
+  hp: {type: Number, default: 0},
   weapon: Number,
-  armor: Number
+  armor: Number,
+  guild: {type: mongoose.Schema.ObjectId, ref: 'Guild'}
 });
 Players = mongoose.model('Player', playerSchema);
+
+var guildMemberSchema = mongoose.Schema({   
+  player: {type: mongoose.Schema.ObjectId, ref: 'Player'},
+  rank: {type: Number, default: 1}
+});
+GuildMember = mongoose.model('GuildMember', guildMemberSchema);
+
+var findMemberByPlayer = function(members, player) {
+  var playerEntity = player.getDBEntity();
+  var result = null;
+  members.forEach(function (member) {
+    if (member.player.equals(playerEntity._id)) {
+      result = member;
+    }
+  });
+
+  return result;
+};
+
+var guildSchema = mongoose.Schema({
+  name: String,
+  members: [guildMemberSchema]
+});
+
+guildSchema.methods.online = function() {
+  Guilds.aggregate(
+    {$match: {}}, 
+    {$unwind: '$members'}, 
+    {$project: 
+      {
+        player: '$members.player', 
+        rank: '$members.rank'
+      }
+    }
+  );
+};
+
+guildSchema.methods.broadcast = function(server, message) {
+  this.members.forEach(function (member) {
+    var player = server.getPlayerByDBID(member.player);
+    // only try to send for online players
+    if (player) {
+      player.send(message);
+    }
+  });
+};
+
+guildSchema.methods.isMember = function(player) {
+  return (null != findMemberByPlayer(this.members, player));
+};
+
+guildSchema.methods.isLeader = function(player) {
+  var member = findMemberByPlayer(this.members, player);
+  if (!member) {
+    return false;
+  }
+
+  return member.rank == 0;
+};
+
+guildSchema.methods.getCapacity = function() {
+  return 10;
+};
+
+guildSchema.methods.getMembersCount = function() {
+  return this.members.toObject().length;
+};
+
+guildSchema.methods.getMembers = function() {
+  return this.members.toObject();
+};
+
+guildSchema.methods.getMembersPlayers = function(callback) {
+  GuildMember
+  .find(
+    {_id: 
+      {$in: 
+        _.chain(this.members.toObject())
+        .filter(function(v, k) { return v != null; })
+        .map(function(v, k) { return v._id; })
+        .value()
+      }
+    }
+  )
+  .populate("player")
+  .exec(function(err, members) {
+    if (err) {
+      log.error("Guild.getMembersPlayers - failed populating guild members: " + err);
+      return;
+    }
+
+    if (callback) {
+      callback(members);
+    }
+  }.bind(this));
+};
+
+guildSchema.methods.isFull = function() {
+  return this.getCapacity() == this.getMembersCount();
+};
+
+guildSchema.methods.addMember = function(player, callback) {
+  log.debug("addMember - looking for existing membership");
+  var member = findMemberByPlayer(this.members, player);
+  if (member) {
+    // player is already in the guild
+    return;
+  }
+  log.debug("addMember - not yet in the guild");
+
+  var playerEntity = player.getDBEntity();
+  var guildMember = new GuildMember;
+  guildMember.player = playerEntity._id;
+  log.debug("Creating new guild member");
+  guildMember.save(function (err) {
+    if (err) {
+      log.debug("Failed saving new GuildMember - Guilds.addMember: " + err);
+      return;
+    }
+
+    log.debug("Saving new guild member");
+
+    this.members.push(guildMember);
+    this.save(function (err) {
+      if (err) {
+        log.debug("Failed saving guild with new guild member - Guilds.addMember: " + err);
+        return;
+      }
+
+      log.debug("Saved new guild member");
+
+      if (callback) {
+        callback(guildMember, this);
+      }
+    }.bind(this));
+  }.bind(this));
+};
+
+guildSchema.methods.removeMember = function(player, callback) {
+  log.debug("removeMember - looking for existing membership");
+  var member = findMemberByPlayer(this.members, player);
+  var idx = this.members.indexOf(member);
+  if (idx == -1) {
+    // player is not in the guild
+    log.error("removeMember - player is not in the guild");
+    //return;
+  }
+
+  log.debug("removeMember - removed member from array");
+  var removed = this.members.splice(idx, 1);
+
+  log.debug("removeMember - saving guild after removal of member");
+  this.save(function (err) {
+    if (err) {
+      log.debug("Failed saving guild after removing member - Guilds.removeMember: " + err);
+      return;
+    }
+
+    log.debug("removeMember - removed member from guild");
+
+    member.remove(function (err) {
+      if (err) {
+        log.debug("Failed removing guild member - Guilds.removeMember: " + err);
+        return;
+      }
+
+      log.debug("removeMember - removed guild member");
+
+      if (callback) {
+        callback(removed[0]);
+      }
+    });
+  });
+};
+
+guildSchema.methods.setLeader = function(player, callback) {
+  var member = findMemberByPlayer(this.members, player);
+  if (!member) {
+    // player is not in the guild
+    // and the leader must be a member of the guild
+    return;
+  }
+
+  member.rank = 0;
+  member.save(function (err) {
+    if (callback) {
+      callback();
+    }
+  });
+};
+
+guildSchema.methods.getRank = function(player, callback) {
+  var member = findMemberByPlayer(this.members, player);
+  if (!member) {
+    // player is not in the guild
+    return;
+  }
+
+  return member.rank;
+};
+
+guildSchema.statics.create = function (name, leader, callback) {
+  var guild = new Guilds;
+  guild.name = name;
+  log.debug("Creating a new guild");
+  guild.addMember(leader, function() {
+    log.debug("Added leader to the new guild");
+    guild.setLeader(leader, function () {
+      log.debug("Set the first member as the leader");
+      guild.save(function (err) {
+        if (err) {
+          log.debug("error creating guild - Guilds.create: " + err);
+          return;
+        }
+
+        log.debug("Saved the new guild");
+
+        if (callback) {
+          callback(guild);
+        }
+      });
+    });
+  });
+};
+
+guildSchema.statics.isAvailableName = function (name, callback) {
+  Guilds.count({name: name}, function (err, count) {
+    if (err) {
+      log.debug("error on count of guilds - Guilds.isAvailableName: " + err);
+      return;
+    }
+
+    callback(count == 0);
+  });
+};
+
+guildSchema.statics.nameMaxLength = function () {
+  return 24;
+};
+
+guildSchema.methods.kick = function(kicker, player, callback) {
+    var member = findMemberByPlayer(this.members, player);
+    if (!member) {
+      // player wasn't in the kicker's guild
+      return;
+    }
+    var idx = this.members.indexOf(member);
+    var removed = this.members.splice(idx, 1);
+    this.save(function() {
+      removed[0].remove(function () {
+        // removed player from the guild                 
+        if (callback) {
+          callback(this);
+        }
+      }.bind(this));
+    }.bind(this));
+};
+
+/*guildSchema.statics.kick = function(kicker, player, callback) {*/
+  //Guilds.findOne({'members.player': kicker}, function (err, guild) {
+    //var idx = guild.members.indexOf(player);
+    //if (idx == -1) {
+      //// player wasn't in the kicker's guild
+      //return;
+    //}
+
+    //var removed = guild.members.splice(idx, 1);
+    //guild.save(function() {
+      //removed[0].remove(function () {
+        //// removed player from the guild                 
+        //if (callback) {
+          //callback(guild);
+        //}
+      //});
+    //});
+  //});
+//};
+
+Guilds = mongoose.model('Guild', guildSchema);
 
 inventorySchema = mongoose.Schema({
   playerId: String,

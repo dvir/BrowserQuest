@@ -604,9 +604,22 @@ define([
             color = "#f03a51";
           }
 
-          this.drawText(name, (entity.x + 8) * this.scale, (entity.y + entity.nameOffsetY) * this.scale,
+          var nameOffsetY = entity.nameOffsetY;
+          if (entity instanceof Player && entity.guild) {
+            nameOffsetY -= 6;
+          }
+
+          this.drawText(name, (entity.x + 8) * this.scale, (entity.y + nameOffsetY) * this.scale,
             true,
             color);
+
+          if (entity instanceof Player && entity.guild) {
+            this.setFontSize(9);
+            var name = entity.guild.name;
+            this.drawText(name, (entity.x + 8) * this.scale, (entity.y + nameOffsetY + 6) * this.scale,
+              true,
+              "white");
+          }
         }
         this.context.restore();
       },
@@ -665,6 +678,7 @@ define([
         var colors = {
           global: "orange",
           party: "cyan",
+          guild: "#1eff00",
           say: "white",
           yell: "red",
           error: "#f2db2c",
@@ -673,6 +687,7 @@ define([
         var channelNamePrefix = {
           global: "[General] ",
           party: "[Party] ",
+          guild: "[Guild] ",
           say: "",
           yell: "",
           error: "",
@@ -681,6 +696,7 @@ define([
         var channelNamePostfix = {
           global: "",
           party: "",
+          guild: "",
           say: " says",
           yell: " yells",
           error: "",
