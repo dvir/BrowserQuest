@@ -93,10 +93,13 @@ module.exports = Player = Character.extend({
               x: this.x,
               y: this.y
             });
-            dbPlayer.save();
           }
 
-          this.setDBEntity(dbPlayer, this.enter.bind(this));
+          dbPlayer.online = true;
+          dbPlayer.save(function(err) {
+            if (err) { log.error("Failed saving dbPlayer on enter"); return; }
+            this.setDBEntity(dbPlayer, this.enter.bind(this));
+          }.bind(this));
         }.bind(this));
       } else if (action === Types.Messages.WHO) {
         message.shift();
@@ -497,6 +500,10 @@ module.exports = Player = Character.extend({
         clearTimeout(this.firepotionTimeout);
       }
       clearTimeout(this.disconnectTimeout);
+      this.dbEntity.online = false;
+      this.dbEntity.save(function(err) {
+        if (err) { log.error("Failed saving dbPlayer on exit"); return; }
+      }.bind(this));
       this.trigger("exit");
     }.bind(this));
 
