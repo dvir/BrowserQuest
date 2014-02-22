@@ -66,6 +66,10 @@ module.exports = Character = Entity.extend({
     return this.data.hp;
   },
 
+  isDead: function() {
+    return this.hp == 0;
+  },
+
   get maxHP() {
     return this.baseHP + ((this.level - 1) * 20);
   },

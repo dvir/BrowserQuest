@@ -221,7 +221,7 @@ module.exports = World = cls.Class.extend({
 
   regenTick: function () {
     this.forEachCharacter(function (character) {
-      if (!character.hasFullHealth()) {
+      if (!character.isDead() && !character.hasFullHealth()) {
         character.regenHealthBy(Formulas.regenHP(character));
 
         if (character.type === 'player') {
