@@ -63,6 +63,7 @@ Types = {
         GUILD_ONLINE: 60,
         GUILD_OFFLINE: 61,
         PLAYER_UPDATE: 62,
+        DEFEATED: 63,
 
         COMMAND_NOTICE: 9998,
         COMMAND_ERROR: 9999,

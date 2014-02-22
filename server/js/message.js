@@ -221,6 +221,22 @@ Messages.Kill = Message.extend({
   }
 });
 
+Messages.Defeated = Message.extend({
+  init: function (attacker, victim) {
+    this.data = {
+      attackerName: attacker.name,
+      victimName: victim.name,
+      x: victim.x,
+      y: victim.y
+    };
+  },
+  serialize: function () {
+    return [Types.Messages.DEFEATED,
+      this.data
+    ];
+  }
+});
+
 Messages.List = Message.extend({
   init: function (ids) {
     this.ids = ids;

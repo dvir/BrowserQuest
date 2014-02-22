@@ -46,6 +46,7 @@ define(['player',
       this.handlers[Types.Messages.LIST] = this.receiveList;
       this.handlers[Types.Messages.DESTROY] = this.receiveDestroy;
       this.handlers[Types.Messages.KILL] = this.receiveKill;
+      this.handlers[Types.Messages.DEFEATED] = this.receiveDefeated;
       this.handlers[Types.Messages.BLINK] = this.receiveBlink;
       this.handlers[Types.Messages.XP] = this.receiveXP;
       this.handlers[Types.Messages.LEVEL] = this.receiveLevel;
@@ -860,6 +861,17 @@ define(['player',
       if (kind === Types.Entities.BOSS) {
         globalGame.tryUnlockingAchievement("HERO");
       }
+    },
+
+    receiveDefeated: function (data) {
+      var data = data[1];
+      this.notice(
+        "*** %s has defeated %s (%d, %d) ***",
+        data.attackerName,
+        data.victimName,
+        data.x,
+        data.y
+      );
     },
 
     receiveList: function (data) {

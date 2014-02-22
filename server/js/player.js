@@ -705,6 +705,10 @@ module.exports = Player = Character.extend({
     this.xp += xp;
   },
 
+  defeated: function (victim) {
+    this.server.pushBroadcast(new Messages.Defeated(this, victim));
+  },
+
   loot: function (item) {
     return new Messages.Loot(item);
   },

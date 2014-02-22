@@ -619,6 +619,7 @@ module.exports = World = cls.Class.extend({
       }
 
       if (entity.type === "player") {
+        attacker.defeated(entity);
         this.handlePlayerVanish(entity);
         this.decrementPlayerCount();
       }
