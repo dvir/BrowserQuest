@@ -595,15 +595,12 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
   left: 16px;
 }
 #player > .hitpoints {
-  left: 32px;
 }
 
 #target {
   top: 16px;
-  left: 330px;
 }
 #target > .hitpoints {
-  left: 32px;
 }
 
 #skillbar {
