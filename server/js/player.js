@@ -57,7 +57,7 @@ module.exports = Player = Character.extend({
       this.resetTimeout();
 
       if (action === Types.Messages.RESURRECT) {
-        this.hp = this.maxHP / 20;
+        this.hp = this.maxHP / 2;
         this.enter(true);
       } else if (action === Types.Messages.HELLO) {
         var name = Utils.sanitize(message[1]);
