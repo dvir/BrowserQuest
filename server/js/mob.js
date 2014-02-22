@@ -20,7 +20,6 @@ module.exports = Mob = Character.extend({
     this.hatelist = [];
     this.respawnTimeout = null;
     this.returnTimeout = null;
-    this.isDead = false;
   },
 
   destroy: function () {

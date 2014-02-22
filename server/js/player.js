@@ -26,7 +26,6 @@ module.exports = Player = Character.extend({
     this.inventory = null;
 
     this.hasEnteredGame = false;
-    this.isDead = false;
     this.isAutoEquip = true;
     this.haters = {};
     this.hatelist = [];

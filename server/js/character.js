@@ -12,6 +12,8 @@ module.exports = Character = Entity.extend({
     this.attackers = {};
     this.target = null;
 
+    this.isDead = false;
+
     this._lastCombat = 0;
 
     Utils.Mixin(this.data, {
@@ -64,10 +66,6 @@ module.exports = Character = Entity.extend({
 
   get hp() {
     return this.data.hp;
-  },
-
-  isDead: function() {
-    return this.hp == 0;
   },
 
   get maxHP() {
