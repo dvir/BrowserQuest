@@ -27,18 +27,6 @@ define(['character',
       this.skillbar = new Skillbar();
     },
 
-    isHostile: function (entity) {
-      return (
-             (entity instanceof Mob) 
-             || ((entity instanceof Player) 
-                 && this.id != entity.id
-                 && (!this.guild 
-                     || !entity.guild 
-                     || this.guild.name != entity.guild.name)
-                )
-      );
-    },
-
     die: function () {
       this.removeTarget();
       this.isDead = true;

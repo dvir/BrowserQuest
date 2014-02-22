@@ -50,6 +50,8 @@ define(['character',
                  && (!this.guild 
                      || !entity.guild 
                      || this.guild.name != entity.guild.name)
+                 && (!this.party
+                     || !this.party.isMember(entity))
                 )
       );
     },

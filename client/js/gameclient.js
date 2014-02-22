@@ -671,7 +671,7 @@ define(['player',
       var entity = globalGame.getEntityById(
         entityId, 
         /* silence errors */ false,
-        /* load player */ true
+        /* load player */ true 
       );
       if (entity) {
         var diff = hp - entity.hp;
