@@ -608,8 +608,6 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 
 #skillbar {
   width: 580px;
-  left: 415px;
-  bottom: 18px;
 }
       
       .barSlot, ul.slotbar > li {
