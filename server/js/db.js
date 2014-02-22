@@ -43,19 +43,6 @@ var guildSchema = mongoose.Schema({
   members: [guildMemberSchema]
 });
 
-guildSchema.methods.online = function() {
-  Guilds.aggregate(
-    {$match: {}}, 
-    {$unwind: '$members'}, 
-    {$project: 
-      {
-        player: '$members.player', 
-        rank: '$members.rank'
-      }
-    }
-  );
-};
-
 guildSchema.methods.broadcast = function(server, message) {
   this.members.forEach(function (member) {
     var player = server.getPlayerByDBID(member.player);
@@ -92,26 +79,17 @@ guildSchema.methods.getMembers = function() {
 };
 
 guildSchema.methods.getMembersPlayers = function(callback) {
-  GuildMember
-  .find(
-    {_id: 
-      {$in: 
-        _.chain(this.members.toObject())
-        .filter(function(v, k) { return v != null; })
-        .map(function(v, k) { return v._id; })
-        .value()
-      }
-    }
-  )
-  .populate("player")
-  .exec(function(err, members) {
+  Guilds
+  .findById({_id: this._id}) 
+  .populate("members.player")
+  .exec(function(err, guild) {
     if (err) {
       log.error("Guild.getMembersPlayers - failed populating guild members: " + err);
       return;
     }
 
     if (callback) {
-      callback(members);
+      callback(_.filter(guild.members, function(v, k) { return v != {}; }));
     }
   }.bind(this));
 };
@@ -133,42 +111,32 @@ guildSchema.methods.addMember = function(player, callback) {
   var guildMember = new GuildMember;
   guildMember.player = playerEntity._id;
   log.debug("Creating new guild member");
-  guildMember.save(function (err) {
+
+  this.members.push(guildMember);
+  this.save(function (err) {
     if (err) {
-      log.debug("Failed saving new GuildMember - Guilds.addMember: " + err);
+      log.debug("Failed saving guild with new guild member - Guilds.addMember: " + err);
       return;
     }
 
-    log.debug("Saving new guild member");
+    log.debug("Saved new guild member");
 
-    this.members.push(guildMember);
-    this.save(function (err) {
-      if (err) {
-        log.debug("Failed saving guild with new guild member - Guilds.addMember: " + err);
-        return;
-      }
-
-      log.debug("Saved new guild member");
-
-      if (callback) {
-        callback(guildMember, this);
-      }
-    }.bind(this));
+    if (callback) {
+      callback(guildMember, this);
+    }
   }.bind(this));
 };
 
 guildSchema.methods.removeMember = function(player, callback) {
   log.debug("removeMember - looking for existing membership");
   var member = findMemberByPlayer(this.members, player);
-  var idx = this.members.indexOf(member);
-  if (idx == -1) {
+  if (!member) {
     // player is not in the guild
     log.error("removeMember - player is not in the guild");
-    //return;
+    return;
   }
 
-  log.debug("removeMember - removed member from array");
-  var removed = this.members.splice(idx, 1);
+  member.remove();
 
   log.debug("removeMember - saving guild after removal of member");
   this.save(function (err) {
@@ -179,19 +147,10 @@ guildSchema.methods.removeMember = function(player, callback) {
 
     log.debug("removeMember - removed member from guild");
 
-    member.remove(function (err) {
-      if (err) {
-        log.debug("Failed removing guild member - Guilds.removeMember: " + err);
-        return;
-      }
-
-      log.debug("removeMember - removed guild member");
-
-      if (callback) {
-        callback(removed[0]);
-      }
-    });
-  });
+    if (callback) {
+      callback(this);
+    }
+  }.bind(this));
 };
 
 guildSchema.methods.setLeader = function(player, callback) {
@@ -199,15 +158,19 @@ guildSchema.methods.setLeader = function(player, callback) {
   if (!member) {
     // player is not in the guild
     // and the leader must be a member of the guild
+    log.debug("Guild.setLeader - player is not in the guild");
     return;
   }
 
   member.rank = 0;
-  member.save(function (err) {
+  this.save(function (err) {
+    if (err) {
+      log.error("Guild.setLeader - Failed saving member after rank change: " + err);
+    }
     if (callback) {
       callback();
     }
-  });
+  }.bind(this));
 };
 
 guildSchema.methods.getRank = function(player, callback) {
@@ -260,42 +223,21 @@ guildSchema.statics.nameMaxLength = function () {
 };
 
 guildSchema.methods.kick = function(kicker, player, callback) {
-    var member = findMemberByPlayer(this.members, player);
-    if (!member) {
-      // player wasn't in the kicker's guild
-      return;
+  var member = findMemberByPlayer(this.members, player);
+  if (!member) {
+    // player wasn't in the kicker's guild
+    return;
+  }
+
+  member.remove();
+
+  this.save(function() {
+    // removed player from the guild                 
+    if (callback) {
+      callback(this);
     }
-    var idx = this.members.indexOf(member);
-    var removed = this.members.splice(idx, 1);
-    this.save(function() {
-      removed[0].remove(function () {
-        // removed player from the guild                 
-        if (callback) {
-          callback(this);
-        }
-      }.bind(this));
-    }.bind(this));
+  }.bind(this));
 };
-
-/*guildSchema.statics.kick = function(kicker, player, callback) {*/
-  //Guilds.findOne({'members.player': kicker}, function (err, guild) {
-    //var idx = guild.members.indexOf(player);
-    //if (idx == -1) {
-      //// player wasn't in the kicker's guild
-      //return;
-    //}
-
-    //var removed = guild.members.splice(idx, 1);
-    //guild.save(function() {
-      //removed[0].remove(function () {
-        //// removed player from the guild                 
-        //if (callback) {
-          //callback(guild);
-        //}
-      //});
-    //});
-  //});
-//};
 
 Guilds = mongoose.model('Guild', guildSchema);
 

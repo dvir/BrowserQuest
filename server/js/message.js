@@ -428,6 +428,32 @@ Messages.GuildInvite = Message.extend({
   }
 });
 
+Messages.GuildJoined = Message.extend({
+  init: function (player, guild) {
+    this.playerName = player.name;
+    this.guildName = guild.name;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_JOINED,
+      this.playerName,
+      this.guildName
+    ];
+  }
+});
+
+Messages.GuildLeft = Message.extend({
+  init: function (player, guild) {
+    this.playerName = player.name;
+    this.guildName = guild.name;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_LEFT,
+      this.playerName,
+      this.guildName
+    ];
+  }
+});
+
 Messages.GuildKick = Message.extend({
   init: function (kicker, kicked) {
     this.kickerName = kicker.name;

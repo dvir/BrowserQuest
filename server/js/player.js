@@ -348,9 +348,10 @@ module.exports = Player = Character.extend({
           return;
         }
 
-        this.guild.removeMember(this, function() { 
+        this.guild.removeMember(this, function(guild) { 
           this.guild = null; 
           this.sendCommandNotice("You have left the guild.");                   
+          guild.broadcast(this.server, new Messages.GuildLeft(this, guild).serialize());
         }.bind(this));
       } else if (action === Types.Messages.GUILD_ONLINE) {
         this.send(new Messages.GuildOnline(this.guild).serialize());
@@ -372,7 +373,19 @@ module.exports = Player = Character.extend({
         var player = this.server.getPlayerByName(name);
 
         if (!player) {
-          this.sendCommandError("Cannot invite an offline player to the guild.");
+          Players.count({name: name}, function (err, count) {
+            if (err) {
+              log.debug("error on count of players - player.js::guild_invite: " + err);
+              return;
+            }
+
+            if (count > 0) {
+              this.sendCommandError("Cannot invite an offline player to the guild.");
+              return;
+            }
+
+            this.sendCommandError("Unknown player '"+name+"'.");
+          }.bind(this));
           return;
         }
 
@@ -459,7 +472,7 @@ module.exports = Player = Character.extend({
 
           inviter.guild.addMember(this, function(_, guild) {
             this.guild = guild;
-            this.sendCommandNotice("You have joined the guild '"+guild.name+"'");                   
+            guild.broadcast(this.server, new Messages.GuildJoined(this, guild).serialize());
           }.bind(this));
         }
 

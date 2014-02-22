@@ -58,6 +58,8 @@ Types = {
         GUILD_ACCEPT: 55,
         GUILD_CREATE: 56,
         GUILD_MEMBERS: 57,
+        GUILD_JOINED: 58,
+        GUILD_LEFT: 59,
 
         COMMAND_NOTICE: 9998,
         COMMAND_ERROR: 9999,

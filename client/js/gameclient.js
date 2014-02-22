@@ -65,6 +65,8 @@ define(['player',
       this.handlers[Types.Messages.GUILD_INVITE] = this.receiveGuildInvite;
       this.handlers[Types.Messages.GUILD_KICK] = this.receiveGuildKick;
       this.handlers[Types.Messages.GUILD_MEMBERS] = this.receiveGuildMembers;
+      this.handlers[Types.Messages.GUILD_JOINED] = this.receiveGuildJoined;
+      this.handlers[Types.Messages.GUILD_LEFT] = this.receiveGuildLeft;
 
       this.handlers[Types.Messages.COMMAND_NOTICE] = this.receiveCommandNotice;
       this.handlers[Types.Messages.COMMAND_ERROR] = this.receiveCommandError;
@@ -397,6 +399,28 @@ define(['player',
           kickedName,
           kickerName
         );
+      }
+    },
+
+    receiveGuildJoined: function (data) {
+      var playerName = data[1];
+      var guildName = data[2];
+
+      if (playerName == globalGame.player.name) {
+        this.notice("You have joined the guild %s.", guildName);
+      } else {
+        this.notice("%s has joined the guild.", playerName);
+      }
+    },
+
+    receiveGuildLeft: function (data) {
+      var playerName = data[1];
+      var guildName = data[2];
+
+      if (playerName == globalGame.player.name) {
+        this.notice("You have left the guild %s.", guildName);
+      } else {
+        this.notice("%s has left the guild.", playerName);
       }
     },
 
