@@ -62,6 +62,7 @@ Types = {
         GUILD_LEFT: 59,
         GUILD_ONLINE: 60,
         GUILD_OFFLINE: 61,
+        PLAYER_UPDATE: 62,
 
         COMMAND_NOTICE: 9998,
         COMMAND_ERROR: 9999,

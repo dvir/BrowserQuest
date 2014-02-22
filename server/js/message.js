@@ -282,6 +282,15 @@ Messages.PlayerEnter = Message.extend({
   }
 });
 
+Messages.PlayerUpdate = Message.extend({
+  init: function (player) {
+    this.player = player;
+  },
+  serialize: function () {
+    return [Types.Messages.PLAYER_UPDATE, this.player.getBasicState()];
+  }
+});
+
 Messages.PlayerExit = Message.extend({
   init: function (player) {
     this.playerID = player.id;

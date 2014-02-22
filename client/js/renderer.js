@@ -3,6 +3,7 @@ define([
     'item',
     'character',
     'player',
+    'mob',
     'spell',
     'spelleffect',
     'timer',
@@ -13,6 +14,7 @@ define([
     Item,
     Character,
     Player,
+    Mob,
     Spell,
     SpellEffect,
     Timer

@@ -43,7 +43,15 @@ define(['character',
     },
 
     isHostile: function (entity) {
-      return (entity instanceof Mob) || ((entity instanceof Player) && this.id != entity.id);
+      return (
+             (entity instanceof Mob) 
+             || ((entity instanceof Player) 
+                 && this.id != entity.id
+                 && (!this.guild 
+                     || !entity.guild 
+                     || this.guild.name != entity.guild.name)
+                )
+      );
     },
 
     requestPathfindingTo: function (x, y) {

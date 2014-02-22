@@ -603,7 +603,11 @@ module.exports = Player = Character.extend({
     return {
       id: this.id,
       kind: this.kind,
-      name: this.name
+      name: this.name,
+      data: {
+        level: this.level,
+        guild: this.guild ? {name: this.guild.name} : null
+      }
     };
   },
 
@@ -662,6 +666,7 @@ module.exports = Player = Character.extend({
 
   sync: function () {
     this.send(new Messages.Data(this.getData()).serialize());
+    this.broadcast(new Messages.PlayerUpdate(this));
   },
 
   syncInventory: function () {
@@ -747,7 +752,7 @@ module.exports = Player = Character.extend({
     this.level++;
     this.hp = this.maxHP;
 
-    this.send(new Messages.Data(this.getData()).serialize());
+    this.sync();
   },
 
   updatePosition: function (isResurrection) {

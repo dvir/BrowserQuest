@@ -52,6 +52,7 @@ define(['player',
       this.handlers[Types.Messages.DATA] = this.receiveData;
       this.handlers[Types.Messages.INVENTORY] = this.receiveInventory;
       this.handlers[Types.Messages.LOOT] = this.receiveLoot;
+      this.handlers[Types.Messages.PLAYER_UPDATE] = this.receivePlayerUpdate;
       this.handlers[Types.Messages.PLAYER_ENTER] = this.receivePlayerEnter;
       this.handlers[Types.Messages.PLAYER_EXIT] = this.receivePlayerExit;
       this.handlers[Types.Messages.PLAYERS] = this.receivePlayers;
@@ -513,14 +514,26 @@ define(['player',
       this.handlePlayerEnter(data[1]);
     },
 
-    handlePlayerEnter: function (data) {
-      var player = globalGame.getPlayerByID(data.id);
+    receivePlayerUpdate: function (data) {
+      var playerData = data[1];
+      var player = globalGame.getPlayerByID(playerData.id);
+      if (!player || player.id == globalGame.player.id) {
+        // irrelevant update
+        return;
+      }
+    
+      $.extend(player, playerData.data);
+    },
+
+    handlePlayerEnter: function (playerData) {
+      var player = globalGame.getPlayerByID(playerData.id);
       if (player) {
         // already exists - skip it
         return;
       }
 
-      player = EntityFactory.createEntity(data.kind, data.id, data.name);
+      player = EntityFactory.createEntity(playerData.kind, playerData.id, playerData.name);
+      $.extend(player, playerData.data);
       globalGame.addPlayer(player);
     },
 
