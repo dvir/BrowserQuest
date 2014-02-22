@@ -115,12 +115,19 @@ Messages.Chat = Message.extend({
     this.playerId = player.id;
     this.message = message;
     this.channel = channel;
+
+    // we are also sending the player name in case the receiving player
+    // isn't aware of its existence through player id.
+    // this allows us to receive chat messages even if the players are at
+    // different edges of the world, without sending unnecessary entity data.
+    this.playerName = player.name;
   },
   serialize: function () {
     return [Types.Messages.CHAT,
       this.playerId,
       this.message,
-      this.channel];
+      this.channel,
+      this.playerName];
   }
 });
 
@@ -375,23 +382,23 @@ Messages.PartyAccept = Message.extend({
   }
 });
 
-Messages.GuildJoin = Message.extend({
-  init: function (entity) {
-    this.entity = entity;
-  },
-  serialize: function () {
-    return [Types.Messages.GUILD_JOIN,
-      this.entity.id];
-  }
-});
-
 Messages.GuildOnline = Message.extend({
-  init: function (guild) {
-    this.guildList = guild.getMembersIDs();
+  init: function (player) {
+    this.playerName = player.name;
   },
   serialize: function () {
     return [Types.Messages.GUILD_ONLINE,
-      this.guildList];
+      this.playerName];
+  }
+});
+
+Messages.GuildOffline = Message.extend({
+  init: function (player) {
+    this.playerName = player.name;
+  },
+  serialize: function () {
+    return [Types.Messages.GUILD_OFFLINE,
+      this.playerName];
   }
 });
 

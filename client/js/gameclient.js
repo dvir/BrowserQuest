@@ -67,6 +67,8 @@ define(['player',
       this.handlers[Types.Messages.GUILD_MEMBERS] = this.receiveGuildMembers;
       this.handlers[Types.Messages.GUILD_JOINED] = this.receiveGuildJoined;
       this.handlers[Types.Messages.GUILD_LEFT] = this.receiveGuildLeft;
+      this.handlers[Types.Messages.GUILD_ONLINE] = this.receiveGuildOnline;
+      this.handlers[Types.Messages.GUILD_OFFLINE] = this.receiveGuildOffline;
 
       this.handlers[Types.Messages.COMMAND_NOTICE] = this.receiveCommandNotice;
       this.handlers[Types.Messages.COMMAND_ERROR] = this.receiveCommandError;
@@ -424,14 +426,39 @@ define(['player',
       }
     },
 
+    receiveGuildOnline: function (data) {
+      var playerName = data[1];
+
+      if (playerName == globalGame.player.name) {
+        // don't report the online status to the player itself
+        return;
+      }
+
+      this.notice("%s has come online.", playerName);
+    },
+
+    receiveGuildOffline: function (data) {
+      var playerName = data[1];
+
+      if (playerName == globalGame.player.name) {
+        // don't report the online status to the player itself
+        return;
+      }
+
+      this.notice("%s went offline.", playerName);
+    },
+
     receiveGuildMembers: function (data) {
+      // @TODO: move to a config
+      var rankToTitle = {0: "Leader", 1: "Member", 2: "Officer"};
+
       var members = data[1];
       this.notice("Members of %s:", globalGame.player.guild.name);
       for (var i in members) {
         this.notice(
           "%s (%s)%s",
           members[i].name,
-          members[i].rank,
+          rankToTitle[members[i].rank],
           members[i].online ? " - Online" : ""
         );
       }
@@ -660,11 +687,15 @@ define(['player',
     receiveChat: function (data) {
       var playerID = data[1],
         message = data[2],
-        channel = data[3];
+        channel = data[3],
+        playerName = data[4];
 
-      var player = globalGame.getPlayerByID(playerID);
-      globalGame.createBubble(playerID, message);
-      globalGame.assignBubbleTo(player);
+      if (channel == "say" || channel == "yell") {
+        var player = globalGame.getPlayerByID(playerID);
+        globalGame.createBubble(playerID, message);
+        globalGame.assignBubbleTo(player);
+      }
+
       globalGame.audioManager.playSound("chat");
 
       var namePrefix = "";
@@ -672,7 +703,7 @@ define(['player',
         namePrefix = "\u2694 ";
       }
 
-      this.chat.insertMessage(player, namePrefix + player.name, message, channel);
+      this.chat.insertMessage(player, namePrefix + playerName, message, channel);
     },
 
     receiveEquipItem: function (data) {

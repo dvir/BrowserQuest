@@ -60,6 +60,8 @@ Types = {
         GUILD_MEMBERS: 57,
         GUILD_JOINED: 58,
         GUILD_LEFT: 59,
+        GUILD_ONLINE: 60,
+        GUILD_OFFLINE: 61,
 
         COMMAND_NOTICE: 9998,
         COMMAND_ERROR: 9999,

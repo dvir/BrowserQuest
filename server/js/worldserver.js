@@ -130,6 +130,10 @@ module.exports = World = cls.Class.extend({
   entered: function (player) {
     log.info(player.name + " has joined " + this.id);
 
+    if (player.guild) {
+      player.guild.broadcast(this, new Messages.GuildOnline(player).serialize());
+    }
+
     this.pushToPlayer(player, new Messages.Players(this.players));
     this.pushBroadcast(new Messages.PlayerEnter(player), player);
 
@@ -196,6 +200,10 @@ module.exports = World = cls.Class.extend({
     player.on("exit", function () {
       if (player.party) {
         player.party.leave(player);
+      }
+
+      if (player.guild) {
+        player.guild.broadcast(this, new Messages.GuildOffline(player).serialize());
       }
 
       this.pushBroadcast(new Messages.PlayerExit(player), player);

@@ -356,8 +356,6 @@ module.exports = Player = Character.extend({
           this.sendCommandNotice("You have left the guild.");                   
           guild.broadcast(this.server, new Messages.GuildLeft(this, guild).serialize());
         }.bind(this));
-      } else if (action === Types.Messages.GUILD_ONLINE) {
-        this.send(new Messages.GuildOnline(this.guild).serialize());
       } else if (action === Types.Messages.GUILD_INVITE) {
         if (!this.guild) {
           // cannot ginvite when not in a guild
