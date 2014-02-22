@@ -668,7 +668,11 @@ define(['player',
         maxHP = data[3],
         isRegen = data[4] ? true : false;
 
-      var entity = globalGame.getEntityById(entityId);
+      var entity = globalGame.getEntityById(
+        entityId, 
+        /* silence errors */ false,
+        /* load player */ true
+      );
       if (entity) {
         var diff = hp - entity.hp;
 

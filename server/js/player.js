@@ -605,6 +605,8 @@ module.exports = Player = Character.extend({
       kind: this.kind,
       name: this.name,
       data: {
+        hp: this.hp,
+        maxHP: this.maxHP,
         level: this.level,
         guild: this.guild ? {name: this.guild.name} : null
       }

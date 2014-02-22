@@ -600,8 +600,13 @@ module.exports = World = cls.Class.extend({
   handleHurtEntity: function (entity, attacker, damage) {
     entity.combat();
 
-    this.pushToAdjacentGroups(entity.group, new Messages.Health(entity));
-    this.pushToAdjacentGroups(entity.group, new Messages.Damage(entity, damage, attacker));
+    if (entity instanceof Player) {
+      entity.broadcast(new Messages.Health(entity));
+      entity.broadcast(new Messages.Damage(entity, damage, attacker));
+    } else {
+      this.pushToAdjacentGroups(entity.group, new Messages.Health(entity));
+      this.pushToAdjacentGroups(entity.group, new Messages.Damage(entity, damage, attacker));
+    }
 
     // If the entity is about to die
     if (entity.hp <= 0) {

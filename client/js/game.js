@@ -775,13 +775,16 @@ define(['spell', 'skillbar', 'infomanager', 'bubble', 'renderer', 'map', 'animat
         return id in this.entities;
       },
 
-      getEntityById: function (id, noError) {
+      getEntityById: function (id, noError, loadPlayer) {
         if (id in this.entities) {
           return this.entities[id];
         }
 
         // check if it's a player entity, and if so, don't cry about it
         if (id in this.players) {
+          if (loadPlayer) {
+            return this.players[id];
+          }
           return null;
         }
 
