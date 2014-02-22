@@ -605,7 +605,7 @@ module.exports = World = cls.Class.extend({
 
     // If the entity is about to die
     if (entity.hp <= 0) {
-      if (entity.type === "mob") {
+      if (entity instanceof Mob) {
         var mob = entity,
           item = this.getDroppedItem(mob);
 
@@ -618,10 +618,13 @@ module.exports = World = cls.Class.extend({
         }
       }
 
-      if (entity.type === "player") {
-        attacker.defeated(entity);
+      if (entity instanceof Player) {
         this.handlePlayerVanish(entity);
         this.decrementPlayerCount();
+      }
+      
+      if (attacker instanceof Player && entity instanceof Player) {
+        attacker.defeated(entity);
       }
 
       this.removeEntity(entity);
