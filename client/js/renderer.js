@@ -735,7 +735,7 @@ define([
         for (var x in members) {
           var member = members[x];
           var isLeader = party.getLeader() == member;
-          var namePostfix = sprintf(" (%d, %d)", member.gridX, member.gridY);
+          var namePostfix = sprintf(" - %s (%d, %d)", member.getHealthPercent() + '%', member.gridX, member.gridY);
           this.drawText(i + ". " + (isLeader ? "\u2694 " : "") + member.name + namePostfix, 10, start_offset + (i * line_height), false);
           i++;
         }

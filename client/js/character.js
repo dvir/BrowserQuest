@@ -121,6 +121,14 @@ define(['entity',
       this.trigger("change");
     },
 
+    getHealthPercent: function () {
+      var percent = this.hp * 100 / this.maxHP;
+      if (percent < 1 && percent > 0) {
+        percent = 1;
+      }
+      return Math.floor(percent);
+    },
+
     get level() {
       return this._level;
     },
