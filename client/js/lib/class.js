@@ -73,25 +73,44 @@ Class.extend = function (prop) {
       if (!this.bubbleToObjects) this.bubbleToObjects = [];
       if (!this.callbacks) this.callbacks = {};
 
+      this._handlerGenerator = function guidGenerator() {
+          var S4 = function() {
+             return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+          };
+          return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+      };
+
       this.on = function (names, callback) {
         if (!(names instanceof Object)) {
           names = [names];
         }
 
+        var handlers = {};
+
         for (var x in names) {
           var name = names[x];
-
+          var handler = this._handlerGenerator();
           if (!this.callbacks.hasOwnProperty(name)) {
-            this.callbacks[name] = [];
+            this.callbacks[name] = {};
           }
-          this.callbacks[name].push(callback);
+          this.callbacks[name][handler] = callback;
+          handlers[name] = handler;
+        }
+
+        return handlers;
+      };
+
+      this.off = function (handlers) {
+        for (var name in handlers) {
+          var handler = handlers[name];
+          delete this.callbacks[name][handler];
         }
       };
 
       this.trigger = function (name) {
         if (this.callbacks.hasOwnProperty(name)) {
-          for (var i = 0; i < this.callbacks[name].length; i++) {
-            this.callbacks[name][i].apply(this, Array.prototype.slice.call(arguments, 1));
+          for (var handler in this.callbacks[name]) {
+            this.callbacks[name][handler].apply(this, Array.prototype.slice.call(arguments, 1));
           }
         }
 
