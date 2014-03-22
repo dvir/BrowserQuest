@@ -180,14 +180,14 @@ class Character extends Entity {
     var oriented = ['atk', 'walk', 'idle'];
 
     // don't change animation if the character is dying
-    if (this.currentAnimation && this.currentAnimation.name == "death" && this.isDying) { 
+    if (this.currentAnimation != null && this.currentAnimation.name == "death" && this.isDying) { 
       return;
     }
 
     this.flipSpriteX = false;
     this.flipSpriteY = false;
 
-    if (animationName.indexOf(oriented) >= 0) {
+    if (oriented.contains(animationName)) {
       animationName += "_" + (this.orientation == Orientation.LEFT ? "right" : Types.getOrientationAsString(this.orientation));
       this.flipSpriteX = (this.orientation == Orientation.LEFT);
     }
@@ -568,7 +568,7 @@ class Character extends Entity {
       attacker.disengage();
     });
 
-    if (Game.player.target && Game.player.target.id == this.id) {
+    if (Game.player.target != null && Game.player.target.id == this.id) {
       Game.player.disengage();
     }
 
@@ -602,7 +602,7 @@ class Character extends Entity {
 
   void stopHurting() {
     this.isHurting = false;
-    if (this.hurtingTimer && this.hurtingTimer.isActive) {
+    if (this.hurtingTimer != null && this.hurtingTimer.isActive) {
       this.hurtingTimer.cancel();
     }
   }

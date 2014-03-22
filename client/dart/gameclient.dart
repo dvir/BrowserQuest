@@ -1,7 +1,8 @@
 library gameclient;
 
+import "dart:async";
 import "dart:convert";
-import "dart:html";
+import "dart:html" as html;
 
 import "base.dart";
 import "character.dart";
@@ -18,6 +19,8 @@ import "player.dart";
 import "spell.dart";
 import "spelleffect.dart";
 import "../shared/dart/gametypes.dart";
+import 'xpinfo.dart';
+import 'entity.dart';
 
 class GameClient extends Base {
 
@@ -26,7 +29,7 @@ class GameClient extends Base {
   Chat chat;
   bool isListening = false;
   bool isTimeout = false;
-  WebSocket connection;
+  html.WebSocket connection;
 
   GameClient() {
     this.chat = new Chat();
@@ -48,7 +51,7 @@ class GameClient extends Base {
         y = data[3];
 
       if (Game.player != null && id != Game.player.id) {
-        var entity = Game.getEntityById(id);
+        var entity = Game.getEntityByID(id);
         if (entity) {
           if (Game.player.isAttackedBy(entity)) {
             Game.tryUnlockingAchievement("COWARD");
@@ -74,8 +77,8 @@ class GameClient extends Base {
       Player player;
       Item item;
       if (playerId != Game.player.id) {
-        player = Game.getEntityById(playerId);
-        item = Game.getEntityById(itemId);
+        player = Game.getEntityByID(playerId);
+        item = Game.getEntityByID(itemId);
 
         if (player != null && item != null) {
           Game.makeCharacterGoTo(player, item.gridX, item.gridY);
@@ -88,7 +91,7 @@ class GameClient extends Base {
 
       var item = Game.player.inventory.find(itemId);
       if (!item) {
-        window.console.log("Loot was picked up but couldn't be found in inventory. (${itemId})");
+        html.window.console.log("Loot was picked up but couldn't be found in inventory. (${itemId})");
         return;
       }
 
@@ -143,7 +146,7 @@ class GameClient extends Base {
       var leaderID = data[1];
       var membersIDs = data[2];
 
-      Game.player.party = new Party(leaderID, membersIDs);
+      Game.player.party = new Party(leaderID, Game.getPlayersByIDs(membersIDs));
     });
 
     this.on(Message.PARTY_LEAVE, (data) {
@@ -157,7 +160,7 @@ class GameClient extends Base {
       var invitee = Game.getPlayerByID(data[2]);
 
       if (invitee == Game.player) {
-        if (Game.player.party) {
+        if (Game.player.party != null) {
           // already in a party.
           this.notice("You were invited to a party by ${inviter.name} but you are already in one. ('/leave' to leave it)");
           return;
@@ -278,19 +281,21 @@ class GameClient extends Base {
       var attackerId = data[1],
         targetId = data[2];
 
-      var attacker = Game.getEntityById(attackerId),
-        target = Game.getEntityById(targetId);
+      var attacker = Game.getEntityByID(attackerId),
+        target = Game.getEntityByID(targetId);
 
       if (attacker && target && attacker.id != Game.player.id) {
-        window.console.debug(attacker.id + " attacks " + target.id);
+        html.window.console.debug(attacker.id + " attacks " + target.id);
 
         if (attacker && target is Player && target.id != Game.player.id && target.target && target.target.id == attacker.id && attacker.getDistanceToEntity(target) < 3) {
+          // TODO: eh? remove this crap and let the server decide on this AI behavior
+          
           // delay to prevent other players attacking mobs 
           // from ending up on the same tile as they walk 
           // towards each other.
-          setTimeout(() {
+          new Timer(new Duration(milliseconds: 200), () {
             Game.createAttackLink(attacker, target);
-          }, 200);
+          });
         } else {
           Game.createAttackLink(attacker, target);
         }
@@ -340,16 +345,16 @@ class GameClient extends Base {
       } else if (Types.isItem(kind)) {
         var item = EntityFactory.createEntity(kind, id);
 
-        window.console.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at " + x + ", " + y);
+        html.window.console.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at " + x + ", " + y);
         Game.addItem(item, x, y);
       } else if (Types.isChest(kind)) {
         var chest = EntityFactory.createEntity(kind, id);
 
-        window.console.info("Spawned chest (" + chest.id + ") at " + x + ", " + y);
+        html.window.console.info("Spawned chest (" + chest.id + ") at " + x + ", " + y);
         chest.setSprite(Game.sprites[chest.getSpriteName()]);
         chest.setGridPosition(x, y);
         chest.setAnimation("idle_down", 150);
-        Game.addEntity(chest, x, y);
+        Game.addEntity(chest);
       } else {
         var name, orientation, targetId, weapon, armor, hp, maxHP;
 
@@ -390,11 +395,11 @@ class GameClient extends Base {
 
               Game.addEntity(character);
 
-              window.console.info("Spawned " + Types.getKindAsString(character.kind) + " (" + character.id + ") at " + character.gridX + ", " + character.gridY);
+              html.window.console.info("Spawned " + Types.getKindAsString(character.kind) + " (" + character.id + ") at " + character.gridX + ", " + character.gridY);
 
               if (character is Mob) {
                 if (targetId) {
-                  Player player = Game.getEntityById(targetId);
+                  Player player = Game.getEntityByID(targetId);
                   if (player != null) {
                     Game.createAttackLink(character, player);
                   }
@@ -402,11 +407,11 @@ class GameClient extends Base {
               }
             }
           } catch (e) {
-            window.console.error("ReceiveSpawn failed. Error: " + e);
-            window.console.error(e.stack);
+            html.window.console.error("ReceiveSpawn failed. Error: " + e);
+            html.window.console.error(e.stack);
           }
         } else {
-          window.console.debug("Character " + character.id + " already exists. Don't respawn.");
+          html.window.console.debug("Character " + character.id + " already exists. Don't respawn.");
         }
       }
     });
@@ -414,33 +419,38 @@ class GameClient extends Base {
     this.on(Message.DESPAWN, (data) {
       var id = data[1];
 
-      var entity = Game.getEntityById(id, true);
-      if (entity) {
-        entity.removed = true;
-
-        window.console.info("Despawning " + Types.getKindAsString(entity.kind) + " (" + entity.id + ")");
-
-        if (entity.gridX == Game.previousClickPosition.x && entity.gridY == Game.previousClickPosition.y) {
-          Game.previousClickPosition = {};
-        }
-
-        if (entity is SpellEffect) {
-          Game.removeSpellEffect(entity);
-        } else if (entity is Item) {
-          Game.removeItem(entity);
-        } else if (entity is Character) {
-          entity.forEachAttacker((attacker) {
-            if (attacker.canReachTarget()) {
-              attacker.hit();
-            }
-          });
-          entity.die();
-        } else if (entity is Chest) {
-          entity.open();
-        }
-
-        entity.clean();
+      if (!Game.entityIdExists(id)) {
+        // entity was already removed
+        html.window.console.log("Tried to remove an entity that was already removed. (id=${id})");
+        return;
       }
+      
+      Entity entity = Game.getEntityByID(id);
+      
+      entity.isRemoved = true;
+
+      html.window.console.info("Despawning ${Types.getKindAsString(entity.kind)} (${entity.id})");
+
+      if (entity.gridPosition == Game.previousClickPosition) {
+        Game.previousClickPosition = null;
+      }
+
+      if (entity is SpellEffect) {
+        Game.removeSpellEffect(entity);
+      } else if (entity is Item) {
+        Game.removeItem(entity);
+      } else if (entity is Character) {
+        entity.forEachAttacker((attacker) {
+          if (attacker.canReachTarget()) {
+            attacker.hit();
+          }
+        });
+        entity.die();
+      } else if (entity is Chest) {
+        entity.open();
+      }
+
+      entity.clean();
     });
 
     this.on(Message.HEALTH, (data) {
@@ -448,39 +458,38 @@ class GameClient extends Base {
         hp = data[2],
         maxHP = data[3],
         isRegen = data[4] ? true : false;
+      
+      if (!Game.entityIdExists(entityId)) {
+        html.window.console.debug("Received HEALTH message for an entity that doesn't exist. (id=${entityId})");
+        return;
+      }
 
-      var entity = Game.getEntityById(
-        entityId, 
-        /* silence errors */ false,
-        /* load player */ true 
-      );
-      if (entity) {
-        var diff = hp - entity.hp;
+      Character entity = Game.getEntityByID(entityId);
+      var diff = hp - entity.hp;
 
-        entity.maxHP = maxHP;
-        entity.hp = hp;
+      entity.maxHP = maxHP;
+      entity.hp = hp;
 
-        if (entityId == Game.player.id) {
-          Player player = Game.player;
-          bool isHurt = diff < 0;
+      if (entityId == Game.player.id) {
+        Player player = Game.player;
+        bool isHurt = diff < 0;
 
-          if (player != null && !player.isDead && !player.invincible) {
-            //if (player.hp <= 0) {
-            //player.die();
-            //}
-            if (isHurt) {
-              player.hurt();
-              Game.infoManager.addInfo(new ReceivedDamageInfo(diff, player.x, player.y - 15));
-              Game.audioManager.playSound("hurt");
-              Game.storage.addDamage(-diff);
-              Game.tryUnlockingAchievement("MEATSHIELD");
-              Game.trigger("Hurt");
-            } else if (!isRegen) {
-              Game.infoManager.addInfo(new HealedDamageInfo("+" + diff, player.x, player.y - 15));
-            }
+        if (player != null && !player.isDead && !player.isInvincible) {
+          //if (player.hp <= 0) {
+          //player.die();
+          //}
+          if (isHurt) {
+            player.hurt();
+            Game.infoManager.addInfo(new ReceivedDamageInfo(diff, player.x, player.y - 15));
+            Game.audioManager.playSound("hurt");
+            Game.storage.addDamage(-diff);
+            Game.tryUnlockingAchievement("MEATSHIELD");
+            Game.trigger("Hurt");
+          } else if (!isRegen) {
+            Game.infoManager.addInfo(new HealedDamageInfo("+" + diff, player.x, player.y - 15));
           }
         }
-      }
+        }
     });
 
     this.on(Message.CHAT, (data) {
@@ -499,7 +508,7 @@ class GameClient extends Base {
       Game.audioManager.playSound("chat");
 
       var namePrefix = "";
-      if (channel == "party" && Game.player.party && Game.player.party.isLeader(player)) {
+      if (channel == "party" && Game.player.party != null && Game.player.party.isLeader(player)) {
         namePrefix = "\u2694 ";
       }
 
@@ -510,7 +519,7 @@ class GameClient extends Base {
       var playerId = data[1],
         itemKind = data[2];
 
-      var player = Game.getEntityById(playerId),
+      var player = Game.getEntityByID(playerId),
         itemName = Types.getKindAsString(itemKind);
 
       if (player != null) {
@@ -542,22 +551,17 @@ class GameClient extends Base {
         y = data[3];
 
       if (id != Game.player.id) {
-        var entity = null,
-          currentOrientation;
+        Character entity = Game.getEntityByID(id);
+        Orientation currentOrientation = entity.orientation;
 
-        entity = Game.getEntityById(id);
-        if (entity) {
-          currentOrientation = entity.orientation;
+        Game.makeCharacterTeleportTo(entity, x, y);
+        entity.orientation = currentOrientation;
 
-          Game.makeCharacterTeleportTo(entity, x, y);
-          entity.setOrientation(currentOrientation);
-
-          entity.forEachAttacker((attacker) {
-            attacker.disengage();
-            attacker.idle();
-            attacker.stop();
-          });
-        }
+        entity.forEachAttacker((attacker) {
+          attacker.disengage();
+          attacker.idle();
+          attacker.stop();
+        });
       }
     });
 
@@ -566,11 +570,9 @@ class GameClient extends Base {
         points = data[2],
         attackerId = data[3];
 
-      var entity = Game.getEntityById(entityId, true);
+      Entity entity = Game.getEntityByID(entityId);
       if (attackerId == Game.player.id) {
-        if (entity) {
-          Game.infoManager.addInfo(new InflictedDamageInfo(points, entity.x, entity.y - 15));
-        }
+        Game.infoManager.addInfo(new InflictedDamageInfo(points, entity.x, entity.y - 15));
       } else if (entityId == Game.player.id) {
         Game.infoManager.addInfo(new ReceivedDamageInfo(-points, Game.player.x, Game.player.y - 15));
       }
@@ -580,24 +582,24 @@ class GameClient extends Base {
       var worldPlayers = data[1],
         totalPlayers = data[2];
 
-      var setWorldPlayersString = (string) {
-        $("#instance-population").find("span:nth-child(2)").text(string);
-        $("#playercount").find("span:nth-child(2)").text(string);
+      var setWorldPlayersString = (String str) {
+        html.document.querySelector("#instance-population span:nth-child(2)").text = str;
+        html.document.querySelector("#playercount span:nth-child(2)").text = str;
       },
-        setTotalPlayersString = (string) {
-          $("#world-population").find("span:nth-child(2)").text(string);
+        setTotalPlayersString = (String str) {
+        html.document.querySelector("#world-population span:nth-child(2)").text = str;
         };
 
-      $("#playercount").find("span.count").text(worldPlayers);
+      html.document.querySelector("#playercount span.count").text = worldPlayers;
 
-      $("#instance-population").find("span").text(worldPlayers);
+      html.document.querySelector("#instance-population span").text =worldPlayers;
       if (worldPlayers == 1) {
         setWorldPlayersString("player");
       } else {
         setWorldPlayersString("players");
       }
 
-      $("#world-population").find("span").text(totalPlayers);
+      html.document.querySelector("#world-population span").text = totalPlayers;
       if (totalPlayers == 1) {
         setTotalPlayersString("player");
       } else {
@@ -624,7 +626,7 @@ class GameClient extends Base {
       if (mobName == 'boss') {
         Game.showNotification("You killed the skeleton king");
       } else {
-        if (_.include(['a', 'e', 'i', 'o', 'u'], mobName[0])) {
+        if (['a', 'e', 'i', 'o', 'u'].contains(mobName[0])) {
           Game.showNotification("You killed an " + mobName);
         } else {
           Game.showNotification("You killed a " + mobName);
@@ -662,16 +664,20 @@ class GameClient extends Base {
 
     this.on(Message.DESTROY, (data) {
       var id = data[1];
-
-      var entity = Game.getEntityById(id, true);
-      if (entity) {
-        if (entity is Item) {
-          Game.removeItem(entity);
-        } else {
-          Game.removeEntity(entity);
-        }
-        window.console.debug("Entity was destroyed: " + entity.id);
+      
+      if (!Game.entityIdExists(id)) {
+        html.window.console.debug("Entity was already destroyed. (id=${id})");
+        return;
       }
+
+      Entity entity = Game.getEntityByID(id);
+      if (entity is Item) {
+        Game.removeItem(entity);
+      } else {
+        Game.removeEntity(entity);
+      }
+      
+      html.window.console.debug("Entity was destroyed. (id=${entity.id})");
     });
 
     this.on(Message.XP, (data) {
@@ -686,7 +692,7 @@ class GameClient extends Base {
         Game.infoManager.addInfo(new XPInfo((gainedXP > 0 ? "+" : "-") + gainedXP + " XP", player.x + 5, player.y - 15));
       }
 
-      if (!player.maxXP || player.maxXP != maxXP) {
+      if (player.maxXP != maxXP) {
         player.maxXP = maxXP;
       }
     });
@@ -694,10 +700,13 @@ class GameClient extends Base {
     this.on(Message.BLINK, (data) {
       var id = data[1];
 
-      var item = Game.getEntityById(id);
-      if (item) {
-        item.blink(150);
+      if (!Game.entityIdExists(id)) {
+        html.window.console.debug("Received BLINK message for an item that doesn't exist. (id=${id})");
+        return;
       }
+      
+      Entity item = Game.getEntityByID(id);
+      item.blink(150, () {});
     });
 
     this.on(Message.LEVEL, (data) {
@@ -737,27 +746,27 @@ class GameClient extends Base {
 
   void connect(bool dispatcherMode) {
     String url = "ws://${this.host}:${this.port}/";
-    window.console.info("Trying to connect to server '${url}'");
-    this.connection = new WebSocket(url);
+    html.window.console.info("Trying to connect to server '${url}'");
+    this.connection = new html.WebSocket(url);
     if (dispatcherMode) {
-      this.connection.onMessage.listen((MessageEvent e) {
+      this.connection.onMessage.listen((html.MessageEvent e) {
         var reply = JSON.decode(e.data);
         if (reply.status == "OK") {
           this.trigger("Dispatched", [reply.host, reply.port]);
         } else if (reply.status == "FULL") {
-          window.alert("BrowserQuest is currently at maximum player population. Please retry later.");
+          html.window.alert("BrowserQuest is currently at maximum player population. Please retry later.");
         } else {
-          window.alert("Unknown error while connecting to BrowserQuest.");
+          html.window.alert("Unknown error while connecting to BrowserQuest.");
         }
       });
       return;
     }
 
-    this.connection.onOpen.listen((MessageEvent e) {
-      window.console.info("Connected to server " + this.host + ":" + this.port);
+    this.connection.onOpen.listen((html.MessageEvent e) {
+      html.window.console.info("Connected to server ${this.host}:${this.port}");
     });
 
-    this.connection.onMessage.listen((MessageEvent e) {
+    this.connection.onMessage.listen((html.MessageEvent e) {
       if (e.data == "go") {
         this.trigger("Connected");
         return;
@@ -770,13 +779,13 @@ class GameClient extends Base {
       this.receiveMessage(e.data);
     });
 
-    this.connection.onError.listen((MessageEvent e) {
-      window.console.error(e, true);
+    this.connection.onError.listen((html.ErrorEvent e) {
+      html.window.console.error(e);
     });
 
-    this.connection.onClose.listen((MessageEvent e) {
-      window.console.debug("Connection closed");
-      document.querySelector("#container").classes.add("error");
+    this.connection.onClose.listen((html.CloseEvent e) {
+      html.window.console.debug("Connection closed");
+      html.document.querySelector("#container").classes.add("error");
 
       if (this.isTimeout) {
         this.disconnected("You have been disconnected for being inactive for too long");
@@ -787,23 +796,23 @@ class GameClient extends Base {
   }
 
   void sendMessage(json) {
-    if (this.connection == null || this.connection.readyState != WebSocket.OPEN) {
+    if (this.connection == null || this.connection.readyState != html.WebSocket.OPEN) {
       throw "Unable to send message - WebSocket is not connected.";
     }
 
     var data = JSON.encode(json);
     this.connection.send(data);
-    window.console.debug("dataOut: ${data}");
+    html.window.console.debug("dataOut: ${data}");
   }
 
   void receiveMessage(String message) {
     if (!this.isListening) {
-      window.console.debug("Data received but client isn't listening yet");
+      html.window.console.debug("Data received but client isn't listening yet");
       return;
     }
 
     var data = JSON.decode(message);
-    window.console.debug("dataIn: ${message}");
+    html.window.console.debug("dataIn: ${message}");
 
     if (data[0] is List) {
       // Multiple actions received
@@ -825,7 +834,7 @@ class GameClient extends Base {
   }
 
   void disconnected(String message) {
-    if (Game.player) {
+    if (Game.player != null) {
       Game.player.die();
     }
 
@@ -952,7 +961,7 @@ class GameClient extends Base {
   }
 
   void sendChat(String text, String channel) {
-    if (!channel) {
+    if (channel == null) {
       channel = this.chat.channel;
     }
     this.sendMessage([Message.CHAT,

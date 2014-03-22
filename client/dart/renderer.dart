@@ -1,6 +1,6 @@
 library renderer;
 
-import "dart:html";
+import "dart:html" as html;
 import "dart:io";
 
 import "animatedtile.dart";
@@ -31,12 +31,12 @@ int getX(id, w) {
 
 class Renderer extends Base {
 
-  CanvasElement canvas;
-  CanvasElement backcanvas;
-  CanvasElement forecanvas;
-  CanvasRenderingContext2D context;
-  CanvasRenderingContext2D background;
-  CanvasRenderingContext2D foreground;
+  html.CanvasElement canvas;
+  html.CanvasElement backcanvas;
+  html.CanvasElement forecanvas;
+  html.CanvasRenderingContext2D context;
+  html.CanvasRenderingContext2D background;
+  html.CanvasRenderingContext2D foreground;
   int tilesize = 16;
   DateTime lastTime;
   int frameCount = 0;
@@ -46,10 +46,11 @@ class Renderer extends Base {
   bool isDebugInfoVisible = false;
   int animatedTileCount = 0;
   int highTileCount = 0;
-  ImageElement _tileset;
+  html.ImageElement _tileset;
   int scale;
   Camera camera;
   Position lastTargetPos;
+  Rect targetRect;
   AnimationTimer fixFlickeringTimer = new AnimationTimer(new Duration(milliseconds: 100));
 
   // TODO: update to fetch real values
@@ -59,7 +60,11 @@ class Renderer extends Base {
 
   bool mobile = false;
 
-  Renderer(CanvasElement this.canvas, CanvasElement this.backcanvas, CanvasElement this.forecanvas) {
+  Renderer(
+    html.CanvasElement this.canvas, 
+    html.CanvasElement this.backcanvas, 
+    html.CanvasElement this.forecanvas
+  ) {
     this.context = this.canvas.getContext("2d");
     this.background =  this.backcanvas.getContext("2d");
     this.foreground =  this.forecanvas.getContext("2d");
@@ -80,20 +85,20 @@ class Renderer extends Base {
   int get width => this.canvas.width;
   int get height => this.canvas.height;
   
-  ImageElement get tileset => this._tileset;
-  void set tileset(ImageElement tileset) {
+  html.ImageElement get tileset => this._tileset;
+  void set tileset(html.ImageElement tileset) {
     this._tileset = tileset;
   }
 
   int getScaleFactor() {
     this.mobile = false;
 
-    if (window.innerWidth <= 1000) {
+    if (html.window.innerWidth <= 1000) {
       this.mobile = true;
       return 2;
     }
 
-    if (window.innerWidth <= 1500 || window.innerHeight <= 870) {
+    if (html.window.innerWidth <= 1500 || html.window.innerHeight <= 870) {
       return 2;
     }
 
@@ -245,7 +250,7 @@ class Renderer extends Base {
   }
 
   void drawOccupiedCells() {
-    List<List<List<Entity>>> positions = Game.entityGrid;
+    List<List<Map<int, Entity>>> positions = Game.entityGrid;
 
     for (int i = 0; i < positions.length; i += 1) {
       for (int j = 0; j < positions[i].length; j += 1) {
@@ -300,8 +305,8 @@ class Renderer extends Base {
     int w = sprite.width * os;
     int h = sprite.height * os;
     int ts = 16;
-    int dx = Game.selectedX * ts * this.scale;
-    int dy = Game.selectedY * ts * this.scale;
+    int dx = Game.selected.x * ts * this.scale;
+    int dy = Game.selected.y * ts * this.scale;
     int dw = w * ds;
     int dh = h * ds;
 
@@ -322,15 +327,15 @@ class Renderer extends Base {
       os = this.upscaledRendering ? 1 : this.scale;
 
     this.context.save();
-    if (Game.currentCursor && Game.currentCursor.isLoaded) {
+    if (Game.currentCursor != null && Game.currentCursor.isLoaded) {
       this.context.drawImageScaledFromSource(Game.currentCursor.image, 0, 0, 14 * os, 14 * os, mx, my, 14 * s, 14 * s);
     }
     this.context.restore();
   }
 
   void drawScaledImage(
-    CanvasRenderingContext2D ctx, 
-    ImageElement image, 
+    html.CanvasRenderingContext2D ctx, 
+    html.ImageElement image, 
     int x, 
     int y, 
     int w, 
@@ -506,7 +511,7 @@ class Renderer extends Base {
 
   void clearDirtyRects() {
     Game.forEachVisibleEntityByDepth((Entity entity) {
-      if (entity.isDirty && entity.oldDirtyRect) {
+      if (entity.isDirty && entity.oldDirtyRect != null) {
         this.clearDirtyRect(entity.oldDirtyRect);
       }
     });
@@ -517,7 +522,7 @@ class Renderer extends Base {
       }
     });
 
-    if (Game.clearTarget && this.lastTargetPos) {
+    if (Game.clearTarget && this.lastTargetPos != null) {
       Position last = this.lastTargetPos;
       Rect rect = this.getTargetBoundingRect(last);
       this.clearDirtyRect(rect);
@@ -575,7 +580,7 @@ class Renderer extends Base {
     String color = "white";
     if (entity.id == Game.player.id) {
       color = "#fcda5c";
-    } else if (Game.player.target && entity.id == Game.player.target.id) {
+    } else if (Game.player.target != null && entity.id == Game.player.target.id) {
       color = "#40f022";
     } else if (Game.player.isHostile(entity)) {
       color = "#f03a51";
@@ -639,7 +644,7 @@ class Renderer extends Base {
     this.drawAnimatedTiles(true);
   }
 
-  void drawHighTiles(CanvasRenderingContext2D ctx) {
+  void drawHighTiles(html.CanvasRenderingContext2D ctx) {
     var tilesetwidth = this.tileset.width / Game.map.tilesize;
 
     this.highTileCount = 0;
@@ -651,7 +656,7 @@ class Renderer extends Base {
     }, 1);
   }
 
-  void drawBackground(CanvasRenderingContext2D ctx, String color) {
+  void drawBackground(html.CanvasRenderingContext2D ctx, String color) {
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
@@ -731,7 +736,7 @@ class Renderer extends Base {
       bool isLeader = party.getLeader() == member;
       String namePostfix = " - ${member.getHealthPercent}% (${member.gridX}, ${member.gridY})"; 
       this.drawText(
-        i + ". " + (isLeader ? "\u2694 " : "") + member.name + namePostfix, 
+        "${i}. ${(isLeader ? "\u2694 " : "")} ${member.name} ${namePostfix}", 
         new Position(10, start_offset + (i * line_height)), 
         /* centered */ false
       );
@@ -803,48 +808,51 @@ class Renderer extends Base {
     this.initFont();
   }
 
-  void setCameraView(CanvasRenderingContext2D ctx) {
+  void setCameraView(html.CanvasRenderingContext2D ctx) {
     ctx.translate(-this.camera.x * this.scale, -this.camera.y * this.scale);
   }
 
-  void clearScreen(CanvasRenderingContext2D ctx) {
+  void clearScreen(html.CanvasRenderingContext2D ctx) {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   // TODO: keep re-factoring after this
-  getPlayerImage() {
-    var canvas = document.createElement('canvas'),
-      ctx = canvas.getContext('2d'),
-      os = this.upscaledRendering ? 1 : this.scale,
-      player = Game.player,
-      sprite = Game.sprites[Types.getKindAsString(Game.player.armor)],
-      spriteAnim = sprite.animationData["idle_down"],
-      // character
-      row = spriteAnim.row,
-      w = sprite.width * os,
-      h = sprite.height * os,
-      y = row * h,
-      // weapon
-      weapon = Game.sprites[Types.getKindAsString(Game.player.weapon)],
-      ww = weapon.width * os,
-      wh = weapon.height * os,
-      wy = wh * row,
-      offsetX = (weapon.offsetX - sprite.offsetX) * os,
-      offsetY = (weapon.offsetY - sprite.offsetY) * os,
-      // shadow
-      shadow = Game.shadows["small"],
-      sw = shadow.width * os,
-      sh = shadow.height * os,
-      ox = -sprite.offsetX * os,
-      oy = -sprite.offsetY * os;
+  String getPlayerImage() {
+    html.CanvasElement canvas = html.document.createElement('canvas');
+    html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
+    int os = this.upscaledRendering ? 1 : this.scale;
+    Player player = Game.player;
+    Sprite sprite = Game.sprites[Types.getKindAsString(Game.player.armor)];
+    Animation spriteAnim = sprite.animationData["idle_down"];
+    
+    // character
+    int row = spriteAnim.row;
+    int w = sprite.width * os;
+    int h = sprite.height * os;
+    int y = row * h;
+    
+    // weapon
+    Sprite weapon = Game.sprites[Types.getKindAsString(Game.player.weapon)];
+    int ww = weapon.width * os;
+    int wh = weapon.height * os;
+    int wy = wh * row;
+    int offsetX = (weapon.offsetX - sprite.offsetX) * os;
+    int offsetY = (weapon.offsetY - sprite.offsetY) * os;
+    
+    // shadow
+    Sprite shadow = Game.shadows["small"];
+    int sw = shadow.width * os;
+    int sh = shadow.height * os;
+    int ox = -sprite.offsetX * os;
+    int oy = -sprite.offsetY * os;
 
     canvas.width = w;
     canvas.height = h;
 
     ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(shadow.image, 0, 0, sw, sh, ox, oy, sw, sh);
-    ctx.drawImage(sprite.image, 0, y, w, h, 0, 0, w, h);
-    ctx.drawImage(weapon.image, 0, wy, ww, wh, offsetX, offsetY, ww, wh);
+    ctx.drawImageScaledFromSource(shadow.image, 0, 0, sw, sh, ox, oy, sw, sh);
+    ctx.drawImageScaledFromSource(sprite.image, 0, y, w, h, 0, 0, w, h);
+    ctx.drawImageScaledFromSource(weapon.image, 0, wy, ww, wh, offsetX, offsetY, ww, wh);
 
     return canvas.toDataUrl("image/png");
   }

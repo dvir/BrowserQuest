@@ -16,6 +16,10 @@ class InfoManager extends Base {
     });
     info.init();
   }
+  
+  void forEachInfo(void callback(Info info)) {
+    infos.forEach(callback);
+  }
 
   void update(int time) {
     this.infos.forEach((Info info) {

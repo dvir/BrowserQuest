@@ -103,7 +103,7 @@ class Player extends Character {
   }
 
   void switchWeapon(Item item) {
-    if (this.isSwitchingWeapon && this.switchingWeaponTimer) {
+    if (this.isSwitchingWeapon && this.switchingWeaponTimer != null) {
       this.switchingWeaponTimer.cancel();
     }
 
@@ -122,7 +122,7 @@ class Player extends Character {
   }
 
   void switchArmor(Item item) {
-    if (this.isSwitchingArmor && this.switchingArmorTimer) {
+    if (this.isSwitchingArmor && this.switchingArmorTimer != null) {
       this.switchingArmorTimer.cancel();
     }
 
@@ -143,7 +143,7 @@ class Player extends Character {
   void startInvincibility() {
     if (this.isInvincible) {
       // If the player already has invincibility, just reset its duration.
-      if (this.invincibilityTimer && this.invincibilityTimer.isActive) {
+      if (this.invincibilityTimer != null && this.invincibilityTimer.isActive) {
         this.invincibilityTimer.cancel();
       }
     } else {
@@ -159,7 +159,7 @@ class Player extends Character {
   void stopInvincibility() {
     this.isInvincible = false;
 
-    if (this.invincibilityTimer && this.invincibilityTimer.isActive) {
+    if (this.invincibilityTimer != null && this.invincibilityTimer.isActive) {
       this.invincibilityTimer.cancel();
     }
   }

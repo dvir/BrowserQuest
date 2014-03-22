@@ -4,7 +4,9 @@ import "character.dart";
 import "game.dart";
 import "item.dart";
 import "../shared/dart/gametypes.dart";
+import 'hero.dart';
 
+// TODO: make it a class not dependant of Item.
 class InventoryItem extends Item {
 
   int slot = 0;
@@ -43,4 +45,6 @@ class InventoryItem extends Item {
       "barSlot": this.barSlot
     };
   }
+  
+  void looted(Hero hero) {}
 }

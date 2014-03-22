@@ -9,5 +9,5 @@ class XPInfo extends Info {
   String strokeColor = "rgb(50, 120, 50)";
   Orientation orientation = Orientation.RIGHT;
 
-  XPInfo(int id, String value, int x, int y): super(id, value, x, y);
+  XPInfo(String value, int x, int y): super(value, x, y);
 }
