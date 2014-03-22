@@ -22,7 +22,7 @@ class AudioManager extends Base {
 
   AudioManager() {
     this.audioContext = new AudioContext();
-    this.gainNode = this.audioContext.createGainNode();
+    this.gainNode = this.audioContext.createGain();
     this.gainNode.connectNode(this.audioContext.destination, 0, 0);
 
     AudioManager.soundNames.forEach((String name) {
@@ -73,9 +73,9 @@ class AudioManager extends Base {
     this.currentMusic = music;
   }
 
-  void addArea(int x, int y, int width, int height, String name) {
-    var area = new Area(x, y, width, height);
-    area.musicName = name;
+  void addArea(var data) {
+    Area area = new Area(data["x"], data["y"], data["width"], data["height"]);
+    area.musicName = data["name"];
     this.areas.add(area);
   }
 

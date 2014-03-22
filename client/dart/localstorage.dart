@@ -1,7 +1,7 @@
 library localstorage;
 
 import "dart:convert";
-import "dart:html";
+import "dart:html" as html;
 import "dart:math";
 
 import "base.dart";
@@ -10,7 +10,7 @@ import "../shared/dart/gametypes.dart";
 
 class LocalStorage extends Base {
 
-  Storage storage = window.localStorage;
+  html.Storage storage = html.window.localStorage;
   var data;
 
   LocalStorage() {

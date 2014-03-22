@@ -1,7 +1,7 @@
 library hero;
 
 import "dart:async";
-import "dart:html";
+import "dart:html" as html;
 
 import "character.dart";
 import "chest.dart";
@@ -19,6 +19,7 @@ import "player.dart";
 /*import "skillbar.dart";*/
 import "localstorage.dart";
 import "../shared/dart/gametypes.dart";
+import 'position.dart';
 
 class Hero extends Player {
 
@@ -60,22 +61,24 @@ class Hero extends Player {
         Game.deathpositions = {};
         Game.currentCursor = null;
         Game.zoningQueue = [];
-        Game.previousClickPosition = {};
+        Game.previousClickPosition = null;
 
         Game.initPathingGrid();
         Game.initEntityGrid();
         Game.initRenderingGrid();
         Game.initItemGrid();
 
-        Game.selectedX = 0;
-        Game.selectedY = 0;
+        Game.selected = new Position(0, 0);
         Game.selectedCellVisible = false;
         Game.targetColor = "rgba(255, 255, 255, 0.5)";
         Game.targetCellVisible = true;
-        Game.hoveringTarget = false;
-        Game.hoveringPlayer = false;
-        Game.hoveringMob = false;
-        Game.hoveringItem = false;
+        Game.hoveringTarget = null;
+        Game.hoveringPlayer = null;
+        Game.hoveringMob = null;
+        Game.hoveringNpc = null;
+        Game.hoveringItem = null;
+        Game.hoveringChest = null;
+        Game.hoveringPlateauTile = false;
         Game.hoveringCollidingTile = false;
 
         Game.playerDeath();
@@ -174,16 +177,14 @@ class Hero extends Player {
       Game.client.sendMove(x, y);
     }
 
-    // TODO: move to a helper Game class function.
     // Target cursor position
-    Game.selectedX = x;
-    Game.selectedY = y;
+    Game.selected = new Position(x, y);
 
     if (Game.renderer.mobile || Game.renderer.tablet) {
       Game.drawTarget = true;
       Game.clearTarget = true;
       Game.renderer.targetRect = Game.renderer.getTargetBoundingRect();
-      Game.checkOtherDirtyRects(Game.renderer.targetRect, null, Game.selectedX, Game.selectedY);
+      Game.checkOtherDirtyRects(Game.renderer.targetRect, null, Game.selected.x, Game.selected.y);
     }
   }
   void stopPathing(int x, int y) {
@@ -202,9 +203,9 @@ class Hero extends Player {
     }
 
     if (this.target is Npc) {
-      Game.makeNpcTalk(this.target);
+      Game.makeNpcTalk(this.target as Npc);
     } else if (this.target is Chest) {
-      Game.client.sendOpen(this.target);
+      Game.client.sendOpen(this.target as Chest);
       Game.audioManager.playSound("chest");
     }
 
@@ -219,7 +220,7 @@ class Hero extends Player {
   }
 
   String get areaName {
-    if (Game.audioManager.getSurroundingMusic(this)) {
+    if (Game.audioManager.getSurroundingMusic(this) != null) {
       return Game.audioManager.getSurroundingMusic(this).name;
     }
 
@@ -245,7 +246,7 @@ class Hero extends Player {
     /*this.skillbar.loadFromObject(data);*/
   /*}*/
 
-  void lootedArmor(InventoryItem item) {
+  void lootedArmor(Item item) {
     // make sure that it's better than what we already have, and if so - equip it
     if (this.getArmorRank() >= Types.getArmorRank(item.kind)) {
       return;
@@ -257,7 +258,7 @@ class Hero extends Player {
     this.switchArmor(item);
   }
 
-  void lootedWeapon(InventoryItem item) {
+  void lootedWeapon(Item item) {
     // make sure that it's better than what we already have, and if so - equip it
     if (this.getWeaponRank() >= Types.getWeaponRank(item.kind)) {
       return;

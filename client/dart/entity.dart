@@ -1,13 +1,14 @@
 library entity;
 
 import "dart:async";
-import "dart:html";
+import "dart:html" as html;
 import "dart:math";
 
 import "animation.dart";
 import "base.dart";
 import "rect.dart";
 import "sprite.dart";
+import "position.dart";
 import "../shared/dart/gametypes.dart";
 
 class Entity extends Base {
@@ -30,6 +31,8 @@ class Entity extends Base {
 
   Timer blinkingTimer;
 
+  Orientation direction;
+
   // Renderer
   Sprite _sprite;
   Map<String, Animation> animations;
@@ -43,6 +46,8 @@ class Entity extends Base {
   Rect oldDirtyRect;
 
   Entity(int this.id, Entities this.kind);
+
+  Position get gridPosition => new Position(this.gridX, this.gridY);
 
   Sprite get sprite {
     if (this.isHighlighted) {
@@ -112,7 +117,7 @@ class Entity extends Base {
 
   void setSprite(Sprite sprite) {
     // don't change to the same sprite
-    if (this._sprite && this._sprite.name == sprite.name) {
+    if (this._sprite != null && this._sprite.name == sprite.name) {
       return;
     }
 
@@ -135,7 +140,7 @@ class Entity extends Base {
     }
 
     // if we are already animating the given animation, stop.
-    if (this.currentAnimation && this.currentAnimation.name == name) {
+    if (this.currentAnimation != null && this.currentAnimation.name == name) {
       return;
     }
 
@@ -161,15 +166,15 @@ class Entity extends Base {
   }
 
   void log_debug(String message) {
-    window.console.debug("[$this.id] $message");
+    html.window.console.debug("[$this.id] $message");
   }
 
   void log_info(String message) {
-    window.console.info("[$this.id] $message");
+    html.window.console.info("[$this.id] $message");
   }
 
   void log_error(String message) {
-    window.console.error("[$this.id] $message");
+    html.window.console.error("[$this.id] $message");
   }
 
   void setHighlight(bool isHighlighted) {
@@ -210,7 +215,7 @@ class Entity extends Base {
   }
 
   void stopBlinking() {
-    if (this.blinkingTimer && this.blinkingTimer.isActive) {
+    if (this.blinkingTimer != null && this.blinkingTimer.isActive) {
       this.blinkingTimer.cancel();
     }
 

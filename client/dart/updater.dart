@@ -2,11 +2,12 @@ library updater;
 
 import "dart:async";
 
+import "animatedtile.dart";
 import "base.dart";
 import "character.dart";
 import "entity.dart";
 import "game.dart";
-import "animatedtile.dart";
+import "position.dart";
 import "../shared/dart/gametypes.dart";
 
 class Updater extends Base {
@@ -71,7 +72,7 @@ class Updater extends Base {
       }
     });
 
-    if (Game.currentZoning && Game.currentZoning.inProgress) {
+    if (Game.currentZoning != null && Game.currentZoning.inProgress) {
       Game.currentZoning.step(Game.currentTime);
     }
   }
@@ -81,7 +82,7 @@ class Updater extends Base {
     int ts = 16;
     int speed = 500;
 
-    if (!Game.currentZoning || Game.currentZoninginProgress) {
+    if (Game.currentZoning == null || Game.currentZoning.inProgress) {
       return;
     }
 
@@ -93,34 +94,34 @@ class Updater extends Base {
     Function endFunc;
 
     if (orientation == Orientation.LEFT || orientation == Orientation.RIGHT) {
-      offset = (Game.cameragridW - 2) * ts;
-      startValue = (orientation == Orientation.LEFT) ? Game.camerax - ts : Game.camerax + ts;
-      endValue = (orientation == Orientation.LEFT) ? Game.camerax - offset : Game.camerax + offset;
+      offset = (Game.camera.gridW - 2) * ts;
+      startValue = (orientation == Orientation.LEFT) ? Game.camera.x - ts : Game.camera.x + ts;
+      endValue = (orientation == Orientation.LEFT) ? Game.camera.x - offset : Game.camera.x + offset;
       updateFunc = (x) {
-        Game.camerasetPosition(x, Game.cameray);
+        Game.camera.setPosition(x, Game.camera.y);
         Game.initAnimatedTiles();
         Game.renderer.renderStaticCanvases();
       };
       endFunc = () {
-        Game.camerasetPosition(Game.currentZoningendValue, Game.cameray);
+        Game.camera.setPosition(Game.currentZoning.endValue, Game.camera.y);
         Game.endZoning();
       };
     } else if (orientation == Orientation.UP || orientation == Orientation.DOWN) {
-      offset = (Game.cameragridH - 2) * ts;
-      startValue = (orientation == Orientation.UP) ? Game.cameray - ts : Game.cameray + ts;
-      endValue = (orientation == Orientation.UP) ? Game.cameray - offset : Game.cameray + offset;
+      offset = (Game.camera.gridH - 2) * ts;
+      startValue = (orientation == Orientation.UP) ? Game.camera.y - ts : Game.camera.y + ts;
+      endValue = (orientation == Orientation.UP) ? Game.camera.y - offset : Game.camera.y + offset;
       updateFunc = (y) {
-        Game.camerasetPosition(Game.camerax, y);
+        Game.camera.setPosition(Game.camera.x, y);
         Game.initAnimatedTiles();
         Game.renderer.renderStaticCanvases();
       };
       endFunc = () {
-        Game.camerasetPosition(Game.camerax, Game.currentZoningendValue);
+        Game.camera.setPosition(Game.camera.x, Game.currentZoning.endValue);
         Game.endZoning();
       };
     }
 
-    Game.currentZoningstart(Game.currentTime, updateFunc, endFunc, startValue, endValue, speed);
+    Game.currentZoning.start(Game.currentTime, updateFunc, endFunc, startValue, endValue, speed);
   }
 
   void updateCharacter(Character c) {
@@ -198,16 +199,16 @@ class Updater extends Base {
 
   void updateAnimations() {
     Game.forEachEntity((Entity entity) {
-      if (entity.currentAnimation && entity.currentAnimation.update(Game.currentTime)) {
+      if (entity.currentAnimation != null && entity.currentAnimation.update(Game.currentTime)) {
         entity.dirty();
       }
     });
 
-    if (Game.sparksAnimation) {
+    if (Game.sparksAnimation != null) {
       Game.sparksAnimation.update(Game.currentTime);
     }
 
-    if (Game.targetAnimation) {
+    if (Game.targetAnimation != null) {
       Game.targetAnimation.update(Game.currentTime);
     }
   }
@@ -227,29 +228,30 @@ class Updater extends Base {
   }
 
   void updateKeyboardMovement() {
-    if (!Game.player || Game.player.isMoving()) {
+    if (Game.player == null || Game.player.isMoving()) {
       return;
     }
 
     Game.selectedCellVisible = false;
 
-    var pos = {
-      "x": Game.player.gridX,
-      "y": Game.player.gridY
-    };
+    Position pos = Game.player.gridPosition;
 
-    if (Game.player.moveUp) {
-      pos["y"]--;
-      Game.keys(pos, Orientation.UP);
-    } else if (Game.player.moveDown) {
-      pos["y"]++;
-      Game.keys(pos, Orientation.DOWN);
-    } else if (Game.player.moveRight) {
-      pos["x"]++;
-      Game.keys(pos, Orientation.RIGHT);
-    } else if (Game.player.moveLeft) {
-      pos["x"]--;
-      Game.keys(pos, Orientation.LEFT);
+    switch (Game.player.direction) {
+      case Orientation.UP:
+        Game.keys(new Position(pos.x, pos.y-1), Orientation.UP);
+        break;
+
+      case Orientation.DOWN:
+        Game.keys(new Position(pos.x, pos.y+1), Orientation.DOWN);
+        break;
+
+      case Orientation.RIGHT:
+        Game.keys(new Position(pos.x+1, pos.y), Orientation.RIGHT);
+        break;
+
+      case Orientation.LEFT:
+        Game.keys(new Position(pos.x-1, pos.y), Orientation.LEFT);
+        break;
     }
   }
 }

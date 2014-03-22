@@ -20,10 +20,7 @@ class Mob extends Character {
     // TODO: implement a proper function receive deathpositions @ Game class
     // Keep track of where mobs die in order to spawn their dropped items
     // at the right position later.
-    Game.deathpositions[this.id] = {
-      x: this.gridX,
-      y: this.gridY
-    };
+    Game.deathpositions[this.id] = this.gridPosition;
 
     super.die();
   }

@@ -4,7 +4,7 @@ import "entity.dart";
 import "hero.dart";
 import "../shared/dart/gametypes.dart";
 
-class Item extends Entity {
+abstract class Item extends Entity {
 
   bool wasDropped = false;
   int amount = 1;
@@ -17,9 +17,10 @@ class Item extends Entity {
   Item(
     int id, 
     Entities kind, 
-    String this.name, 
-    String this.lootMessage
+    [String name, 
+    String this.lootMessage]
   ): super(id, kind) {
+    this.name = name;
     this.nameOffsetY += 5;
   }
 
@@ -32,6 +33,8 @@ class Item extends Entity {
   bool hasShadow() => true;
 
   String getSpriteName() => "item-${this.itemKind}";
+  
+  void looted(Hero hero);
 }
 
 class Weapon extends Item {

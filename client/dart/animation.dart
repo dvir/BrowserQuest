@@ -15,6 +15,9 @@ class Frame {
 }
 
 class Animation extends Base {
+  
+  static const String IDLE_DOWN = "idle_down";
+  
   String name;
   int length;
   int row;

@@ -27,7 +27,7 @@ class Chest extends Entity {
 
       Game.removeEntity(this);
       Game.removeFromRenderingGrid(this, this.gridX, this.gridY);
-      Game.previousClickPosition = {};
+      Game.previousClickPosition = null;
     });
   }
 }

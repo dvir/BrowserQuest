@@ -1,9 +1,11 @@
 library sprite;
 
-import "dart:html";
+import "dart:html" as html;
 
 import "base.dart";
 import "animation.dart";
+
+import "../sprites/all_sprites.dart";
 
 class Sprite extends Base {
 
@@ -16,7 +18,7 @@ class Sprite extends Base {
   int offsetY = 0;
   int width;
   int height;
-  ImageElement image;
+  html.ImageElement image;
   var animationData;
   Sprite whiteSprite;
   Sprite silhouetteSprite;
@@ -40,7 +42,9 @@ class Sprite extends Base {
     this.height = height;
   }
 
-  Sprite.FromJSON(data) {
+  Sprite.FromJSON(String this.name, int this.scale) {
+    var data = rawSprites[name];
+    
     this.id = data["id"];
     StringBuffer sb = new StringBuffer();
     sb.write("img/");
@@ -65,7 +69,7 @@ class Sprite extends Base {
   }
 
   void load() {
-    this.image = new ImageElement();
+    this.image = new html.ImageElement();
     this.image.src = this.filepath;
     this.image.onLoad.listen((e) {
       this.isLoaded = true;
@@ -88,15 +92,13 @@ class Sprite extends Base {
   void createHurtSprite() {
     if (!this.isLoaded) return;
 
-    CanvasElement canvas = new CanvasElement();
+    html.CanvasElement canvas = new html.CanvasElement(width: this.image.width, height: this.image.height);
     var ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
     var spriteData, data;
 
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(this.image, 0, 0, width, height);
+    ctx.drawImageScaled(this.image, 0, 0, width, height);
     try {
       spriteData = ctx.getImageData(0, 0, width, height);
 
@@ -119,8 +121,8 @@ class Sprite extends Base {
         this.height
       );
     } catch (e) {
-      window.console.error("Error getting image data for sprite : " + this.name);
-      window.console.error(e);
+      html.window.console.error("Error getting image data for sprite : " + this.name);
+      html.window.console.error(e);
     }
   }
 
@@ -129,16 +131,14 @@ class Sprite extends Base {
   }
 
   void createSilhouette() {
-    CanvasElement canvas = new CanvasElement();
+    html.CanvasElement canvas = new html.CanvasElement(width: this.image.width, height: this.image.height);
     var ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
     var spriteData, data;
     var finalData, fdata;
 
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(this.image, 0, 0, width, height);
+    ctx.drawImageScaled(this.image, 0, 0, width, height);
     data = ctx.getImageData(0, 0, width, height).data;
     finalData = ctx.getImageData(0, 0, width, height);
     fdata = finalData.data;

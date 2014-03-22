@@ -9,6 +9,7 @@ import "door.dart";
 import "entity.dart";
 import "game.dart";
 import "../shared/dart/gametypes.dart";
+import 'position.dart';
 
 class WorldMap extends Base {
 
@@ -155,7 +156,7 @@ class WorldMap extends Base {
     return tileset;
   }
 
-  Map<String, int> tileIndexToGridPosition(int tileNum) {
+  Position tileIndexToGridPosition(int tileNum) {
     int x = 0;
     int y = 0;
 
@@ -171,22 +172,19 @@ class WorldMap extends Base {
 
     y = (tileNum / this.width).floor();
 
-    return {
-      "x": x,
-      "y": y
-    };
+    return new Position(x, y);
   }
 
   int GridPositionToTileIndex(int x, int y) => (y * this.width) + x + 1;
 
   bool isColliding(int x, int y) =>
     !this.isOutOfBounds(x, y)
-    && this.grid
+    && this.grid != null
     && this.grid[y][x] == 1;
 
   bool isPlateau(int x, int y) =>
     !this.isOutOfBounds(x, y)
-    && this.plateauGrid
+    && this.plateauGrid != null
     && this.plateauGrid[y][x] == 1;
 
   void _generateCollisionGrid() {
@@ -198,13 +196,13 @@ class WorldMap extends Base {
     }
 
     this.collisions.forEach((int tileIndex) {
-      Map<String, int> pos = this.tileIndexToGridPosition(tileIndex + 1);
-      this.grid[pos["y"]][pos["x"]] = 1;
+      Position pos = this.tileIndexToGridPosition(tileIndex + 1);
+      this.grid[pos.y][pos.x] = 1;
     });
 
     this.blocking.forEach((int tileIndex) {
-      Map<String, int> pos = this.tileIndexToGridPosition(tileIndex + 1);
-      this.grid[pos["y"]][pos["x"]] = 1;
+      Position pos = this.tileIndexToGridPosition(tileIndex + 1);
+      this.grid[pos.y][pos.x] = 1;
     });
 
     window.console.info("Collision grid generated.");
