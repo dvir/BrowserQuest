@@ -1,0 +1,75 @@
+library animation;
+
+import "base.dart";
+
+class Frame {
+  int index = 0;
+  int x = 0;
+  int y = 0;
+
+  Frame(int index, int x, int y) {
+    this.index = index;
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class Animation extends Base {
+  String name;
+  int length;
+  int row;
+  int width;
+  int height;
+  int speed = 0;
+  int count = 0;
+  int lastTime = 0;
+  Frame currentFrame;
+
+  Animation(String name, int length, int row, int width, int height) {
+    this.name = name;
+    this.length = length;
+    this.row = row;
+    this.width = width;
+    this.height = height;
+
+    this.reset();
+  }
+
+  void tick() {
+    var i = (this.currentFrame.index + 1) % this.length;
+
+    if (this.count > 0 && i == 0) {
+      this.count--;
+      if (this.count == 0) {
+        this.currentFrame.index = 0;
+        this.trigger("EndCount");
+        return;
+      }
+    }
+
+    this.currentFrame.x = this.width * i;
+    this.currentFrame.y = this.height * this.row;
+    this.currentFrame.index = i;
+  }
+
+  bool isTimeToAnimate(int time) => ((time - this.lastTime) > this.speed);
+
+  bool update(int time) {
+    if (this.lastTime == 0 && this.name.substring(0, 3) == "atk") {
+      this.lastTime = time;
+    }
+
+    if (this.isTimeToAnimate(time)) {
+      this.lastTime = time;
+      this.tick();
+      return true;
+    }
+
+    return false;
+  }
+
+  void reset() {
+    this.lastTime = 0;
+    this.currentFrame = new Frame(0, 0, this.row * this.height);
+  }
+}
