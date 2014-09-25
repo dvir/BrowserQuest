@@ -86,6 +86,7 @@ class Game extends Base {
   static Map<String, Player> playersByName;
 
   static Map<int, Entity> entities;
+  static Map<int, Entity> obsoleteEntities;
 
   static AudioManager audioManager = new AudioManager();
   static BubbleManager bubbleManager;
@@ -148,20 +149,14 @@ class Game extends Base {
   static Player getPlayerByID(int playerID) {
     return Game.players[playerID];
   }
-
+  
   static List<Player> getPlayersByIDs(List<int> playerIDs) {
-    List<Player> matchingPlayers = new List<Player>();
-
-    playerIDs.forEach((int id) {
-      Player player = Game.players[id];
-      if (player != null) {
-        matchingPlayers.add(player);
-      }
-    });
-
-    return matchingPlayers;
+    return playerIDs
+      .where((int id) => Game.players.containsKey(id))
+      .map((int id) => Game.players[id])
+      .toList();
   }
-
+ 
   static Player getPlayerByName(String name) {
     return Game.playersByName[name];
   }
@@ -328,6 +323,13 @@ class Game extends Base {
     }
 
     return Game.entities[id];
+  }
+  
+  static List<Entity> getEntitiesByIDs(List<int> entityIDs) {
+    return entityIDs
+      .where((int id) => Game.entities.containsKey(id))
+      .map((int id) => Game.entities[id])
+      .toList();
   }
 
   static bool entityIdExists(int id) {
@@ -586,23 +588,81 @@ class Game extends Base {
       Game.updateCursorLogic();
       Game.updater.update();
       Game.renderer.renderFrame();
-    }
-
-    if (!Game.isStopped) {
       window.requestAnimationFrame(Game.tick);
     }
   }
 
   static void start() {
-    Game.tick();
+    Game.started = true;
     Game.hasNeverStarted = false;
-
+    
+    Game.tick();
+    
     html.window.console.info("Game loop started.");
   }
 
   static void stop() {
-    Game.isStopped = true;
+    Game.started = false;
 
     html.window.console.info("Game stopped.");
+  }
+  
+  static void updateInventory() {
+    Game.app.updateInventory();
+  }
+  
+  static void updateSkillbar() {
+    Game.app.updateSkillbar();
+  }
+  
+  static void updateBars() {
+    updateInventory();
+    updateSkillbar();
+  }
+  
+  static void showNotificiation(String message) {
+    Game.app.showMessage(message);
+  }
+  
+  static void activateTownPortal() {
+    if (!Game.player.isDead) {
+     // @TODO: implement 
+    }
+  }
+  
+  // TODO: original code deleted the position from this array right after
+  // fetching it. figure out why and remove that requirement (possibly a
+  // timer that deletes it after some time?)
+  static Position getDeadMobPosition(int id) {
+    return Game.deathpositions[id];
+  }
+  
+  static void removeObsoleteEntities() {
+    Game.obsoleteEntities.forEach((int id, Entity entity) {
+      if (id == Game.player.id) {
+        throw new Exception("Trying to remove the current player!");
+      }
+      Game.removeEntity(entity);
+    });
+    html.window.console.debug("Removed ${Game.obsoleteEntities.length} entities");
+    Game.obsoleteEntities.clear();
+  }
+  
+  /**
+   * Fake a mouse move event in order to update the cursor.
+   *
+   * For instance, to get rid of the sword cursor in case the mouse is still hovering over a dying mob.
+   * Also useful when the mouse is hovering a tile where an item is appearing.
+   */
+  static void updateCursor() {
+    Game.movecursor();
+    Game.updateCursorLogic();
+  }
+  
+  /**
+   * Change player plateau mode when necessary
+   */
+  static void updatePlateauMode() {
+    Game.player.isOnPlateau = Game.map.isPlateau(Game.player.gridPosition);
   }
 }

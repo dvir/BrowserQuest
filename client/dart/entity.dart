@@ -24,6 +24,7 @@ class Entity extends Base {
   bool isHighlighted = false;
   bool isVisible = true;
   bool isDirty = false;
+  bool isOnPlateau = false;
 
   bool isFading = false;
   num fadingAlpha = 1;
