@@ -177,15 +177,15 @@ class WorldMap extends Base {
 
   int GridPositionToTileIndex(int x, int y) => (y * this.width) + x + 1;
 
-  bool isColliding(int x, int y) =>
-    !this.isOutOfBounds(x, y)
+  bool isColliding(Position pos) =>
+    !this.isOutOfBounds(pos)
     && this.grid != null
-    && this.grid[y][x] == 1;
+    && this.grid[pos.y][pos.x] == 1;
 
-  bool isPlateau(int x, int y) =>
-    !this.isOutOfBounds(x, y)
+  bool isPlateau(Position pos) =>
+    !this.isOutOfBounds(pos)
     && this.plateauGrid != null
-    && this.plateauGrid[y][x] == 1;
+    && this.plateauGrid[pos.y][pos.x] == 1;
 
   void _generateCollisionGrid() {
     var tileIndex = 0;
@@ -223,8 +223,8 @@ class WorldMap extends Base {
     window.console.info("Plateau grid generated.");
   }
 
-  bool isOutOfBounds(int x, int y) =>
-    (x < 0 || x >= this.width || y < 0 || y >= this.height);
+  bool isOutOfBounds(Position pos) =>
+    (pos.x < 0 || pos.x >= this.width || pos.y < 0 || pos.y >= this.height);
 
   /**
    * Returns true if the given tile id is "high", i.e. above all entities.
