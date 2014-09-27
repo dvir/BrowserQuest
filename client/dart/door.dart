@@ -1,22 +1,19 @@
 library door;
 
-import "../shared/dart/gametypes.dart";
+import "position.dart";
+import "lib/gametypes.dart";
 
 class Door {
 
-  int x;
-  int y;
+  Position position;
   Orientation orientation;
-  int cameraX;
-  int cameraY;
+  Position cameraPosition;
   bool isPortal;
 
   Door(
-    int this.x,
-    int this.y,
+    Position this.position,
     Orientation this.orientation,
-    int this.cameraX,
-    int this.cameraY,
+    Position this.cameraPosition,
     bool this.isPortal
   );
 }

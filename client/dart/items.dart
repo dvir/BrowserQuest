@@ -1,7 +1,7 @@
 library items;
 
 import "item.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Sword2 extends Weapon {
 

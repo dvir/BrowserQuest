@@ -1,7 +1,7 @@
 library npcs;
 
 import "npc.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Guard extends Npc {
 

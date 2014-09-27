@@ -1,8 +1,11 @@
 library pathfinder;
 
+import 'package:pathfinding/core/grid.dart';
+import 'package:pathfinding/finders/jps.dart';
+
 import "base.dart";
 import "character.dart";
-import "lib/astar.dart";
+import 'position.dart';
 
 class Pathfinder extends Base {
 
@@ -18,20 +21,25 @@ class Pathfinder extends Base {
     }
   }
 
+  AStarCompute(List<List<int>> rawGrid, List<int> start, List<int> end) {
+    Grid grid = new Grid(rawGrid.length, rawGrid.first.length, rawGrid);
+    JumpPointFinder jpf = new JumpPointFinder();
+    return jpf.findPath(start[0], start[1], end[0], end[1], grid);
+  }
+
   List<List<int>> findPath(
-    List<List<int>> grid, 
-    Character character, 
-    int x, 
-    int y, 
+    List<List<int>> grid,
+    Character character,
+    Position position,
     bool findIncomplete
   ) {
-    List<int> start = [character.gridX, character.gridY];
-    List<int> end = [x, y];
+    List<int> start = [character.gridPosition.x, character.gridPosition.y];
+    List<int> end = [position.x, position.y];
     List<List<int>> path;
 
     this.grid = grid;
     this.applyIgnoreList_(true);
-    path = AStar.compute(this.grid, start, end);
+    path = this.AStarCompute(this.grid, start, end);
     if (path.length == 0 && findIncomplete) {
       // If no path was found, try and find an incomplete one
       // to at least get closer to destination.
@@ -58,14 +66,14 @@ class Pathfinder extends Base {
     int x;
     int y;
 
-    perfect = AStar.compute(this.blankGrid, start, end);
+    perfect = this.AStarCompute(this.blankGrid, start, end);
 
     for (var i = perfect.length - 1; i > 0; i -= 1) {
       x = perfect[i][0];
       y = perfect[i][1];
 
       if (this.grid[y][x] == 0) {
-        incomplete = AStar.compute(this.grid, start, [x, y]);
+        incomplete = this.AStarCompute(this.grid, start, [x, y]);
         break;
       }
     }
@@ -84,8 +92,8 @@ class Pathfinder extends Base {
     var x, y, g;
 
     this.ignored.forEach((Character character) {
-      int x = character.isMoving() ? character.nextGridX : character.gridX;
-      int y = character.isMoving() ? character.nextGridY : character.gridY;
+      int x = character.isMoving() ? character.nextGridX : character.gridPosition.x;
+      int y = character.isMoving() ? character.nextGridY : character.gridPosition.y;
 
       if (x >= 0 && y >= 0) {
         this.grid[y][x] = ignored ? 0 : 1;

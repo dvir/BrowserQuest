@@ -1,7 +1,7 @@
 library damageinfo;
 
 import "info.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class DamageInfo extends Info {
 

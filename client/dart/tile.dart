@@ -1,13 +1,14 @@
 library tile;
 
 import "base.dart";
+import "position.dart";
+import "rect.dart";
 
 class Tile extends Base {
 
-  int x;
-  int y;
+  Position position;
   bool isDirty = false;
-  var dirtyRect;
+  Rect dirtyRect;
 
-  Tile (int this.x, int this.y);
+  Tile (Position this.position);
 }

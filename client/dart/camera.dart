@@ -2,15 +2,13 @@ library camera;
 
 import "base.dart";
 import "entity.dart";
+import "position.dart";
 import "renderer.dart";
 
 class Camera extends Base {
 
   Renderer renderer;
-  int x = 0;
-  int y = 0;
-  int gridX = 0;
-  int gridY = 0;
+  Position _gridPosition = const Position.zero();
   int gridW;
   int gridH;
   num offset = 0.5;
@@ -26,54 +24,55 @@ class Camera extends Base {
     this.gridH = 7 * factor;
   }
 
-  void setPosition(int x, int y) {
-    this.x = x;
-    this.y = y;
-
-    this.gridX = (x / 16).floor();
-    this.gridY = (y / 16).floor();
+  int get x => this.gridPosition.x * 16;
+  void set x(int x) {
+    this.gridPosition = new Position((x / 16).floor(), this.gridPosition.y);
   }
 
-  void setGridPosition(int x, int y) {
-    this.gridX = x;
-    this.gridY = y;
+  int get y => this.gridPosition.y * 16;
+  void set y(int y) {
+    this.gridPosition = new Position(this.gridPosition.x, (y / 16).floor());
+  }
 
-    this.x = this.gridX * 16;
-    this.y = this.gridY * 16;
+  Position get gridPosition => this._gridPosition;
+  void set gridPosition(Position position) {
+    this._gridPosition = position;
+    this.trigger("PositionChange");
   }
 
   void lookAt(Entity entity) {
     int x = (entity.x - ((this.gridW / 2).floor() * this.renderer.tilesize)).round();
     int y = (entity.y - ((this.gridH / 2).floor() * this.renderer.tilesize)).round();
 
-    this.setPosition(x, y);
+    this.x = x;
+    this.y = y;
   }
 
-  void forEachVisiblePosition(void callback(int x, int y), [int extra = 0]) {
-    int maxY = this.gridY + this.gridH + (extra * 2);
-    int maxX = this.gridX + this.gridW + (extra * 2);
-    for (int y = this.gridY - extra; y < maxY; y++) {
-      for (int x = this.gridX - extra; x < maxX; x++) {
-        callback(x, y);
+  void forEachVisiblePosition(void callback(Position), [int extra = 0]) {
+    int maxY = this.gridPosition.y + this.gridH + (extra * 2);
+    int maxX = this.gridPosition.x + this.gridW + (extra * 2);
+    for (int y = this.gridPosition.y - extra; y < maxY; y++) {
+      for (int x = this.gridPosition.x - extra; x < maxX; x++) {
+        callback(new Position(x, y));
       }
     }
   }
 
-  bool isVisible(Entity entity) => 
-    this.isVisiblePosition(entity.gridX, entity.gridY);
+  bool isVisible(Entity entity) =>
+    this.isVisiblePosition(entity.gridPosition.x, entity.gridPosition.y);
 
   bool isVisiblePosition(int x, int y) =>
-    (y >= this.gridY 
-     && y < this.gridY + this.gridH 
-     && x >= this.gridX 
-     && x < this.gridX + this.gridW);
+    (y >= this.gridPosition.y
+     && y < this.gridPosition.y + this.gridH
+     && x >= this.gridPosition.x
+     && x < this.gridPosition.x + this.gridW);
 
   void focusEntity(Entity entity) {
     int w = this.gridW - 2;
     int h = this.gridH - 2;
-    int x = ((entity.gridX - 1) / w).floor() * w;
-    int y = ((entity.gridY - 1) / h).floor() * h;
+    int x = ((entity.gridPosition.x - 1) / w).floor() * w;
+    int y = ((entity.gridPosition.y - 1) / h).floor() * h;
 
-    this.setGridPosition(x, y);
+    this.gridPosition = new Position(x, y);
   }
 }

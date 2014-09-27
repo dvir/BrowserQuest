@@ -5,11 +5,9 @@ import "dart:math";
 
 import "base.dart";
 import "character.dart";
-import "entity.dart";
 import "game.dart";
-import "mob.dart";
 import "spelleffect.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Spell extends Base {
 

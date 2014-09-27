@@ -1,10 +1,8 @@
 library info;
 
-import "dart:async";
-
 import "animationtimer.dart";
 import "base.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Info extends Base {
 

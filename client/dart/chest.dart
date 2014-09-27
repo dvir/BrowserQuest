@@ -4,7 +4,7 @@ import "dart:html";
 
 import "entity.dart";
 import "game.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Chest extends Entity {
 
@@ -26,7 +26,7 @@ class Chest extends Entity {
       window.console.info("${this.id} was removed");
 
       Game.removeEntity(this);
-      Game.removeFromRenderingGrid(this, this.gridX, this.gridY);
+      Game.removeFromRenderingGrid(this, this.gridPosition);
       Game.previousClickPosition = null;
     });
   }

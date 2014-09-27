@@ -1,13 +1,16 @@
 library game;
 
 import 'dart:async';
+import 'dart:math';
 
-/*import "app.dart";*/
+import "app.dart";
 import "animatedtile.dart";
 import "animation.dart";
 import "audiomanager.dart";
 import "base.dart";
+import "bubble.dart";
 import "bubblemanager.dart";
+import "door.dart";
 import "entity.dart";
 import "hero.dart";
 import "item.dart";
@@ -18,7 +21,7 @@ import "renderer.dart";
 import "sprite.dart";
 import "transition.dart";
 import "updater.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 import 'dart:html' as html;
 import 'map.dart';
 import 'gameclient.dart';
@@ -30,13 +33,18 @@ import 'tile.dart';
 import 'camera.dart';
 import 'infomanager.dart';
 import 'character.dart';
+import 'rect.dart';
+import 'audio.dart';
+import 'checkpoint.dart';
 
 class Game extends Base {
+
+  static Base events = new Base();
 
   static int currentTime = 0;
 
   static String host;
-  static String port;
+  static int port;
   static String username;
 
   static List<List<int>> pathingGrid;
@@ -68,8 +76,9 @@ class Game extends Base {
   static Npc hoveringNpc;
   static Item hoveringItem;
   static Chest hoveringChest;
-  static bool hoveringPlateauTile = false;
-  static bool hoveringCollidingTile = false;
+  static bool isHoveringPlateauTile = false;
+  static bool isHoveringCollidingTile = false;
+  static Entity lastHoveredEntity;
 
   static bool ready = false;
   static bool started = false;
@@ -88,6 +97,7 @@ class Game extends Base {
   static Map<int, Entity> entities;
   static Map<int, Entity> obsoleteEntities;
 
+  static Application app = new Application();
   static AudioManager audioManager = new AudioManager();
   static BubbleManager bubbleManager;
   static InfoManager infoManager = new InfoManager();
@@ -118,6 +128,8 @@ class Game extends Base {
 
   static Map<String, Sprite> shadows;
 
+  static Door townPortalDoor = new Door(new Position(36, 210), Orientation.DOWN, new Position(36, 210), true);
+
   static void setup(
     html.Element bubbleContainer,
     html.CanvasElement canvas,
@@ -128,6 +140,11 @@ class Game extends Base {
     Game.bubbleManager = new BubbleManager(bubbleContainer);
     Game.renderer = new Renderer(canvas, backCanvas, foreCanvas);
     Game.chatInput = chatInput;
+  }
+
+  static void initAchievements() {
+    // TODO: implement
+    // possibly create an AchievementsManager
   }
 
   static void tryUnlockingAchievement(String name) {
@@ -149,14 +166,14 @@ class Game extends Base {
   static Player getPlayerByID(int playerID) {
     return Game.players[playerID];
   }
-  
+
   static List<Player> getPlayersByIDs(List<int> playerIDs) {
     return playerIDs
       .where((int id) => Game.players.containsKey(id))
       .map((int id) => Game.players[id])
       .toList();
   }
- 
+
   static Player getPlayerByName(String name) {
     return Game.playersByName[name];
   }
@@ -196,7 +213,7 @@ class Game extends Base {
     Game.sparksAnimation.speed = 120;
   }
 
-  static void initHurtsprites() {
+  static void initHurtSprites() {
     Types.forEachArmorKind((Entities kind, String kindName) {
       Game.sprites[kindName].createHurtSprite();
     });
@@ -253,7 +270,7 @@ class Game extends Base {
   }
 
   static void updateCursorLogic() {
-    if (Game.hoveringCollidingTile && Game.started) {
+    if (Game.isHoveringCollidingTile && Game.started) {
       Game.targetColor = "rgba(255, 50, 50, 0.5)";
     } else {
       Game.targetColor = "rgba(255, 255, 255, 0.5)";
@@ -311,7 +328,7 @@ class Game extends Base {
       entity.on("dirty", () {
         if (Game.camera.isVisible(entity)) {
           entity.dirtyRect = Game.renderer.getEntityBoundingRect(entity);
-          Game.checkOtherDirtyRects(entity.dirtyRect, entity, entity.gridX, entity.gridY);
+          Game.checkOtherDirtyRects(entity.dirtyRect, entity, entity.gridPosition);
         }
       });
     }
@@ -324,7 +341,7 @@ class Game extends Base {
 
     return Game.entities[id];
   }
-  
+
   static List<Entity> getEntitiesByIDs(List<int> entityIDs) {
     return entityIDs
       .where((int id) => Game.entities.containsKey(id))
@@ -351,9 +368,9 @@ class Game extends Base {
     Game.entities.remove(entity.id);
   }
 
-  static void addSpellEffect(SpellEffect spellEffect, int x, int y) {
+  static void addSpellEffect(SpellEffect spellEffect, Position position) {
     spellEffect.setSprite(Game.sprites[spellEffect.getSpriteName()]);
-    spellEffect.setGridPosition(x, y);
+    spellEffect.gridPosition = position;
     spellEffect.setAnimation("idle", 150);
     Game.addEntity(spellEffect);
   }
@@ -361,13 +378,13 @@ class Game extends Base {
   static void removeSpellEffect(SpellEffect spellEffect) {
     spellEffect.isRemoved = true;
 
-    Game.removeFromRenderingGrid(spellEffect, spellEffect.gridX, spellEffect.gridY);
+    Game.removeFromRenderingGrid(spellEffect, spellEffect.gridPosition);
     Game.entities.remove(spellEffect.id);
   }
 
-  static void addItem(Item item, int x, int y) {
+  static void addItem(Item item, Position position) {
     item.setSprite(Game.sprites[item.getSpriteName()]);
-    item.setGridPosition(x, y);
+    item.gridPosition = position;
     item.setAnimation("idle", 150);
     Game.addEntity(item);
   }
@@ -375,8 +392,8 @@ class Game extends Base {
   static void removeItem(Item item) {
     item.isRemoved = true;
 
-    Game.removeFromItemGrid(item, item.gridX, item.gridY);
-    Game.removeFromRenderingGrid(item, item.gridX, item.gridY);
+    Game.removeFromItemGrid(item, item.gridPosition);
+    Game.removeFromRenderingGrid(item, item.gridPosition);
     Game.entities.remove(item.id);
   }
 
@@ -434,8 +451,7 @@ class Game extends Base {
       if (Game.map.isAnimatedTile(id)) {
         Position pos = Game.map.tileIndexToGridPosition(index);
         Tile tile = new AnimatedTile(
-          pos.x,
-          pos.y,
+          pos,
           id,
           Game.map.getTileAnimationLength(id),
           Game.map.getTileAnimationDelay(id),
@@ -446,26 +462,26 @@ class Game extends Base {
     }, 1);
   }
 
-  static void addToRenderingGrid(Entity entity, int x, int y) {
-    if (!Game.map.isOutOfBounds(x, y)) {
-      Game.renderingGrid[y][x].putIfAbsent(entity.id, () => entity);
+  static void addToRenderingGrid(Entity entity, Position position) {
+    if (!Game.map.isOutOfBounds(position)) {
+      Game.renderingGrid[position.y][position.x].putIfAbsent(entity.id, () => entity);
     }
   }
 
-  static void removeFromRenderingGrid(Entity entity, int x, int y) {
-    Game.renderingGrid[y][x].remove(entity.id);
+  static void removeFromRenderingGrid(Entity entity, Position position) {
+    Game.renderingGrid[position.y][position.x].remove(entity.id);
   }
 
-  static void removeFromEntityGrid(Entity entity, int x, int y) {
-    Game.entityGrid[y][x].remove(entity.id);
+  static void removeFromEntityGrid(Entity entity, Position position) {
+    Game.entityGrid[position.y][position.x].remove(entity.id);
   }
 
-  static void removeFromItemGrid(Item item, int x, int y) {
-    Game.itemGrid[y][x].remove(item.id);
+  static void removeFromItemGrid(Item item, Position position) {
+    Game.itemGrid[position.y][position.x].remove(item.id);
   }
 
-  static void removeFromPathingGrid(x, y) {
-    Game.pathingGrid[y][x] = 0;
+  static void removeFromPathingGrid(Position position) {
+    Game.pathingGrid[position.y][position.x] = 0;
   }
 
   /**
@@ -476,8 +492,8 @@ class Game extends Base {
    * @param {Entity} entity The moving entity
    */
   static void registerEntityDualPosition(Character entity) {
-    Game.entityGrid[entity.gridY][entity.gridX][entity.id] = entity;
-    Game.addToRenderingGrid(entity, entity.gridX, entity.gridY);
+    Game.entityGrid[entity.gridPosition.y][entity.gridPosition.x][entity.id] = entity;
+    Game.addToRenderingGrid(entity, entity.gridPosition);
     if (entity.nextGridX >= 0 && entity.nextGridY >= 0) {
       Game.entityGrid[entity.nextGridY][entity.nextGridX][entity.id] = entity;
       if (!(entity is Player)) {
@@ -493,33 +509,30 @@ class Game extends Base {
    * @param {Entity} entity The moving entity
    */
   static void unregisterEntityPosition(Character entity) {
-    Game.removeFromEntityGrid(entity, entity.gridX, entity.gridY);
-    Game.removeFromPathingGrid(entity.gridX, entity.gridY);
-    Game.removeFromRenderingGrid(entity, entity.gridX, entity.gridY);
+    Game.removeFromEntityGrid(entity, entity.gridPosition);
+    Game.removeFromPathingGrid(entity.gridPosition);
+    Game.removeFromRenderingGrid(entity, entity.gridPosition);
 
     if (entity.nextGridX >= 0 && entity.nextGridY >= 0) {
-      Game.removeFromEntityGrid(entity, entity.nextGridX, entity.nextGridY);
-      Game.removeFromPathingGrid(entity.nextGridX, entity.nextGridY);
+      Game.removeFromEntityGrid(entity, new Position(entity.nextGridX, entity.nextGridY));
+      Game.removeFromPathingGrid(new Position(entity.nextGridX, entity.nextGridY));
     }
   }
 
   static void registerEntityPosition(Entity entity) {
-    int x = entity.gridX;
-    int y = entity.gridY;
-
     if (entity is Character || entity is Chest) {
-      Game.entityGrid[y][x][entity.id] = entity;
+      Game.entityGrid[entity.gridPosition.y][entity.gridPosition.x][entity.id] = entity;
       if (entity is Chest) {
-        Game.pathingGrid[y][x] = 1;
+        Game.pathingGrid[entity.gridPosition.y][entity.gridPosition.x] = 1;
       }
     } else if (entity is Item) {
-      Game.itemGrid[y][x][entity.id] = entity;
+      Game.itemGrid[entity.gridPosition.y][entity.gridPosition.x][entity.id] = entity;
     }
 
-    Game.addToRenderingGrid(entity, x, y);
+    Game.addToRenderingGrid(entity, entity.gridPosition);
   }
 
-  static void setServerOptions(String host, String port, String username) {
+  static void setServerOptions(String host, int port, String username) {
     Game.host = host;
     Game.port = port;
     Game.username = username;
@@ -537,7 +550,7 @@ class Game extends Base {
 
   static void run(started_callback) {
     Game.loadSprites();
-    Game.setUpdater(new Updater());
+    Game.updater = new Updater();
     Game.camera = Game.renderer.camera;
     Game.setSpriteScale(Game.renderer.scale);
 
@@ -570,7 +583,7 @@ class Game extends Base {
       Game.initPathingGrid();
       Game.initRenderingGrid();
 
-      Game.setPathfinder(new Pathfinder(Game.map.width, Game.map.height));
+      Game.pathfinder = new Pathfinder(Game.map.width, Game.map.height);
 
       //this.initPlayer();
       Game.setCursor("hand");
@@ -581,23 +594,23 @@ class Game extends Base {
     });
   }
 
-  static void tick() {
-    Game.currentTime = new Date().getTime();
+  static void tick(num time) {
+    Game.currentTime = new DateTime.now().millisecondsSinceEpoch;
 
     if (Game.started) {
       Game.updateCursorLogic();
       Game.updater.update();
       Game.renderer.renderFrame();
-      window.requestAnimationFrame(Game.tick);
+      html.window.requestAnimationFrame(Game.tick);
     }
   }
 
   static void start() {
     Game.started = true;
     Game.hasNeverStarted = false;
-    
-    Game.tick();
-    
+
+    Game.tick(new DateTime.now().millisecondsSinceEpoch);
+
     html.window.console.info("Game loop started.");
   }
 
@@ -606,37 +619,86 @@ class Game extends Base {
 
     html.window.console.info("Game stopped.");
   }
-  
+
   static void updateInventory() {
     Game.app.updateInventory();
   }
-  
+
   static void updateSkillbar() {
     Game.app.updateSkillbar();
   }
-  
+
   static void updateBars() {
     updateInventory();
     updateSkillbar();
   }
-  
-  static void showNotificiation(String message) {
+
+  static void showNotification(String message) {
     Game.app.showMessage(message);
   }
-  
-  static void activateTownPortal() {
+
+  static void teleport(Door dest) {
+    Game.player.gridPosition = dest.position;
+    Game.player.nextGridX = dest.position.x;
+    Game.player.nextGridY = dest.position.y;
+    Game.player.turnTo(dest.orientation);
+    Game.client.sendTeleport(dest.position);
+
+    if (Game.renderer.mobile && dest.cameraPosition != null) {
+      Game.camera.gridPosition = dest.cameraPosition;
+      Game.resetZone();
+    } else {
+      if (dest.isPortal) {
+        Game.assignBubbleTo(Game.player);
+      } else {
+        Game.camera.focusEntity(Game.player);
+        Game.resetZone();
+      }
+    }
+
+    bool hadAttackers = Game.player.attackers.length > 0;
+
+    Game.player.forEachAttacker((Character attacker) {
+      attacker.disengage();
+      attacker.idle();
+    });
+
+    Game.updatePlateauMode();
+
+    // TODO: emit an event, i.e "ZoneChange" and check it there
+    Game.checkUndergroundAchievement();
+
+    if (Game.renderer.mobile || Game.renderer.tablet) {
+      // When rendering with dirty rects, clear the whole screen when entering a do>
+      Game.renderer.clearScreen(Game.renderer.context);
+    }
+
+    if (dest.isPortal) {
+      Game.audioManager.playSound("teleport");
+    }
+
     if (!Game.player.isDead) {
-     // @TODO: implement 
+      Game.audioManager.updateMusic();
+    }
+
+    if (hadAttackers) {
+      Game.tryUnlockingAchievement("COWARD");
     }
   }
-  
+
+  static void activateTownPortal() {
+    if (!Game.player.isDead) {
+      Game.teleport(Game.townPortalDoor);
+    }
+  }
+
   // TODO: original code deleted the position from this array right after
   // fetching it. figure out why and remove that requirement (possibly a
   // timer that deletes it after some time?)
   static Position getDeadMobPosition(int id) {
     return Game.deathpositions[id];
   }
-  
+
   static void removeObsoleteEntities() {
     Game.obsoleteEntities.forEach((int id, Entity entity) {
       if (id == Game.player.id) {
@@ -647,7 +709,7 @@ class Game extends Base {
     html.window.console.debug("Removed ${Game.obsoleteEntities.length} entities");
     Game.obsoleteEntities.clear();
   }
-  
+
   /**
    * Fake a mouse move event in order to update the cursor.
    *
@@ -655,14 +717,814 @@ class Game extends Base {
    * Also useful when the mouse is hovering a tile where an item is appearing.
    */
   static void updateCursor() {
-    Game.movecursor();
+    Game.updateHoverTargets();
     Game.updateCursorLogic();
   }
-  
+
   /**
    * Change player plateau mode when necessary
    */
   static void updatePlateauMode() {
     Game.player.isOnPlateau = Game.map.isPlateau(Game.player.gridPosition);
   }
+
+  /**
+   * Links two entities in an attacker<-->target relationship.
+   * This is just a utility method to wrap a set of instructions.
+   *
+   * @param {Entity} attacker The attacker entity
+   * @param {Entity} target The target entity
+   */
+  static void createAttackLink(Character attacker, Character target) {
+    if (attacker.hasTarget()) {
+      attacker.removeTarget();
+    }
+    attacker.engage(target);
+
+    if (Game.player != null && attacker.id != Game.player.id) {
+      target.addAttacker(attacker);
+    }
+  }
+
+  /**
+    * Sends a "hello" message to the server, as a way of initiating the player connection handshake.
+   */
+  static void sendHello([bool isResurrection = false]) {
+    Game.client.sendHello(Game.playerName, isResurrection);
+  }
+
+  /**
+   * Converts the current mouse position on the screen to world grid coordinates.
+   */
+  static Position getMouseGridPosition() {
+    int mx = Game.mouse.x;
+    int my = Game.mouse.y;
+    Camera c = Game.renderer.camera;
+    int s = Game.renderer.scale;
+    int ts = Game.renderer.tilesize;
+
+    int offsetX = mx % (ts * s);
+    int offsetY = my % (ts * s);
+
+    return new Position(
+      (((mx - offsetX) / (ts * s)) + c.gridPosition.x).round(),
+      (((my - offsetY) / (ts * s)) + c.gridPosition.y).round()
+    );
+  }
+
+  /**
+   * Moves a character to a given location on the world grid.
+   *
+   * @param {Number} x The x coordinate of the target location.
+   * @param {Number} y The y coordinate of the target location.
+   */
+   static void makeCharacterGoTo(Character character, Position position) {
+    if (!Game.map.isOutOfBounds(position)) {
+      character.go(position);
+    }
+  }
+
+   static void makeCharacterTeleportTo(Character character, Position position) {
+     if (Game.map.isOutOfBounds(position)) {
+       html.window.console.debug("Teleport out of bounds: ${position}");
+       return;
+     }
+
+     Game.unregisterEntityPosition(character);
+     character.gridPosition = position;
+     Game.registerEntityPosition(character);
+     Game.assignBubbleTo(character);
+   }
+
+   // TODO: THIS CRAP IS ONLY CALLED FOR MOBILE BULLSHIT. SEE IF IT'S EVEN NEEDED.
+   // @TODO: below
+   // source might be a tile or an entity.
+   // split into two functions and a helper
+   static void checkOtherDirtyRects(Rect r1, dynamic source, Position position) {
+     Game.forEachEntityAround(position, 2, (Entity entity) {
+       if (source is Entity && source.id == entity.id) {
+         return;
+       }
+
+       if (!entity.isDirty && r1.isIntersecting(Game.renderer.getEntityBoundingRect(entity))) {
+         entity.dirty();
+       }
+     });
+
+     if (source != null && !(source is AnimatedTile)) {
+       Game.forEachAnimatedTile((Tile tile) {
+         if (!tile.isDirty) {
+           if (r1.isIntersecting(Game.renderer.getTileBoundingRect(tile))) {
+             tile.isDirty = true;
+           }
+         }
+       });
+     }
+
+     if (!Game.drawTarget && Game.selectedCellVisible) {
+       Rect targetRect = Game.renderer.getTargetBoundingRect();
+       if (r1.isIntersecting(targetRect)) {
+         Game.drawTarget = true;
+         Game.renderer.targetRect = targetRect;
+       }
+     }
+   }
+
+   static void assignBubbleTo(Character character) {
+     Bubble bubble = Game.bubbleManager.getBubbleByID(character.id);
+     if (bubble == null) {
+       return;
+     }
+
+     int t = 16 * Game.renderer.scale; // tile size
+     int x = ((character.x - Game.camera.x) * Game.renderer.scale);
+     int w = int.parse(bubble.element.style.width) + 24;
+     int offset = ((w / 2) - (t / 2)).round();
+     int offsetY;
+     int y;
+
+     if (character is Npc) {
+       offsetY = 0;
+     } else {
+       if (Game.renderer.scale == 2) {
+         if (Game.renderer.mobile) {
+           offsetY = 0;
+         } else {
+           offsetY = 15;
+         }
+       } else {
+         offsetY = 12;
+       }
+     }
+
+     y = ((character.y - Game.camera.y) * Game.renderer.scale) - (t * 2) - offsetY;
+
+     bubble.element.style.left = "${x - offset} px";
+     bubble.element.style.top = "${y}px";
+   }
+
+   static void forEachEntity(void callback(Entity)) {
+     Game.entities.forEach((int id, Entity entity) {
+       callback(entity);
+     });
+   }
+
+   static void forEachCharacter(void callback(Character)) {
+     Game.entities.forEach((int id, Entity entity) {
+       if (entity is Character) {
+         callback(entity);
+       }
+     });
+   }
+
+   static void forEachMob(void callback(Mob)) {
+     Game.entities.forEach((int id, Entity entity) {
+       if (entity is Mob) {
+         callback(entity);
+       }
+     });
+   }
+
+   static void forEachAnimatedTile(void callback(AnimatedTile)) {
+     Game.animatedTiles.forEach(callback);
+   }
+
+   static void forEachEntityAround(Position position, int radius, void callback(Entity)) {
+     int maxX = position.x + radius;
+     int maxY = position.y + radius;
+     for (var i = position.x - radius; i <= maxX; i += 1) {
+       for (var j = position.y - radius; j <= maxY; j += 1) {
+         if (!Game.map.isOutOfBounds(new Position(i, j))) {
+           Game.renderingGrid[j][i].forEach((int id, Entity entity) {
+             callback(entity);
+           });
+         }
+       }
+     }
+   }
+
+   /**
+    * Loops through all entities visible by the camera and sorted by depth :
+    * Lower 'y' value means higher depth.
+    * Note: This is used by the Renderer to know in which order to render entities.
+    */
+   static void forEachVisibleEntityByDepth(void callback(Entity)) {
+     Game.camera.forEachVisiblePosition((Position position) {
+       if (!Game.map.isOutOfBounds(position)) {
+         Game.renderingGrid[position.y][position.x].forEach((int id, Entity entity) {
+           callback(entity);
+         });
+       }
+     }, Game.renderer.mobile ? 0 : 2);
+   }
+
+   static void forEachVisibleTileIndex(void callback(int), [int extra = 0]) {
+     Game.camera.forEachVisiblePosition((Position position) {
+       if (!Game.map.isOutOfBounds(position)) {
+         callback(Game.map.gridPositionToTileIndex(position) - 1);
+       }
+     }, extra);
+   }
+
+   static void forEachVisibleTile(void callback(int, int), [int extra = 0]) {
+     if (!Game.map.isLoaded) {
+       return;
+     }
+
+     Game.forEachVisibleTileIndex((int tileIndex) {
+       if (Game.map.data[tileIndex] == null) {
+         callback(Game.map.data[tileIndex] - 1, tileIndex);
+       } else {
+         Game.map.data[tileIndex].forEach((int id) {
+           callback(id - 1, tileIndex);
+         });
+       }
+     }, extra);
+   }
+
+   /**
+     * Returns the entity located at the given position on the world grid.
+     * @returns {Entity} the entity located at (x, y) or null if there is none.
+     */
+   static Entity getEntityAt(Position position) {
+     if (Game.map.isOutOfBounds(position)) {
+       return null;
+     }
+
+     if (Game.entityGrid[position.y][position.x].length > 0) {
+       return Game.entityGrid[position.y][position.x].values.first;
+     }
+
+     return Game.getItemAt(position);
+   }
+
+   static Player getPlayerAt(Position position) {
+     Entity entity = Game.getEntityAt(position);
+     return (entity != null && entity is Player) ? entity : null;
+   }
+
+   static Mob getMobAt(Position position) {
+     Entity entity = Game.getEntityAt(position);
+     return (entity != null && entity is Mob) ? entity : null;
+   }
+
+   static Item getItemAt(Position position) {
+     if (Game.map.isOutOfBounds(position)) {
+       return null;
+     }
+
+     if (Game.itemGrid[position.y][position.x].length == 0) {
+       return null;
+     }
+
+     // If there are potions/burgers stacked with equipment items on the same tile>
+     for (final item in Game.itemGrid[position.y][position.x]) {
+       if (Types.isExpendableItem(item.kind)) {
+         return item;
+       }
+     }
+
+     return Game.itemGrid[position.y][position.x].values.first;
+   }
+
+   static Npc getNpcAt(Position position) {
+     Entity entity = Game.getEntityAt(position);
+     return (entity != null && entity is Npc) ? entity : null;
+   }
+
+   static Chest getChestAt(Position position) {
+     Entity entity = Game.getEntityAt(position);
+     return (entity != null && entity is Chest) ? entity : null;
+   }
+
+   static bool isEntityAt(Position position) => Game.getEntityAt(position) != null;
+   static bool isPlayerAt(Position position) => Game.getPlayerAt(position) != null;
+   static bool isMobAt(Position position) => Game.getMobAt(position) != null;
+   static bool isItemAt(Position position) => Game.getItemAt(position) != null;
+   static bool isNpcAt(Position position) => Game.getNpcAt(position) != null;
+   static bool isChestAt(Position position) => Game.getChestAt(position) != null;
+
+   static bool isZoningTile(Position position) {
+     int x = position.x - Game.camera.gridPosition.x;
+     int y = position.y - Game.camera.gridPosition.y;
+
+     return x == 0
+       || y == 0
+       || x == Game.camera.gridW - 1
+       || y == Game.camera.gridH - 1;
+   }
+
+   static Orientation getZoningOrientation(Position position) {
+     int x = position.x - Game.camera.gridPosition.x;
+     int y = position.y - Game.camera.gridPosition.y;
+
+     if (x == 0) {
+       return Orientation.LEFT;
+     } else if (y == 0) {
+       return Orientation.UP;
+     } else if (x == Game.camera.gridW - 1) {
+       return Orientation.RIGHT;
+     } else if (y == Game.camera.gridH - 1) {
+       return Orientation.DOWN;
+     }
+
+     // TODO: can this be ever null? what does it mean for the callsites?
+     // investigate.
+     return null;
+   }
+
+   static void startZoningFrom(Position position) {
+     Game.zoningOrientation = Game.getZoningOrientation(position);
+
+     // TODO: remove this mobile crap
+     /*
+     if (this.renderer.mobile || this.renderer.tablet) {
+       var z = this.zoningOrientation,
+         c = this.camera,
+         ts = this.renderer.tilesize,
+         x = c.x,
+         y = c.y,
+         xoffset = (c.gridW - 2) * ts,
+         yoffset = (c.gridH - 2) * ts;
+
+       if (z === Types.Orientations.LEFT || z === Types.Orientations.RIGHT) {
+         x = (z === Types.Orientations.LEFT) ? c.x - xoffset : c.x + xoffset;
+       } else if (z === Types.Orientations.UP || z === Types.Orientations.DOWN) {
+         y = (z === Types.Orientations.UP) ? c.y - yoffset : c.y + yoffset;
+       }
+       c.setPosition(x, y);
+
+       this.renderer.clearScreen(this.renderer.context);
+       this.endZoning();
+
+       // Force immediate drawing of all visible entities in the new zone
+       this.forEachVisibleEntityByDepth((entity) {
+         entity.dirty();
+       });
+     } else {
+       this.currentZoning = new Transition();
+     }
+     */
+     Game.currentZoning = new Transition();
+     Game.bubbleManager.clean();
+     Game.client.sendZone();
+   }
+
+   static bool isZoning() {
+     return Game.currentZoning != null;
+   }
+
+   static void endZoning() {
+     Game.currentZoning = null;
+     Game.resetZone();
+
+     if (Game.zoningQueue.length > 0) {
+       Game.zoningQueue.removeAt(0);
+     }
+
+     if (Game.zoningQueue.length > 0) {
+       Game.startZoningFrom(Game.zoningQueue[0]);
+     }
+   }
+
+   static void enqueueZoningFrom(Position position) {
+     Game.zoningQueue.add(position);
+     if (Game.zoningQueue.length == 1) {
+       Game.startZoningFrom(position);
+     }
+   }
+
+   /**
+    * Moves the player one space, if possible
+    */
+   static void keys(Position pos, Orientation orientation) {
+     bool oldIsHoveringColliding = Game.isHoveringCollidingTile;
+     Game.isHoveringCollidingTile = false;
+
+     Game.player.orientation = orientation;
+     Game.player.idle();
+     Game.processInput(pos, true);
+
+     Game.isHoveringCollidingTile = oldIsHoveringColliding;
+   }
+
+   static void checkUndergroundAchievement() {
+     Audio music = Game.audioManager.getSurroundingMusic(Game.player);
+     if (music != null && music.name == 'cave') {
+       Game.tryUnlockingAchievement("UNDERGROUND");
+     }
+   }
+
+   static void resetZone() {
+     Game.bubbleManager.clean();
+     Game.initAnimatedTiles();
+     Game.renderer.renderStaticCanvases();
+   }
+
+   static void updateHoverTargets() {
+     Position mousePosition = Game.getMouseGridPosition();
+
+     if (Game.player == null
+        || Game.renderer.mobile
+        || Game.renderer.tablet) {
+       return;
+     }
+
+     Game.isHoveringCollidingTile = Game.map.isColliding(mousePosition);
+     Game.isHoveringPlateauTile = Game.player.isOnPlateau != Game.map.isPlateau(mousePosition);
+
+     // The order of choose which entity the player is hovering is defined here.
+     // we are resetting everything first to make sure we won't have any data
+     // left over from a previous mouse location.
+     Game.hoveringMob = null;
+     Game.hoveringItem = null;
+     Game.hoveringNpc = null;
+     Game.hoveringChest = null;
+     Entity entity;
+     while (true) {
+       entity = Game.hoveringPlayer = Game.getPlayerAt(mousePosition);
+       if (entity != null) break;
+
+       entity = Game.hoveringMob = Game.getMobAt(mousePosition);
+       if (entity != null) break;
+
+       entity = Game.hoveringNpc = Game.getNpcAt(mousePosition);
+       if (entity != null) break;
+
+       entity = Game.hoveringChest = Game.getChestAt(mousePosition);
+       if (entity != null) break;
+
+       entity = Game.hoveringItem = Game.getItemAt(mousePosition);
+       if (entity != null) break;
+
+       break;
+     }
+
+     if (entity != null) {
+       if (!entity.isHighlighted && Game.renderer.supportsSilhouettes) {
+         if (Game.lastHoveredEntity != null) {
+           Game.lastHoveredEntity.setHighlight(false);
+         }
+         Game.lastHoveredEntity = entity;
+         entity.setHighlight(true);
+       }
+     } else if (Game.lastHoveredEntity != null) {
+       Game.lastHoveredEntity.setHighlight(false);
+       Game.lastHoveredEntity = null;
+     }
+   }
+
+   /**
+    * Processes game logic when the user triggers a click/touch event during the gam>
+    */
+   // TODO: I'm sure this can be simplified / commented and prettified. Do it.
+   static void processInput(Position position, bool isKeyboard) {
+     if (Game.started
+         && Game.player != null
+         && !Game.isZoning()
+         && !Game.isZoningTile(new Position(Game.player.nextGridX, Game.player.nextGridY))
+         && !Game.player.isDead
+         && !Game.isHoveringCollidingTile
+         && !Game.isHoveringPlateauTile) {
+       Entity entity = Game.getEntityAt(position);
+
+       if (!isKeyboard && entity != null && entity.interactable) {
+         if (entity is Mob || entity is Player) {
+           Game.player.target = entity;
+         } else if (entity is Item) {
+           Game.makePlayerGoToItem(entity);
+         } else if (entity is Npc) {
+           if (!Game.player.isAdjacentNonDiagonal(entity)) {
+             Game.makePlayerTalkTo(entity);
+           } else {
+             Game.makeNpcTalk(entity);
+           }
+         } else if (entity is Chest) {
+           Game.makePlayerOpenChest(entity);
+         }
+       } else {
+         Game.makePlayerGoTo(position);
+       }
+     }
+   }
+
+   static void updatePlayerCheckpoint() {
+     Checkpoint checkpoint = Game.map.getCurrentCheckpoint(Game.player);
+     if (checkpoint == null) {
+       return;
+     }
+
+     Game.client.sendCheck(checkpoint.id);
+   }
+
+   // TODO: convert to events
+   static void playerChangedEquipment() {
+     Game.app.initEquipmentIcons();
+   }
+
+   static void playerDeath() {
+     Game.app.playerDeath();
+   }
+
+   static void playerInvincible(bool state) {
+     Game.app.playerInvincible(state);
+   }
+
+   /**
+     * Finds a path to a grid position for the specified character.
+     * The path will pass through any entity present in the ignore list.
+     */
+    static List<List<int>> findPath(Character character, Position position, List<Entity> ignoreList) {
+       if (Game.map.isColliding(position)) {
+         return [];
+       }
+
+       List<List<int>> path = [];
+       if (Game.pathfinder != null && character != null) {
+         if (ignoreList != null) {
+           ignoreList.forEach((Entity entity) {
+             Game.pathfinder.ignoreEntity(entity);
+           });
+         }
+
+         path = Game.pathfinder.findPath(Game.pathingGrid, character, position, false);
+
+         if (ignoreList != null) {
+           Game.pathfinder.clearIgnoreList();
+         }
+       } else {
+         html.window.console.error("Error while finding the path to $position for ${character.id}");
+       }
+
+       return path;
+    }
+
+    static void createBubble(Entity entity, String message) {
+      Game.bubbleManager.create(entity, message);
+    }
+
+    static void destroyBubble(int id) {
+      Game.bubbleManager.destroy(id);
+    }
+
+    static void makePlayerGoToItem(Item item) {
+      Game.player.isLootMoving = true;
+      Game.makePlayerGoTo(item.gridPosition);
+      Game.client.sendMove(new Position(item.x, item.y));
+    }
+
+    static void makePlayerTalkTo(Npc npc) {
+      Game.player.setTarget(npc);
+      Game.player.follow(npc);
+    }
+
+    static void makePlayerOpenChest(Chest chest) {
+      Game.player.setTarget(chest);
+      Game.player.follow(chest);
+    }
+
+    static void makePlayerAttack(Mob mob) {
+      Game.createAttackLink(Game.player, mob);
+      Game.client.sendAttack(mob);
+    }
+
+    static void makePlayerAttackTarget() {
+      if (Game.player.target != null) {
+        Game.makePlayerAttack(Game.player.target);
+      }
+    }
+
+    static void makePlayerAttackTo(Position position) {
+      Entity entity = Game.getEntityAt(position);
+      if (Game.player.isHostile(entity)) {
+        Game.makePlayerAttack(entity);
+      }
+    }
+
+    static void makePlayerGoTo(Position position) {
+      Game.makeCharacterGoTo(Game.player, position);
+    }
+
+    static void makeNpcTalk(Npc npc) {
+      String msg = npc.talk();
+      Game.previousClickPosition = null;
+      if (msg.length > 0) {
+        Game.createBubble(npc, msg);
+        Game.assignBubbleTo(npc);
+        Game.audioManager.playSound("npc");
+      } else {
+        Game.destroyBubble(npc.id);
+        Game.audioManager.playSound("npc-end");
+      }
+      Game.tryUnlockingAchievement("SMALL_TALK");
+
+      if (npc.kind == Entities.RICK) {
+        Game.tryUnlockingAchievement("RICKROLLD");
+      }
+
+    }
+
+    static void setSpriteScale(int scale) {
+      if (scale < 0 || scale > 2) {
+        throw new Exception("Unsupported scale $scale");
+      }
+
+      if (Game.renderer.upscaledRendering) {
+        Game.sprites = Game.spriteSets[0];
+      } else {
+        Game.sprites = Game.spriteSets[scale - 1];
+
+        Game.entities.forEach((int id, Entity entity) {
+          entity.setSprite(Game.sprites[entity.getSpriteName()]);
+        });
+        Game.initHurtSprites();
+        Game.initShadows();
+        Game.initCursors();
+      }
+    }
+
+    static void disconnected(String message) {
+      Game.app.disconnected(message);
+    }
+
+    static void updateCharacter(Character character) {
+      int time = Game.currentTime;
+
+      // If mob has finished moving to a different tile in order to avoid stacking, a>
+      if (character.previousTarget != null
+          && !character.isMoving()
+          && character is Mob) {
+        var t = character.previousTarget;
+
+        if (Game.getEntityByID(t.id) != null) { // does it still exist?
+          character.previousTarget = null;
+          Game.createAttackLink(character, t);
+          return;
+        }
+      }
+
+      if (character.isAttacking() && character.previousTarget == null) {
+
+        // TODO: this is stupid. we don't want this behavior, nor the client
+        //       suppose to take care of this.
+
+        // Don't let multiple mobs stack on the same tile when attacking a player.
+        bool isMoving = false; // Game.tryMovingToADifferentTile(character);
+        if (character.canAttack(time)) {
+          if (!isMoving) { // don't hit target if moving to a different tile.
+            if (character.hasTarget()
+                && character.getOrientationTo(character.target) != character.orientation) {
+              character.lookAtTarget();
+            }
+
+            character.hit();
+
+            if (Game.player != null && character.id == Game.player.id) {
+              Game.client.sendHit(character.target);
+            }
+
+            if (character is Player && Game.camera.isVisible(character)) {
+              Random rng = new Random();
+              Game.audioManager.playSound("hit${(rng.nextInt(1) + 1)}");
+            }
+
+            // TODO: this shouldn't be here, it should be on the server
+            if (character.hasTarget()
+                && Game.player != null
+                && character.target.id == Game.player.id
+                && !Game.player.isInvincible) {
+              Game.client.sendHurt(character);
+            }
+          }
+        } else if (character.hasTarget()
+                   && character.isDiagonallyAdjacent(character.target)
+                   && character.target is Player
+                   && !character.target.isMoving()) {
+          character.follow(character.target);
+        }
+      }
+    }
+
+    static void connect(Function started_callback) {
+      bool connecting = false; // always in dispatcher mode in the build version
+
+      Game.client = new GameClient(Game.host, Game.port);
+      Game.client.chat.input = Game.chatInput;
+
+      Game.client.connect(Game.app.config.dispatcher); // false if the client connects directly to a game server
+      connecting = true;
+
+      Game.client.on("Dispatched", (host, port) {
+        html.window.console.debug("Dispatched to game server $host:$port");
+
+        Game.client.host = host;
+        Game.client.port = port;
+        Game.player.isDying = false;
+        Game.client.connect(); // connect to actual game server
+      });
+
+      Game.client.on("Connected", () {
+        html.window.console.info("Starting client/server handshake");
+
+        Game.playerName = Game.username;
+        Game.started = true;
+
+        Game.sendHello();
+      });
+
+      Game.client.on("EntityList", (List<int> list) {
+        List<int> entityIds = Game.entities.keys;
+        List<int> knownIds = list.where((int id) => entityIds.contains(id));
+        List<int> newIds = list.where((int id) => !knownIds.contains(id));
+
+        Game.obsoleteEntities.clear();
+        Game.entities.forEach((int id, Entity entity) {
+          if (knownIds.contains(id) || id == Game.player.id) {
+            return;
+          }
+
+          Game.obsoleteEntities[id] = entity;
+        });
+
+        // Destroy entities outside of the player's zone group
+        Game.removeObsoleteEntities();
+
+        // Ask the server for spawn information about unknown entities
+        if (newIds.length > 0) {
+          Game.client.sendWho(newIds);
+        }
+      });
+
+      Game.client.on("Welcome", (data) {
+        // Player
+        if (Game.player != null) {
+          Game.player.idle();
+          Game.player.isRemoved = false;
+        } else {
+          // TODO: fix to a proper id, ideally from the server
+          Game.player = new Hero(13371337, "Newbie");
+        }
+
+        // make events from player to bubble to game
+        Game.player.bubbleTo(Game.events);
+
+        Game.app.initBars();
+        html.window.console.debug("initiated bars");
+
+        Game.player.isDead = false;
+        Game.player.isDying = false;
+
+        Game.player.loadFromObject(data);
+
+        Game.addPlayer(Game.player);
+
+        html.window.console.info("Received player ID from server ${Game.player.id}");
+
+        Game.updateBars();
+        Game.resetCamera();
+        Game.updatePlateauMode();
+        Game.audioManager.updateMusic();
+
+        Game.addEntity(Game.player);
+        Game.player.dirtyRect = Game.renderer.getEntityBoundingRect(Game.player);
+
+        Game.initPlayer();
+        Game.player.idle();
+
+        // TODO: implement differently
+        /*
+        if (!Game.storage.hasAlreadyPlayed()) {
+          Game.storage.initPlayer(Game.player.name);
+          Game.storage.savePlayer(Game.renderer.getPlayerImage(), Game.player);
+          Game.showNotification("Welcome to BrowserQuest!");
+        } else {
+          Game.showNotification("Welcome back to BrowserQuest!");
+        }
+        */
+
+        if (Game.hasNeverStarted) {
+          Game.start();
+          started_callback();
+        }
+
+        Game.tryUnlockingAchievement("STILL_ALIVE");
+      });
+    }
+
+    static void initPlayer() {
+      // TODO: implement differently
+//      Game.player.setStorage(Game.storage);
+//      Game.player.loadFromStorage(() {
+//        Game.updateBars();
+//      });
+
+      // TODO: meh. refactor setSprite mechanics
+      Game.player.setSprite(Game.sprites["clotharmor"]);
+      html.window.console.debug("Finished initPlayer");
+    }
+
+    static void resetCamera() {
+      Game.camera.focusEntity(Game.player);
+      Game.resetZone();
+    }
 }

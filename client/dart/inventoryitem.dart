@@ -3,7 +3,7 @@ library inventoryitem;
 import "character.dart";
 import "game.dart";
 import "item.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 import 'hero.dart';
 
 // TODO: make it a class not dependant of Item.
