@@ -1,7 +1,7 @@
 library xpinfo;
 
 import "info.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class XPInfo extends Info {
 

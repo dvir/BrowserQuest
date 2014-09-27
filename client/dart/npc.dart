@@ -1,7 +1,7 @@
 library npc;
 
 import "character.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
   var NpcTalk = {
     "guard": [

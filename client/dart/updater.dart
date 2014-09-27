@@ -8,7 +8,7 @@ import "character.dart";
 import "entity.dart";
 import "game.dart";
 import "position.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Updater extends Base {
 
@@ -98,12 +98,12 @@ class Updater extends Base {
       startValue = (orientation == Orientation.LEFT) ? Game.camera.x - ts : Game.camera.x + ts;
       endValue = (orientation == Orientation.LEFT) ? Game.camera.x - offset : Game.camera.x + offset;
       updateFunc = (x) {
-        Game.camera.setPosition(x, Game.camera.y);
+        Game.camera.gridPosition = new Position(x, Game.camera.y);
         Game.initAnimatedTiles();
         Game.renderer.renderStaticCanvases();
       };
       endFunc = () {
-        Game.camera.setPosition(Game.currentZoning.endValue, Game.camera.y);
+        Game.camera.gridPosition = new Position(Game.currentZoning.endValue, Game.camera.y);
         Game.endZoning();
       };
     } else if (orientation == Orientation.UP || orientation == Orientation.DOWN) {
@@ -111,12 +111,12 @@ class Updater extends Base {
       startValue = (orientation == Orientation.UP) ? Game.camera.y - ts : Game.camera.y + ts;
       endValue = (orientation == Orientation.UP) ? Game.camera.y - offset : Game.camera.y + offset;
       updateFunc = (y) {
-        Game.camera.setPosition(Game.camera.x, y);
+        Game.camera.gridPosition = new Position(Game.camera.x, y);
         Game.initAnimatedTiles();
         Game.renderer.renderStaticCanvases();
       };
       endFunc = () {
-        Game.camera.setPosition(Game.camera.x, Game.currentZoning.endValue);
+        Game.camera.gridPosition = new Position(Game.camera.x, Game.currentZoning.endValue);
         Game.endZoning();
       };
     }

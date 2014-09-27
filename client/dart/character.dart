@@ -6,9 +6,10 @@ import "dart:math";
 
 import "entity.dart";
 import "game.dart";
+import "position.dart";
 import "sprite.dart";
 import "transition.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Character extends Entity {
 
@@ -35,8 +36,8 @@ class Character extends Entity {
   Transition movement = new Transition();
   var path;
   int step = 0;
-  var destination;
-  var newDestination;
+  Position destination;
+  Position newDestination;
   var adjacentTiles = {};
 
   // Combat
@@ -180,7 +181,7 @@ class Character extends Entity {
     var oriented = ['atk', 'walk', 'idle'];
 
     // don't change animation if the character is dying
-    if (this.currentAnimation != null && this.currentAnimation.name == "death" && this.isDying) { 
+    if (this.currentAnimation != null && this.currentAnimation.name == "death" && this.isDying) {
       return;
     }
 
@@ -224,26 +225,23 @@ class Character extends Entity {
     this.animate("walk", this.walkSpeed);
   }
 
-  void moveTo_(int x, int y) {
-    this.destination = {
-      gridX: x,
-      gridY: y
-    };
+  void moveTo_(Position position) {
+    this.destination = position;
     this.adjacentTiles = {};
 
     if (this.isMoving()) {
-      this.continueTo(x, y);
+      this.continueTo(position);
       return;
     }
 
-    this.followPath(this.requestPathfindingTo(x, y));
+    this.followPath(this.requestPathfindingTo(position));
   }
 
   // TODO: give a real type to paths
-  requestPathfindingTo(int x, int y) {
-    List<Entity> ignored = []; 
+  requestPathfindingTo(Position position) {
+    List<Entity> ignored = [];
     // Always ignore self
-    ignored.add(this); 
+    ignored.add(this);
 
     // TODO: maybe we should stop ignoring the target??
     //       if we want to move to a location, we just want to get there asap.
@@ -255,19 +253,19 @@ class Character extends Entity {
       //       it might be cool to make the attackers spread around the target entity,
       //       but that is not practical for a lot of attackers and looks pretty stupid
       //       not mentioning moving targets to locations where they are not really present
-      
+
       // also ignore other attackers of the target entity
       target.forEachAttacker((Entity attacker) {
         ignored.add(attacker);
       });
     }
 
-    return Game.findPath(this, x, y, ignored);
+    return Game.findPath(this, position, ignored);
   }
 
   void startPathing(var path) {
   }
-  void stopPathing(int x, int y) {
+  void stopPathing(Position position) {
     if (this.isDying) {
       return;
     }
@@ -302,8 +300,8 @@ class Character extends Entity {
     this.nextStep();
   }
 
-  void continueTo(int x, int y) {
-    this.newDestination = {x: x, y: y};
+  void continueTo(Position position) {
+    this.newDestination = position;
   }
 
   void updateMovement() {
@@ -322,7 +320,7 @@ class Character extends Entity {
   }
 
   void updatePositionOnGrid() {
-    this.setGridPosition(this.path[this.step][0], this.path[this.step][1]);
+    this.gridPosition = new Position(this.path[this.step][0], this.path[this.step][1]);
   }
 
   void nextStep() {
@@ -352,9 +350,7 @@ class Character extends Entity {
       this.doStep();
 
       if (this.hasChangedItsPath()) {
-        x = this.newDestination.x;
-        y = this.newDestination.y;
-        path = this.requestPathfindingTo(x, y);
+        path = this.requestPathfindingTo(this.newDestination);
 
         this.newDestination = null;
         if (path.length < 2) {
@@ -374,7 +370,7 @@ class Character extends Entity {
       this.path = null;
       this.idle();
 
-      this.stopPathing(this.gridX, this.gridY);
+      this.stopPathing(this.gridPosition);
     }
   }
 
@@ -404,9 +400,9 @@ class Character extends Entity {
 
   bool hasChangedItsPath() => (this.newDestination != null);
 
-  bool isNear(Character character, num distance) => 
-    (this.gridX - character.gridX).abs() <= distance
-    && (this.gridY - character.gridY).abs() <= distance;
+  bool isNear(Character character, num distance) =>
+    (this.gridPosition.x - character.gridPosition.x).abs() <= distance
+    && (this.gridPosition.y - character.gridPosition.y).abs() <= distance;
 
   checkAggro() {
   }
@@ -420,7 +416,7 @@ class Character extends Entity {
     }
   }
 
-  void go(int x, int y) {
+  void go(Position position) {
     if (this.isAttacking()) {
       this.disengage();
     } else if (this.followingMode) {
@@ -428,12 +424,12 @@ class Character extends Entity {
       this.target = null;
     }
 
-    this.moveTo_(x, y);
+    this.moveTo_(position);
   }
 
   void follow(Entity entity) {
     this.followingMode = true;
-    this.moveTo_(entity.gridX, entity.gridY);
+    this.moveTo_(entity.gridPosition);
   }
 
   void stop() {
@@ -474,11 +470,11 @@ class Character extends Entity {
    * @returns {String} The orientation.
    */
   Orientation getOrientationTo(Character character) {
-    if (this.gridX < character.gridX) {
+    if (this.gridPosition.x < character.gridPosition.x) {
       return Orientation.RIGHT;
-    } else if (this.gridX > character.gridX) {
+    } else if (this.gridPosition.x > character.gridPosition.x) {
       return Orientation.LEFT;
-    } else if (this.gridY > character.gridY) {
+    } else if (this.gridPosition.y > character.gridPosition.y) {
       return Orientation.UP;
     }
 
@@ -505,8 +501,8 @@ class Character extends Entity {
     });
   }
 
-  void setTarget(Character character) {
-    if (this.hasTarget() && this.target == character) { 
+  void setTarget(Entity entity) {
+    if (this.hasTarget() && this.target == entity) {
       // If it's not already set as the target
       return;
     }
@@ -515,7 +511,7 @@ class Character extends Entity {
       this.removeTarget(); // Cleanly remove the previous one
     }
     this.unconfirmedTarget = null;
-    this.target = character;
+    this.target = entity;
   }
 
   void removeTarget() {
@@ -542,8 +538,8 @@ class Character extends Entity {
   }
   bool isWaitingToAttack(Character character) => (this.unconfirmedTarget == character);
 
-  bool canAttack(int time) => 
-      this.canReachTarget() 
+  bool canAttack(int time) =>
+      this.canReachTarget()
       && (this.attackCooldown == null || this.attackCooldown.isActive);
 
   bool canReachTarget() => (this.hasTarget() && this.isAdjacentNonDiagonal(this.target));
@@ -561,7 +557,7 @@ class Character extends Entity {
       window.console.info("${this.id} was removed");
 
       Game.removeEntity(this);
-      Game.removeFromRenderingGrid(this, this.gridX, this.gridY);
+      Game.removeFromRenderingGrid(this, this.gridPosition);
     });
 
     this.forEachAttacker((Character attacker) {
@@ -575,8 +571,8 @@ class Character extends Entity {
     // Upon death, this entity is removed from both grids, allowing the player
     // to click very fast in order to loot the dropped item and not be blocked.
     // The entity is completely removed only after the death animation has ended.
-    Game.removeFromEntityGrid(this, this.gridX, this.gridY);
-    Game.removeFromPathingGrid(this.gridX, this.gridY);
+    Game.removeFromEntityGrid(this, this.gridPosition);
+    Game.removeFromPathingGrid(this.gridPosition);
 
     if (Game.camera.isVisible(this)) {
       var rng = new Random();
@@ -608,8 +604,8 @@ class Character extends Entity {
   }
 
   // TODO: figure out all the usages of this method. we might be better off
-  // with just calculating it off this.atkRate (to be created), 
-  // and launching the timer only after an attack so we don't have it running 
+  // with just calculating it off this.atkRate (to be created),
+  // and launching the timer only after an attack so we don't have it running
   // for each mob all the time.
   void setAttackRate(rate) {
     this.attackCooldown = new Timer(new Duration(milliseconds: rate), () {});

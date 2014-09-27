@@ -9,7 +9,7 @@ import "base.dart";
 import "rect.dart";
 import "sprite.dart";
 import "position.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Entity extends Base {
   int id;
@@ -17,8 +17,7 @@ class Entity extends Base {
   bool interactable = true;
   String name;
   
-  int gridX = 0;
-  int gridY = 0;
+  Position _gridPosition = const Position(0, 0);
 
   bool isLoaded = false;
   bool isHighlighted = false;
@@ -48,7 +47,11 @@ class Entity extends Base {
 
   Entity(int this.id, Entities this.kind);
 
-  Position get gridPosition => new Position(this.gridX, this.gridY);
+  Position get gridPosition => this._gridPosition;
+  void set gridPosition(Position position) {
+    this._gridPosition = position;
+    this.trigger("PositionChange");
+  }
 
   Sprite get sprite {
     if (this.isHighlighted) {
@@ -62,14 +65,14 @@ class Entity extends Base {
     this._sprite = sprite;
   }
 
-  int get x => this.gridX * 16;
+  int get x => this.gridPosition.x * 16;
   void set x(int x) { 
-    this.gridX = (x / 16).floor();
+    this.gridPosition = new Position((x / 16).floor(), this.gridPosition.y);
   }
 
-  int get y => this.gridY * 16;
+  int get y => this.gridPosition.y * 16;
   void set y(int y) {
-    this.gridY = (y / 16).floor();
+    this.gridPosition = new Position(this.gridPosition.x, (y / 16).floor());
   }
 
   void reset() {
@@ -87,16 +90,9 @@ class Entity extends Base {
     this.dirty();
   }
 
-  void setGridPosition(int gridX, int gridY) {
-    this.gridX = gridX;
-    this.gridY = gridY;
-
-    this.trigger("PositionChange");
-  }
-
   void moveSteps(int steps, Orientation orientation) {
-    int gridX = this.gridX;
-    int gridY = this.gridY;
+    int gridX = this.gridPosition.x;
+    int gridY = this.gridPosition.y;
 
     switch (orientation) {
       case Orientation.LEFT:
@@ -113,7 +109,7 @@ class Entity extends Base {
         break;
     }
 
-    this.setGridPosition(gridX, gridY);
+    this.gridPosition = new Position(gridX, gridY);
   }
 
   void setSprite(Sprite sprite) {
@@ -184,23 +180,23 @@ class Entity extends Base {
 
   bool isHostile(Entity entity) => false;
 
-  num distanceTo(Entity entity) => sqrt(pow(this.gridX - entity.gridX, 2) + pow(this.gridY - entity.gridY, 2));
+  num distanceTo(Entity entity) => sqrt(pow(this.gridPosition.x - entity.gridPosition.x, 2) + pow(this.gridPosition.y - entity.gridPosition.y, 2));
 
-  int getDistanceToEntity(Entity entity) => max((this.gridX - entity.gridX).abs(), (this.gridY - entity.gridY).abs());
+  int getDistanceToEntity(Entity entity) => max((this.gridPosition.x - entity.gridPosition.x).abs(), (this.gridPosition.y - entity.gridPosition.y).abs());
 
-  bool isCloseTo(Entity entity) => (this.gridX - entity.gridX).abs() < 30 && (this.gridY - entity.gridY).abs() < 14;
+  bool isCloseTo(Entity entity) => (this.gridPosition.x - entity.gridPosition.x).abs() < 30 && (this.gridPosition.y - entity.gridPosition.y).abs() < 14;
 
   bool isAdjacent(Entity entity) => this.getDistanceToEntity(entity) > 1 ? false : true;
 
-  bool isAdjacentNonDiagonal(Entity entity) => this.isAdjacent(entity) && !(this.gridX != entity.gridX && this.gridY != entity.gridY);
+  bool isAdjacentNonDiagonal(Entity entity) => this.isAdjacent(entity) && !(this.gridPosition.x != entity.gridPosition.x && this.gridPosition.y != entity.gridPosition.y);
 
   bool isDiagonallyAdjacent(Entity entity) => this.isAdjacent(entity) && !this.isAdjacentNonDiagonal(entity);
 
   void forEachAdjacentNonDiagonalPosition(callback) {
-    callback(this.gridX - 1, this.gridY, Orientation.LEFT);
-    callback(this.gridX, this.gridY - 1, Orientation.UP);
-    callback(this.gridX + 1, this.gridY, Orientation.RIGHT);
-    callback(this.gridX, this.gridY + 1, Orientation.DOWN);
+    callback(this.gridPosition.x - 1, this.gridPosition.y, Orientation.LEFT);
+    callback(this.gridPosition.x, this.gridPosition.y - 1, Orientation.UP);
+    callback(this.gridPosition.x + 1, this.gridPosition.y, Orientation.RIGHT);
+    callback(this.gridPosition.x, this.gridPosition.y + 1, Orientation.DOWN);
   }
 
   void fadeIn(int currentTime) {

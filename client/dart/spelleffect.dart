@@ -5,7 +5,7 @@ import "dart:async";
 import "character.dart";
 import "entity.dart";
 import "game.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class SpellEffect extends Entity {
 
@@ -23,7 +23,7 @@ class SpellEffect extends Entity {
   void travel(Character source) {
     Orientation orientation = source.orientation;
 
-    Game.addSpellEffect(this, source.gridX, source.gridY);
+    Game.addSpellEffect(this, source.gridPosition);
     this.travelingTimer = new Timer.periodic(new Duration(milliseconds: 80), (Timer timer) {
       this.moveSteps(1, orientation);
     });

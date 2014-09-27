@@ -14,9 +14,9 @@ class Area extends Base {
   Area(int this.x, int this.y, int this.width, int this.height, [String this.musicName]);
 
   bool contains(Entity entity) =>
-    entity.gridX >= this.x
-    && entity.gridY >= this.y
-    && entity.gridX < (this.x + this.width)
-    && entity.gridY < (this.y + this.height);
+    entity.gridPosition.x >= this.x
+    && entity.gridPosition.y >= this.y
+    && entity.gridPosition.x < (this.x + this.width)
+    && entity.gridPosition.y < (this.y + this.height);
 
 }

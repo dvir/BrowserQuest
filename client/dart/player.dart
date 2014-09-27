@@ -4,14 +4,13 @@ import "dart:async";
 import "dart:html";
 
 import "character.dart";
-import "chest.dart";
 import "entity.dart";
 import "game.dart";
 import "item.dart";
 import "mob.dart";
-import "npc.dart";
 import "party.dart";
-import "../shared/dart/gametypes.dart";
+import "position.dart";
+import "lib/gametypes.dart";
 
 class Player extends Character {
 
@@ -54,7 +53,7 @@ class Player extends Character {
        );
 
   // TODO: give a real type to paths
-  requestPathfindingTo(int x, int y) {
+  requestPathfindingTo(Position position) {
     List<Entity> ignored = []; // Always ignore self
 
     // TODO: maybe we should stop ignoring the target??
@@ -62,7 +61,7 @@ class Player extends Character {
     if (this.hasTarget()) {
       ignored.add(this.target);
     }
-    return Game.findPath(this, x, y, ignored);
+    return Game.findPath(this, position, ignored);
   }
 
   String get areaName => "n/a";
@@ -174,7 +173,7 @@ class Player extends Character {
 
   void loadFromObject(data) {
     // x and y in server are mapped to gridX and gridY on client
-    this.setGridPosition(data.x, data.y);
+    this.gridPosition = new Position(data.x, data.y);
 
     this.name = data.name;
     this.hp = data.hp;

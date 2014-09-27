@@ -2,7 +2,7 @@ library item;
 
 import "entity.dart";
 import "hero.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 abstract class Item extends Entity {
 
@@ -10,14 +10,15 @@ abstract class Item extends Entity {
   int amount = 1;
   int cooldown = 1;
   int castTime = 1;
-  String tooltip = "N/A";
-  String lootMessage;
+  // TODO: implement
+  final String tooltip = "N/A";
+  final String lootMessage;
   List<int> playersInvolved = [];
 
   Item(
-    int id, 
-    Entities kind, 
-    [String name, 
+    int id,
+    Entities kind,
+    [String name,
     String this.lootMessage]
   ): super(id, kind) {
     this.name = name;
@@ -33,7 +34,7 @@ abstract class Item extends Entity {
   bool hasShadow() => true;
 
   String getSpriteName() => "item-${this.itemKind}";
-  
+
   void looted(Hero hero);
 }
 

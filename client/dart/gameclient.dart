@@ -16,9 +16,10 @@ import "item.dart";
 import "mob.dart";
 import "party.dart";
 import "player.dart";
+import "position.dart";
 import "spell.dart";
 import "spelleffect.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 import 'xpinfo.dart';
 import 'entity.dart';
 
@@ -31,7 +32,7 @@ class GameClient extends Base {
   bool isTimeout = false;
   html.WebSocket connection;
 
-  GameClient() {
+  GameClient(String this.host, int this.port) {
     this.chat = new Chat();
     this.enable();
 
@@ -46,9 +47,8 @@ class GameClient extends Base {
     });
 
     this.on(Message.MOVE, (data) {
-      var id = data[1],
-        x = data[2],
-        y = data[3];
+      var id = data[1];
+      Position position = new Position(data[2], data[3]);
 
       if (Game.player != null && id != Game.player.id) {
         var entity = Game.getEntityByID(id);
@@ -58,13 +58,14 @@ class GameClient extends Base {
           }
           entity.disengage();
           entity.idle();
-          Game.makeCharacterGoTo(entity, x, y);
+          Game.makeCharacterGoTo(entity, position);
         } else {
+          // TODO: this seems like a hack that was made for party updates. remove it
           // maybe it's a player location update
           // check if it's a player entity
           Player player = Game.getPlayerByID(id);
           if (player != null) {
-            player.setGridPosition(x, y);
+            player.gridPosition = position;
           }
         }
       }
@@ -81,7 +82,7 @@ class GameClient extends Base {
         item = Game.getEntityByID(itemId);
 
         if (player != null && item != null) {
-          Game.makeCharacterGoTo(player, item.gridX, item.gridY);
+          Game.makeCharacterGoTo(player, item.gridPosition);
         }
       }
     });
@@ -91,13 +92,13 @@ class GameClient extends Base {
 
       var item = Game.player.inventory.find(itemId);
       if (!item) {
-        html.window.console.log("Loot was picked up but couldn't be found in inventory. (${itemId})");
+        html.window.console.error("Loot was picked up but couldn't be found in inventory. (${itemId})");
         return;
       }
 
       try {
         Game.player.loot(item);
-        Game.showNotification(item.getLootMessage());
+        Game.showNotification(item.lootMessage);
 
         if (item.type == "armor") {
           Game.tryUnlockingAchievement("FAT_LOOT");
@@ -289,9 +290,9 @@ class GameClient extends Base {
 
         if (attacker && target is Player && target.id != Game.player.id && target.target && target.target.id == attacker.id && attacker.getDistanceToEntity(target) < 3) {
           // TODO: eh? remove this crap and let the server decide on this AI behavior
-          
-          // delay to prevent other players attacking mobs 
-          // from ending up on the same tile as they walk 
+
+          // delay to prevent other players attacking mobs
+          // from ending up on the same tile as they walk
           // towards each other.
           new Timer(new Duration(milliseconds: 200), () {
             Game.createAttackLink(attacker, target);
@@ -320,7 +321,7 @@ class GameClient extends Base {
         // irrelevant update
         return;
       }
-    
+
       player.loadFromObject(playerData.data);
     });
 
@@ -332,27 +333,24 @@ class GameClient extends Base {
 
     this.on(Message.SPAWN, (data) {
       var id = data[1],
-        kind = data[2],
-        x = data[3],
-        y = data[4];
+        kind = data[2];
+
+      Position position = new Position(data[3], data[4]);
 
       if (Types.isSpell(kind)) {
         //@TODO: handle properly
-        return;
-
-        var spell = EntityFactory.createEntity(kind, id);
-
+//        Entity spell = EntityFactory.createEntity(kind, id);
       } else if (Types.isItem(kind)) {
         var item = EntityFactory.createEntity(kind, id);
 
-        html.window.console.info("Spawned " + Types.getKindAsString(item.kind) + " (" + item.id + ") at " + x + ", " + y);
-        Game.addItem(item, x, y);
+        html.window.console.info("Spawned ${Types.getKindAsString(item.kind)} (${item.id}) at ${position}");
+        Game.addItem(item, position);
       } else if (Types.isChest(kind)) {
         var chest = EntityFactory.createEntity(kind, id);
 
-        html.window.console.info("Spawned chest (" + chest.id + ") at " + x + ", " + y);
+        html.window.console.info("Spawned chest (${chest.id}) at ${position}");
         chest.setSprite(Game.sprites[chest.getSpriteName()]);
-        chest.setGridPosition(x, y);
+        chest.gridPosition = position;
         chest.setAnimation("idle_down", 150);
         Game.addEntity(chest);
       } else {
@@ -389,13 +387,13 @@ class GameClient extends Base {
             if (character.id != Game.player.id) {
               var kindString = Types.getKindAsString(character.skin);
               character.setSprite(Game.sprites[kindString]);
-              character.setGridPosition(x, y);
-              character.setOrientation(orientation);
+              character.gridPosition = position;
+              character.orientation = orientation;
               character.idle();
 
               Game.addEntity(character);
 
-              html.window.console.info("Spawned " + Types.getKindAsString(character.kind) + " (" + character.id + ") at " + character.gridX + ", " + character.gridY);
+              html.window.console.info("Spawned ${Types.getKindAsString(character.kind)} (${character.id}) at ${character.gridPosition}");
 
               if (character is Mob) {
                 if (targetId) {
@@ -424,9 +422,9 @@ class GameClient extends Base {
         html.window.console.log("Tried to remove an entity that was already removed. (id=${id})");
         return;
       }
-      
+
       Entity entity = Game.getEntityByID(id);
-      
+
       entity.isRemoved = true;
 
       html.window.console.info("Despawning ${Types.getKindAsString(entity.kind)} (${entity.id})");
@@ -458,7 +456,7 @@ class GameClient extends Base {
         hp = data[2],
         maxHP = data[3],
         isRegen = data[4] ? true : false;
-      
+
       if (!Game.entityIdExists(entityId)) {
         html.window.console.debug("Received HEALTH message for an entity that doesn't exist. (id=${entityId})");
         return;
@@ -482,9 +480,10 @@ class GameClient extends Base {
             player.hurt();
             Game.infoManager.addInfo(new ReceivedDamageInfo(diff, player.x, player.y - 15));
             Game.audioManager.playSound("hurt");
-            Game.storage.addDamage(-diff);
+            // TODO: implement differently
+//            Game.storage.addDamage(-diff);
             Game.tryUnlockingAchievement("MEATSHIELD");
-            Game.trigger("Hurt");
+            Game.events.trigger("Hurt");
           } else if (!isRegen) {
             Game.infoManager.addInfo(new HealedDamageInfo("+" + diff, player.x, player.y - 15));
           }
@@ -541,20 +540,19 @@ class GameClient extends Base {
         pos = Game.getDeadMobPosition(entityId);
       }
 
-      Game.addItem(item, pos.x, pos.y);
+      Game.addItem(item, pos);
       Game.updateCursor();
     });
 
     this.on(Message.TELEPORT, (data) {
-      var id = data[1],
-        x = data[2],
-        y = data[3];
+      var id = data[1];
+      Position position = new Position(data[2], data[3]);
 
       if (id != Game.player.id) {
         Character entity = Game.getEntityByID(id);
         Orientation currentOrientation = entity.orientation;
 
-        Game.makeCharacterTeleportTo(entity, x, y);
+        Game.makeCharacterTeleportTo(entity, position);
         entity.orientation = currentOrientation;
 
         entity.forEachAttacker((attacker) {
@@ -633,16 +631,19 @@ class GameClient extends Base {
         }
       }
 
-      Game.storage.incrementTotalKills();
+      // TODO: implement differently
+//      Game.storage.incrementTotalKills();
       Game.tryUnlockingAchievement("HUNTER");
 
       if (kind == Entities.RAT) {
-        Game.storage.incrementRatCount();
+        // TODO: implement differently
+//        Game.storage.incrementRatCount();
         Game.tryUnlockingAchievement("ANGRY_RATS");
       }
 
       if (kind == Entities.SKELETON || kind == Entities.SKELETON2) {
-        Game.storage.incrementSkeletonCount();
+        // TODO: implement differently
+//        Game.storage.incrementSkeletonCount();
         Game.tryUnlockingAchievement("SKULL_COLLECTOR");
       }
 
@@ -664,7 +665,7 @@ class GameClient extends Base {
 
     this.on(Message.DESTROY, (data) {
       var id = data[1];
-      
+
       if (!Game.entityIdExists(id)) {
         html.window.console.debug("Entity was already destroyed. (id=${id})");
         return;
@@ -676,7 +677,7 @@ class GameClient extends Base {
       } else {
         Game.removeEntity(entity);
       }
-      
+
       html.window.console.debug("Entity was destroyed. (id=${entity.id})");
     });
 
@@ -704,7 +705,7 @@ class GameClient extends Base {
         html.window.console.debug("Received BLINK message for an item that doesn't exist. (id=${id})");
         return;
       }
-      
+
       Entity item = Game.getEntityByID(id);
       item.blink(150, () {});
     });
@@ -744,7 +745,7 @@ class GameClient extends Base {
     this.chat.insertNotice(message);
   }
 
-  void connect(bool dispatcherMode) {
+  void connect([bool dispatcherMode = true]) {
     String url = "ws://${this.host}:${this.port}/";
     html.window.console.info("Trying to connect to server '${url}'");
     this.connection = new html.WebSocket(url);
@@ -873,9 +874,9 @@ class GameClient extends Base {
   }
 
   void sendUseSpell(
-    Spell spell, 
-    Entity target, 
-    Orientation orientation, 
+    Spell spell,
+    Entity target,
+    Orientation orientation,
     int trackingId
   ) {
     var message = [Message.USESPELL,
@@ -921,17 +922,17 @@ class GameClient extends Base {
     this.sendMessage([Message.RESURRECT]);
   }
 
-  void sendMove(int x, int y) {
+  void sendMove(Position position) {
     this.sendMessage([Message.MOVE,
-      x,
-      y
+      position.x,
+      position.y
     ]);
   }
 
-  void sendLootMove(Item item, int x, int y) {
+  void sendLootMove(Item item, Position position) {
     this.sendMessage([Message.LOOTMOVE,
-      x,
-      y,
+      position.x,
+      position.y,
       item.id
     ]);
   }
@@ -954,9 +955,9 @@ class GameClient extends Base {
     ]);
   }
 
-  void sendHurt(Mob mob) {
+  void sendHurt(Character character) {
     this.sendMessage([Message.HURT,
-      mob.id
+      character.id
     ]);
   }
 
@@ -1047,10 +1048,10 @@ class GameClient extends Base {
     ]);
   }
 
-  void sendTeleport(int x, int y) {
+  void sendTeleport(Position position) {
     this.sendMessage([Message.TELEPORT,
-      x,
-      y
+      position.x,
+      position.y
     ]);
   }
 

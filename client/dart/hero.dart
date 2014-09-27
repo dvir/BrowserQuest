@@ -1,36 +1,31 @@
 library hero;
 
 import "dart:async";
-import "dart:html" as html;
 
 import "character.dart";
 import "chest.dart";
-import "entity.dart";
 import "game.dart";
-// TODO: re-write and then uncomment
-/*import "inventory.dart";*/
+import "inventory.dart";
 import "inventoryitem.dart";
 import "item.dart";
 import "mob.dart";
 import "npc.dart";
-import "party.dart";
 import "player.dart";
-// TODO: re-write and then uncomment
-/*import "skillbar.dart";*/
+import "skillbar.dart";
 import "localstorage.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 import 'position.dart';
 
 class Hero extends Player {
 
-  // TODO: uncomment after re-writing them
-  /*Inventory inventory;*/
-  /*Skillbar skillbar;*/
+  Inventory inventory;
+  Skillbar skillbar;
   LocalStorage storage;
 
   Hero(int id, String name): super(id, name, Entities.PLAYER) {
     this.on("EquipmentChange", () {
-      Game.storage.savePlayer(Game.renderer.getPlayerImage(), this);
+      // TODO: imeplement differently
+//      Game.storage.savePlayer(Game.renderer.getPlayerImage(), this);
       Game.playerChangedEquipment();
     });
   }
@@ -52,7 +47,7 @@ class Hero extends Player {
       new Timer(new Duration(seconds: 1), () {
         // TODO: move this crap into a Game class helper function
         Game.removeEntity(this);
-        Game.removeFromRenderingGrid(this, this.gridX, this.gridY);
+        Game.removeFromRenderingGrid(this, this.gridPosition);
 
         Game.audioManager.fadeOutCurrentMusic();
         Game.audioManager.playSound("death");
@@ -78,8 +73,8 @@ class Hero extends Player {
         Game.hoveringNpc = null;
         Game.hoveringItem = null;
         Game.hoveringChest = null;
-        Game.hoveringPlateauTile = false;
-        Game.hoveringCollidingTile = false;
+        Game.isHoveringPlateauTile = false;
+        Game.isHoveringCollidingTile = false;
 
         Game.playerDeath();
       });
@@ -95,8 +90,8 @@ class Hero extends Player {
   //       Also, this should be done on the server side.
   void checkAggro() {
     Game.forEachMob((Mob mob) {
-      if (mob.isAggressive 
-          && !mob.isAttacking() 
+      if (mob.isAggressive
+          && !mob.isAttacking()
           && this.isNear(mob, mob.aggroRange)
       ) {
         this.aggro(mob);
@@ -108,7 +103,7 @@ class Hero extends Player {
   //       the one telling the server who aggroed who.
   void aggro(Character character) {
     if (!character.isWaitingToAttack(this) && !this.isAttackedBy(character)) {
-      this.log_info("Aggroed by ${character.id} at (${this.gridX},${this.gridY})");
+      this.log_info("Aggroed by ${character.id} at (${this.gridPosition.x},${this.gridPosition.y})");
       Game.client.sendAggro(character);
       character.waitToAttack(this);
     }
@@ -120,7 +115,7 @@ class Hero extends Player {
    */
   void beforeStep() {
     // TODO: entities shouldn't block each other anymore, so this could be removed.
-    var blockingEntity = Game.getEntityAt(this.nextGridX, this.nextGridY);
+    var blockingEntity = Game.getEntityAt(new Position(this.nextGridX, this.nextGridY));
     if (blockingEntity && blockingEntity.id != this.id) {
       this.log_debug("Blocked by ${blockingEntity.id}");
     }
@@ -135,27 +130,27 @@ class Hero extends Player {
     /*}*/
     super.doStep();
 
-    if (Game.isZoningTile(this.gridX, this.gridY)) {
-      Game.enqueueZoningFrom(this.gridX, this.gridY);
+    if (Game.isZoningTile(this.gridPosition)) {
+      Game.enqueueZoningFrom(this.gridPosition);
     }
 
-    if ((this.gridX <= 85 && this.gridY <= 179 && this.gridY > 178) || (this.gridX <= 85 && this.gridY <= 266 && this.gridY > 265)) {
+    if ((this.gridPosition.x <= 85 && this.gridPosition.y <= 179 && this.gridPosition.y > 178) || (this.gridPosition.x <= 85 && this.gridPosition.y <= 266 && this.gridPosition.y > 265)) {
       Game.tryUnlockingAchievement("INTO_THE_WILD");
     }
 
-    if (this.gridX <= 85 && this.gridY <= 293 && this.gridY > 292) {
+    if (this.gridPosition.x <= 85 && this.gridPosition.y <= 293 && this.gridPosition.y > 292) {
       Game.tryUnlockingAchievement("AT_WORLDS_END");
     }
 
-    if (this.gridX <= 85 && this.gridY <= 100 && this.gridY > 99) {
+    if (this.gridPosition.x <= 85 && this.gridPosition.y <= 100 && this.gridPosition.y > 99) {
       Game.tryUnlockingAchievement("NO_MANS_LAND");
     }
 
-    if (this.gridX <= 85 && this.gridY <= 51 && this.gridY > 50) {
+    if (this.gridPosition.x <= 85 && this.gridPosition.y <= 51 && this.gridPosition.y > 50) {
       Game.tryUnlockingAchievement("HOT_SPOT");
     }
 
-    if (this.gridX <= 27 && this.gridY <= 123 && this.gridY > 112) {
+    if (this.gridPosition.x <= 27 && this.gridPosition.y <= 123 && this.gridPosition.y > 112) {
       Game.tryUnlockingAchievement("TOMB_RAIDER");
     }
 
@@ -174,7 +169,7 @@ class Hero extends Player {
     if (this.isLootMoving) {
       this.isLootMoving = false;
     } else if (!this.isAttacking()) {
-      Game.client.sendMove(x, y);
+      Game.client.sendMove(new Position(x, y));
     }
 
     // Target cursor position
@@ -184,22 +179,22 @@ class Hero extends Player {
       Game.drawTarget = true;
       Game.clearTarget = true;
       Game.renderer.targetRect = Game.renderer.getTargetBoundingRect();
-      Game.checkOtherDirtyRects(Game.renderer.targetRect, null, Game.selected.x, Game.selected.y);
+      Game.checkOtherDirtyRects(Game.renderer.targetRect, null, Game.selected);
     }
   }
-  void stopPathing(int x, int y) {
+  void stopPathing(Position position) {
     Game.selectedCellVisible = false;
 
-    if (Game.isItemAt(x, y)) {
-      Item item = Game.getItemAt(x, y);
+    if (Game.isItemAt(position)) {
+      Item item = Game.getItemAt(position);
 
       // notify the server that the user is trying
       // to loot the item
       Game.client.sendLoot(item);
     }
 
-    if (!this.hasTarget() && Game.map.isDoor(x, y)) {
-      Game.teleport(Game.map.getDoorDestination(x, y));
+    if (!this.hasTarget() && Game.map.isDoor(position)) {
+      Game.teleport(Game.map.getDoorDestination(position));
     }
 
     if (this.target is Npc) {
@@ -227,24 +222,23 @@ class Hero extends Player {
     return super.areaName;
   }
 
-  // TODO: uncomment after re-writing them
-  /*void loadInventory(data) {*/
-    /*if (this.inventory == null) {*/
-      /*this.inventory = new Inventory(data);*/
-      /*return;*/
-    /*} */
+  void loadInventory(data) {
+    if (this.inventory == null) {
+      this.inventory = new Inventory(data);
+      return;
+    }
 
-    /*this.inventory.loadFromObject(data);*/
-  /*}*/
+    this.inventory.loadFromObject(data);
+  }
 
-  /*void loadSkillbar(data) {*/
-    /*if (this.skillbar == null) {*/
-      /*this.skillbar = new Skillbar(data);*/
-      /*return;*/
-    /*}*/
+  void loadSkillbar(data) {
+    if (this.skillbar == null) {
+      this.skillbar = new Skillbar(data);
+      return;
+    }
 
-    /*this.skillbar.loadFromObject(data);*/
-  /*}*/
+    this.skillbar.loadFromObject(data);
+  }
 
   void lootedArmor(Item item) {
     // make sure that it's better than what we already have, and if so - equip it
@@ -252,7 +246,9 @@ class Hero extends Player {
       return;
     }
 
-    item.use();
+    if (item is InventoryItem) {
+      item.use();
+    }
 
     // we are optimistically equipping the item before-hand.
     this.switchArmor(item);
@@ -264,7 +260,9 @@ class Hero extends Player {
       return;
     }
 
-    item.use();
+    if (item is InventoryItem) {
+      item.use();
+    }
 
     // we are optimistically equipping the item before-hand.
     this.switchWeapon(item);

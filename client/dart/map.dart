@@ -8,7 +8,7 @@ import "checkpoint.dart";
 import "door.dart";
 import "entity.dart";
 import "game.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 import 'position.dart';
 
 class WorldMap extends Base {
@@ -72,7 +72,7 @@ class WorldMap extends Base {
           this.trigger("Ready");
         }
       }).catchError((Error error) {
-        window.console.error("Failed loading map via AJAX. Error: ${error}"); 
+        window.console.error("Failed loading map via AJAX. Error: ${error}");
       });
     }
   }
@@ -100,8 +100,8 @@ class WorldMap extends Base {
           o = Orientation.DOWN;
       }
 
-      Door door = new Door(doorData.tx, doorData.ty, o, doorData.tcx, doorData.tcy, doorData.p == 1);
-      doors[this.GridPositionToTileIndex(door.x, door.y)] = door;
+      Door door = new Door(new Position(doorData.tx, doorData.ty), o, new Position(doorData.tcx, doorData.tcy), doorData.p == 1);
+      doors[this.gridPositionToTileIndex(door.position)] = door;
     });
 
     this.map.checkpoints.forEach((cp) {
@@ -175,7 +175,7 @@ class WorldMap extends Base {
     return new Position(x, y);
   }
 
-  int GridPositionToTileIndex(int x, int y) => (y * this.width) + x + 1;
+  int gridPositionToTileIndex(Position position) => (position.y * this.width) + position.x + 1;
 
   bool isColliding(Position pos) =>
     !this.isOutOfBounds(pos)
@@ -252,10 +252,10 @@ class WorldMap extends Base {
     return 100;
   }
 
-  bool isDoor(int x, int y) =>
-    this.doors.containsKey(this.GridPositionToTileIndex(x, y));
+  bool isDoor(Position position) =>
+    this.doors.containsKey(this.gridPositionToTileIndex(position));
 
-  Door getDoorDestination(int x, int y) => this.doors[this.GridPositionToTileIndex(x, y)];
+  Door getDoorDestination(Position position) => this.doors[this.gridPositionToTileIndex(position)];
 
   Checkpoint getCurrentCheckpoint(Entity entity) {
     for (final checkpoint in this.checkpoints) {

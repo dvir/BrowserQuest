@@ -2,7 +2,7 @@ library spells;
 
 import "character.dart";
 import "spell.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Frostnova extends Spell {
 

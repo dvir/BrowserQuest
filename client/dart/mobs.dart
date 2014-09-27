@@ -1,7 +1,7 @@
 library mobs;
 
 import "mob.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class Rat extends Mob {
 

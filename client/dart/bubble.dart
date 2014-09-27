@@ -1,6 +1,5 @@
 library bubble;
 
-import "dart:async";
 import "dart:html";
 
 import "animationtimer.dart";

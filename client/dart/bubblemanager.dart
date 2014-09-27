@@ -4,6 +4,7 @@ import "dart:html";
 
 import "base.dart";
 import "bubble.dart";
+import 'entity.dart';
 
 class BubbleManager extends Base {
 
@@ -16,7 +17,7 @@ class BubbleManager extends Base {
     return this.bubbles[id];
   }
 
-  void create(entity, String message) {
+  void create(Entity entity, String message) {
     if (this.bubbles.containsKey(entity.id)) {
       this.bubbles[entity.id].message = message;
       this.bubbles[entity.id].reset();
@@ -28,6 +29,12 @@ class BubbleManager extends Base {
     bubble.on("Destroy", () {
       this.bubbles.remove(entity.id);
     });
+  }
+
+  void destroy(int id) {
+    if (this.bubbles.containsKey(id)) {
+      this.bubbles[id].destroy();
+    }
   }
 
   void clean() {

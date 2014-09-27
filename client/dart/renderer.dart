@@ -20,7 +20,7 @@ import "position.dart";
 import "rect.dart";
 import "sprite.dart";
 import "tile.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 int getX(id, w) {
   if (id == 0) {
@@ -773,7 +773,7 @@ class Renderer extends Base {
 
     Player player = Game.player;
     this.drawText(
-      "${player.areaName} (${player.gridX},${player.gridY})", 
+      "${player.areaName} ${player.gridPosition}", 
       const Position(-1, 20), 
       false, 
       "white",

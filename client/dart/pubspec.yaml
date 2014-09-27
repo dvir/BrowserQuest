@@ -1,0 +1,6 @@
+name: BrowserQuestDvir
+description: >
+  BrowserQuest port to Dart.
+author: Dvir Azulay <dvir.azulay@gmail.com
+dependencies:
+  pathfinding: ">=0.0.3 <0.1.0"

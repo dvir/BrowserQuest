@@ -1,14 +1,10 @@
 library entityfactory;
 
-import "chest.dart";
 import "entity.dart";
 import "game.dart";
-import "hero.dart";
-import "items.dart";
 import "mobs.dart";
-import "npcs.dart";
 import "player.dart";
-import "../shared/dart/gametypes.dart";
+import "lib/gametypes.dart";
 
 class EntityFactory {
 
