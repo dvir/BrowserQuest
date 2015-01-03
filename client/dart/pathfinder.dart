@@ -1,7 +1,11 @@
 library pathfinder;
 
-import 'package:pathfinding/core/grid.dart';
-import 'package:pathfinding/finders/jps.dart';
+// TODO: revert to package usage when back on unix
+//import 'package:pathfinding/core/grid.dart';
+import 'packages/pathfinding/lib/core/grid.dart';
+// TODO: revert to package usage when back on unix
+//import 'package:pathfinding/finders/jps.dart';
+import 'packages/pathfinding/lib/finders/jps.dart';
 
 import "base.dart";
 import "character.dart";
@@ -11,17 +15,19 @@ class Pathfinder extends Base {
 
   int width;
   int height;
-  List<List<int>> grid = new List<List<int>>();
-  List<List<int>> blankGrid = new List<List<int>>();
+  List<List<int>> grid;
+  List<List<int>> blankGrid;
   List<Character> ignored = [];
 
   Pathfinder(int this.width, int this.height) {
+    this.blankGrid = new List<List<int>>(this.height);
     for (int i = 0; i < this.height; ++i) {
+      this.blankGrid[i] = new List<int>(this.width); 
       this.blankGrid[i].fillRange(0, this.width, 0);
     }
   }
 
-  AStarCompute(List<List<int>> rawGrid, List<int> start, List<int> end) {
+  dynamic _AStarCompute(List<List<int>> rawGrid, List<int> start, List<int> end) {
     Grid grid = new Grid(rawGrid.length, rawGrid.first.length, rawGrid);
     JumpPointFinder jpf = new JumpPointFinder();
     return jpf.findPath(start[0], start[1], end[0], end[1], grid);
@@ -39,7 +45,7 @@ class Pathfinder extends Base {
 
     this.grid = grid;
     this.applyIgnoreList_(true);
-    path = this.AStarCompute(this.grid, start, end);
+    path = this._AStarCompute(this.grid, start, end);
     if (path.length == 0 && findIncomplete) {
       // If no path was found, try and find an incomplete one
       // to at least get closer to destination.
@@ -66,14 +72,14 @@ class Pathfinder extends Base {
     int x;
     int y;
 
-    perfect = this.AStarCompute(this.blankGrid, start, end);
+    perfect = this._AStarCompute(this.blankGrid, start, end);
 
     for (var i = perfect.length - 1; i > 0; i -= 1) {
       x = perfect[i][0];
       y = perfect[i][1];
 
       if (this.grid[y][x] == 0) {
-        incomplete = this.AStarCompute(this.grid, start, [x, y]);
+        incomplete = this._AStarCompute(this.grid, start, [x, y]);
         break;
       }
     }
