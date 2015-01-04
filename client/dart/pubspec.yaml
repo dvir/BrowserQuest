@@ -3,3 +3,4 @@ author: Dvir Azulay <dvir.azulay@gmail.com
 description: BrowserQuest port to Dart.
 dependencies:
   pathfinding: any
+  browser: any
