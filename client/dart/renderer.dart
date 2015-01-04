@@ -1,7 +1,6 @@
 library renderer;
 
 import "dart:html" as html;
-import "dart:io";
 
 import "animatedtile.dart";
 import "animation.dart";
@@ -146,7 +145,7 @@ class Renderer extends Base {
         this.setFontSize(10);
         return;
       case 2:
-        this.setFontSize(Platform.isWindows ? 10 : 13);
+        this.setFontSize(13);
         return;
       case 3:
         this.setFontSize(20);
