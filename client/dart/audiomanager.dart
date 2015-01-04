@@ -72,6 +72,25 @@ class AudioManager extends Base {
 
     this.currentMusic = music;
   }
+  
+  void toggle() {
+    this.enabled = !this.enabled;
+    if (this.enabled) {
+      this.currentMusic = null;
+      this.updateMusic();
+      return;
+    }
+    
+    this.resetMusic();
+  }
+
+  void resetMusic() {
+    if (this.currentMusic == null) {
+      return;
+    }
+    
+    this.currentMusic.stop();
+  }
 
   void addArea(var data) {
     Area area = new Area(data["x"], data["y"], data["width"], data["height"]);

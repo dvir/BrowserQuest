@@ -58,8 +58,6 @@ class Renderer extends Base {
   bool supportsSilhouettes = false;
   bool tablet = false;
 
-  bool mobile = false;
-
   Renderer(
     html.CanvasElement this.canvas, 
     html.CanvasElement this.backcanvas, 
@@ -89,12 +87,11 @@ class Renderer extends Base {
   void set tileset(html.ImageElement tileset) {
     this._tileset = tileset;
   }
+  
+  bool get mobile => html.window.innerWidth <= 1000;
 
   int getScaleFactor() {
-    this.mobile = false;
-
     if (html.window.innerWidth <= 1000) {
-      this.mobile = true;
       return 2;
     }
 

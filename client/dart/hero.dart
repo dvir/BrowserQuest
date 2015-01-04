@@ -295,6 +295,14 @@ class Hero extends Player {
 
     this.storage.updatePlayer(this);
   }
+  
+  List<Character> getNearestEnemies() {
+    List<Character> nearestEnemies = Game.characters
+      .where((Character character) => this != character && this.isHostile(character) && !character.isDead)
+      .toList();
+    nearestEnemies.sort((Character a, Character b) => this.distanceTo(a) - this.distanceTo(b));
+    return nearestEnemies;
+  }
 
   void loadFromObject(data) {
     /*this.loadInventory(data.inventory);*/

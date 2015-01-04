@@ -129,14 +129,18 @@ class Game extends Base {
   static Map<String, Sprite> shadows;
 
   static Door townPortalDoor = new Door(new Position(36, 210), Orientation.DOWN, new Position(36, 210), true);
+  
+  static List<Character> get characters => Game.entities.values.where((Entity entity) => entity is Character).toList(); 
 
   static void setup(
+    Application app,
     html.Element bubbleContainer,
     html.CanvasElement canvas,
     html.CanvasElement backCanvas,
     html.CanvasElement foreCanvas,
     html.Element chatInput
   ) {
+    Game.app = app;
     Game.bubbleManager = new BubbleManager(bubbleContainer);
     Game.renderer = new Renderer(canvas, backCanvas, foreCanvas);
     Game.chatInput = chatInput;
@@ -618,6 +622,21 @@ class Game extends Base {
     Game.started = false;
 
     html.window.console.info("Game stopped.");
+  }
+  
+  static void restart() {
+    html.window.console.debug("Beginning restart");
+
+    Game.resurrect();
+
+    // TODO: implement properly
+    //this.storage.incrementRevives();
+
+    if (Game.renderer.mobile || Game.renderer.tablet) {
+      Game.renderer.clearScreen(Game.renderer.context);
+    }
+
+    html.window.console.debug("Finished restart");
   }
 
   static void updateInventory() {
@@ -1107,6 +1126,18 @@ class Game extends Base {
 
      Game.isHoveringCollidingTile = oldIsHoveringColliding;
    }
+   
+   static void click() {
+     Game.selectedCellVisible = true;
+
+     Position pos = Game.getMouseGridPosition();
+     if (pos == Game.previousClickPosition) {
+       return;
+     }
+     
+     Game.previousClickPosition = pos;
+     Game.processInput(pos);
+   }
 
    static void checkUndergroundAchievement() {
      Audio music = Game.audioManager.getSurroundingMusic(Game.player);
@@ -1178,7 +1209,7 @@ class Game extends Base {
     * Processes game logic when the user triggers a click/touch event during the gam>
     */
    // TODO: I'm sure this can be simplified / commented and prettified. Do it.
-   static void processInput(Position position, bool isKeyboard) {
+   static void processInput(Position position, [bool isKeyboard = false]) {
      if (Game.started
          && Game.player != null
          && !Game.isZoning()
@@ -1258,6 +1289,168 @@ class Game extends Base {
 
        return path;
     }
+    
+    static void say(String message) {
+      if (!message.startsWith('/')) {
+        // no command given - this is a message to the default chat channel
+        Game.client.sendChat(message);
+        return;
+      }
+      
+      // command given
+      var firstSpaceIndex = message.indexOf(' ');
+      var command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
+      var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
+      var args = message.substring(1).split(' ');
+
+      if (command == "global") {
+        Game.client.chat.channel = "global";
+        Game.client.sendChat(rest);
+      } else if (command == "say" || command == "s") {
+        Game.client.chat.channel = "say";
+        Game.client.sendChat(rest);
+      } else if (command == "yell" || command == "y") {
+        Game.client.chat.channel = "yell";
+        Game.client.sendChat(rest);
+      } else if (command == "party" || command == "p") {
+        if (Game.player.party == null) {
+          Game.client.error("You are not in a party.");
+          return;
+        }
+        Game.client.chat.channel = "party";
+        Game.client.sendChat(rest);
+      } else if (command == "guild" || command == "g") {
+        if (Game.player.guild == null) {
+          Game.client.error("You are not in a guild.");
+          return;
+        }
+        Game.client.chat.channel = "guild";
+        Game.client.sendChat(rest);
+      } else if (command == "invite") {
+        Player player = Game.getPlayerByName(args[1]);
+        if (player == null) {
+          Game.client.error("Unknown player '${args[1]}'.");
+          return;
+        }
+
+        if (player == Game.player) {
+          Game.client.error("You cannot invite yourself to a party.");
+          return;
+        }
+
+        if (Game.player.party != null) {
+          if (!Game.player.party.isLeader(Game.player)) {
+            Game.client.error("You must be the party leader to invite players.");
+            return;
+          }
+
+          if (Game.player.party.isFull()) {
+            Game.client.error("Your party is full. You cannot invite any one to it.");
+            return;
+          }
+        }
+
+        Game.client.notice("Invited ${player.name} to your party.");
+        Game.client.sendPartyInvite(player.id);
+      } else if (command == "kick") {
+        Player player = Game.getPlayerByName(args[1]);
+        if (player == null) {
+          Game.client.error("Unknown player '${args[1]}'.");
+          return;
+        }
+
+        if (Game.player.party == null) {
+          Game.client.error("You are not in a party.");
+          return;
+        }
+
+        if (!Game.player.party.isLeader(Game.player)) {
+          Game.client.error("You must be the party leader to kick players.");
+          return;
+        }
+
+        if (player == Game.player) {
+          Game.client.error("You cannot kick yourself from a party.");
+          return;
+        }
+
+        if (!Game.player.party.isMember(player)) {
+          Game.client.error("${player.name} is not a member of your party.");
+          return;
+        }
+
+        Game.client.sendPartyKick(player.id);
+      } else if (command == "accept") {
+        Player player = Game.getPlayerByName(args[1]);
+        if (player == null) {
+          Game.client.error("Unknown player '${args[1]}'.");
+          return;
+        }
+
+        Game.client.sendPartyAccept(player.id);
+      } else if (command == "leave") {
+        Game.client.sendPartyLeave();
+      } else if (command == "leader") {
+        Player player = Game.getPlayerByName(args[1]);
+        if (player == null) {
+          Game.client.error("Unknown player '${args[1]}'.");
+          return;
+        }
+
+        if (!Game.player.party.isLeader(Game.player)) {
+          Game.client.error("Only the party leader can promote a new leader.");
+          return;
+        }
+
+        Game.client.sendPartyLeaderChange(player.id);
+      } else if (command == "gcreate") {
+        String name = rest;
+        if (name.isEmpty) {
+          Game.client.error("Syntax: /gcreate <Guild Name>");
+          return;
+        }
+
+        Game.client.sendGuildCreate(name);
+      } else if (command == "ginvite") {
+        String name = args[1];
+        if (name.isEmpty) {
+          Game.client.error("Syntax: /ginvite <Player Name>");
+          return;
+        }
+
+        Game.client.sendGuildInvite(name);
+      } else if (command == "gkick") {
+        String name = args[1];
+        if (name.isEmpty) {
+          Game.client.error("Syntax: /gkick <Player Name>");
+          return;
+        }
+
+        Game.client.sendGuildKick(name);
+      } else if (command == "gaccept") {
+        String name = args[1];
+        if (name.isEmpty) {
+          Game.client.error("Syntax: /gaccept <Player Name>");
+          return;
+        }
+
+        Game.client.sendGuildAccept(name);
+      } else if (command == "gquit") {
+        Game.client.sendGuildQuit();
+      } else if (command == "gleader") {
+        String name = args[1];
+        if (name.isEmpty) {
+          Game.client.error("Syntax: /gleader <Player Name>");
+          return;
+        }
+
+        Game.client.sendGuildLeaderChange(name);
+      } else if (command == "gmembers") {
+        Game.client.sendGuildMembers();
+      } else {
+        Game.client.error("Unknown command '${command}' given.");
+      }
+    }
 
     static void createBubble(Entity entity, String message) {
       Game.bubbleManager.create(entity, message);
@@ -1323,6 +1516,33 @@ class Game extends Base {
       }
 
     }
+    
+    static void makePlayerTargetNearestEnemy() {
+      var enemies = Game.player.getNearestEnemies();
+      if (enemies.length > 0) {
+        Game.player.setTarget(enemies[0]);
+      }
+    }
+
+    static void makePlayerAttackNext() {
+      switch (Game.player.orientation) {
+        case Orientation.DOWN:
+          Game.makePlayerAttackTo(Game.player.gridPosition.incY());
+          break;
+          
+        case Orientation.UP:
+          Game.makePlayerAttackTo(Game.player.gridPosition.decY());
+          break;
+          
+        case Orientation.LEFT:
+          Game.makePlayerAttackTo(Game.player.gridPosition.decX());
+          break;
+          
+        case Orientation.RIGHT:
+          Game.makePlayerAttackTo(Game.player.gridPosition.incX());
+          break;
+      }
+    }    
 
     static void setSpriteScale(int scale) {
       if (scale < 0 || scale > 2) {
@@ -1526,5 +1746,29 @@ class Game extends Base {
     static void resetCamera() {
       Game.camera.focusEntity(Game.player);
       Game.resetZone();
+    }
+    
+    static void resize() {
+      Camera camera = Game.camera;
+
+      Game.renderer.rescale();
+      Game.camera = Game.renderer.camera;
+      Game.camera.gridPosition = camera.gridPosition;
+
+      Game.renderer.renderStaticCanvases();
+    }
+    
+    /**
+     * Toggles the visibility of the pathing grid for debugging purposes.
+     */
+    static void togglePathingGrid() {
+      Game.debugPathing = !Game.debugPathing;
+    }
+
+    /**
+     * Toggles the visibility of the FPS counter and other debugging info.
+     */
+    static void toggleDebugInfo() {
+      Game.renderer.isDebugInfoVisible = Game.renderer == null || !Game.renderer.isDebugInfoVisible; 
     }
 }

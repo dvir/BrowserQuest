@@ -11,5 +11,10 @@ class Position {
   bool operator ==(Position other) => (this.x == other.x && this.y == other.y);
 
   String toString() => "($x, $y)";
+  
+  Position incX() => new Position(this.x + 1, this.y);
+  Position decX() => new Position(this.x - 1, this.y);
+  Position incY() => new Position(this.x, this.y + 1);
+  Position decY() => new Position(this.x, this.y - 1);
 }
 
