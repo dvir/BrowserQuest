@@ -1,11 +1,7 @@
 library pathfinder;
 
-// TODO: revert to package usage when back on unix
-//import 'package:pathfinding/core/grid.dart';
-import 'packages/pathfinding/lib/core/grid.dart';
-// TODO: revert to package usage when back on unix
-//import 'package:pathfinding/finders/jps.dart';
-import 'packages/pathfinding/lib/finders/jps.dart';
+import 'package:pathfinding/core/grid.dart';
+import 'package:pathfinding/finders/jps.dart';
 
 import "base.dart";
 import "character.dart";
