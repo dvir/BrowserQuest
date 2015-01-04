@@ -68,7 +68,7 @@ class Audio extends Base {
   }
 
   void play() {
-    if (source == null) {
+    if (this.source == null) {
       throw "Audio ${name} has not been loaded yet";
     }
 
@@ -76,11 +76,11 @@ class Audio extends Base {
   }
 
   void stop() {
-    if (source == null) {
+    if (this.source == null) {
       throw "Audio ${name} has not been loaded yet";
     }
 
-    this.source.stop();
+    this.source.stop(0);
   }
 
   void fadeIn([Function callback = null]) {

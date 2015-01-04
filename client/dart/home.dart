@@ -21,7 +21,7 @@ initGame() {
   }
 
   (document.getElementById('nameinput') as InputElement).value = '';
-  (document.getElementById('chatbox') as InputElement).value = '';
+  (document.getElementById('chatinput') as InputElement).value = '';
 
   document.getElementById('foreground').onClick.listen((event) {
     Game.app.center();
@@ -72,107 +72,107 @@ initGame() {
     }
   });
 
-  document.onKeyDown.listen((KeyEvent event) {
+  document.onKeyDown.listen((KeyboardEvent event) {
     int key = event.which;
     Element chat = document.getElementById('chatinput');
 
     if (Game.started && !document.getElementById('chatbox').classes.contains('active')) {
       var knownKeybinding = true;
-      switch (key) {
-      case Keys.ENTER:
-        Game.app.showChat();
-        break;
+      switch (Keys.get(key)) {
+        case Key.ENTER:
+          Game.app.showChat();
+          break;
 
-      case Keys.SLASH:
-        Game.app.showChat("/");
-        break;
+        case Key.SLASH:
+          Game.app.showChat("/");
+          break;
 
-      case Keys.ESC:
-        Game.player.target = null;
-        Game.app.hideWindows();
-        // TODO: wait what? are we stopping OTHER attackers?
-        Game.player.attackers.forEach((_, Character attacker) {
-          attacker.stop();
-        });
-        break;
+        case Key.ESC:
+          Game.player.target = null;
+          Game.app.hideWindows();
+          // TODO: wait what? are we stopping OTHER attackers?
+          Game.player.attackers.forEach((_, Character attacker) {
+            attacker.stop();
+          });
+          break;
 
-      case Keys.LEFT:
-      case Keys.A:
-        Game.player.direction = Orientation.LEFT;
-        break;
-        
-      case Keys.RIGHT:
-      case Keys.D:
-        Game.player.direction = Orientation.RIGHT;
-        break;
-        
-      case Keys.UP:
-      case Keys.W:
-        Game.player.direction = Orientation.UP;
-        break;
-        
-      case Keys.DOWN:
-      case Keys.S:
-        Game.player.direction = Orientation.DOWN;
-        break;        
+        case Key.LEFT:
+        case Key.A:
+          Game.player.direction = Orientation.LEFT;
+          break;
+          
+        case Key.RIGHT:
+        case Key.D:
+          Game.player.direction = Orientation.RIGHT;
+          break;
+          
+        case Key.UP:
+        case Key.W:
+          Game.player.direction = Orientation.UP;
+          break;
+          
+        case Key.DOWN:
+        case Key.S:
+          Game.player.direction = Orientation.DOWN;
+          break;        
 
-      case Keys.TAB:
-        if (event.shiftKey) {
-          Game.player.target = Game.player;
-        } else {
-          Game.makePlayerTargetNearestEnemy();
-        }
-        break;
+        case Key.TAB:
+          if (event.shiftKey) {
+            Game.player.target = Game.player;
+          } else {
+            Game.makePlayerTargetNearestEnemy();
+          }
+          break;
 
-      case Keys.SPACE:
-        Game.makePlayerAttackNext();
-        break;
+        case Key.SPACE:
+          Game.makePlayerAttackNext();
+          break;
 
-      case Keys.I:
-        document.getElementById('inventorybutton').click();
-        break;
+        case Key.I:
+          document.getElementById('inventorybutton').click();
+          break;
 
-      case Keys.K:
-        document.getElementById('achievementsbutton').click();
-        break;
+        case Key.K:
+          document.getElementById('achievementsbutton').click();
+          break;
 
-      case Keys.H:
-        document.getElementById('helpbutton').click();
-        break;
+        case Key.H:
+          document.getElementById('helpbutton').click();
+          break;
 
-      case Keys.M:
-        document.getElementById('mutebutton').click();
-        break;
+        case Key.M:
+          document.getElementById('mutebutton').click();
+          break;
 
-      case Keys.P:
-        document.getElementById('playercount').click();
-        break;
+        case Key.P:
+          document.getElementById('playercount').click();
+          break;
 
-      case Keys.T:
-        Game.makePlayerAttackTarget();
-        break;
+        case Key.T:
+          Game.makePlayerAttackTarget();
+          break;
 
-      case Keys.Y:
-        Game.activateTownPortal();
-        break;
+        case Key.Y:
+          Game.activateTownPortal();
+          break;
 
-      case Keys.F:
-        Game.player.skillbar.reset();
-        Game.player.skillbar.add(Entities.FROSTNOVA);
-        Game.player.skillbar.add(Entities.FROSTBOLT);
-        Game.player.skillbar.add(Entities.FIREBALL);
+        case Key.F:
+          Game.player.skillbar.reset();
+          Game.player.skillbar.add(Entities.FROSTNOVA);
+          Game.player.skillbar.add(Entities.FROSTBOLT);
+          Game.player.skillbar.add(Entities.FIREBALL);
 
-        Game.toggleDebugInfo();
-        Game.togglePathingGrid();
-        break;
+          Game.toggleDebugInfo();
+          Game.togglePathingGrid();
+          break;
 
-      default:
-        if (Game.player != null && Game.player.skillbar.click(key, Game.player.target)) {
-          // was a skillbar action
-        } else {
-          knownKeybinding = false;
-        }
-        break;
+        default:
+          if (Game.player != null && Game.player.skillbar.click(key, Game.player.target)) {
+            // was a skillbar action
+          } else {
+            knownKeybinding = false;
+          }
+          break;
       }
 
       if (knownKeybinding) {
@@ -182,12 +182,12 @@ initGame() {
     }
   });
 
-  document.getElementById('chatinput').onKeyDown.listen((KeyEvent event) {
+  document.getElementById('chatinput').onKeyDown.listen((KeyboardEvent event) {
     int key = event.which;
     InputElement chat = document.getElementById('chatinput');
 
-    switch(key) {
-      case Keys.ENTER:
+    switch(Keys.get(key)) {
+      case Key.ENTER:
         if (chat.value != '') {
           if (Game.player != null) {
             Game.say(chat.value);
@@ -201,17 +201,17 @@ initGame() {
         Game.app.hideChat();
         return false;
        
-      case Keys.ESC:
+      case Key.ESC:
         Game.app.hideChat();
         return false;
     }
   });
 
-  document.getElementById('nameinput').onKeyPress.listen((KeyEvent event) {
+  document.getElementById('nameinput').onKeyPress.listen((KeyboardEvent event) {
     InputElement nameElement = document.getElementById('nameinput');
     String name = nameElement.value;
 
-    if (event.keyCode != Keys.ENTER) {
+    if (event.keyCode != Key.ENTER) {
       return true;
     }
     
@@ -330,7 +330,7 @@ void main() {
     Game.app.toggleAbout();
   });
 
-  document.getElementById('nameinput').onKeyUp.listen((KeyEvent event) {
+  document.getElementById('nameinput').onKeyUp.listen((KeyboardEvent event) {
     Game.app.toggleButton();
   });
 

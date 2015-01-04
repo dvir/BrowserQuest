@@ -2,8 +2,8 @@ library sprite;
 
 import "dart:html" as html;
 
-import "base.dart";
 import "animation.dart";
+import "base.dart";
 
 import "../sprites/all_sprites.dart";
 
@@ -27,24 +27,22 @@ class Sprite extends Base {
   bool _isLoaded = false;
 
   Sprite(
-    var image, 
-    bool isLoaded, 
-    int offsetX, 
-    int offsetY, 
-    int width, 
-    int height
+    html.ImageElement this.image,
+    bool isLoaded,
+    int this.offsetX,
+    int this.offsetY,
+    int this.width,
+    int this.height
   ) {
-    this.image = image;
     this._isLoaded = isLoaded;
-    this.offsetX = offsetX;
-    this.offsetY = offsetY;
-    this.width = width;
-    this.height = height;
   }
 
   Sprite.FromJSON(String this.name, int this.scale) {
-    var data = rawSprites[name];
-    
+    var data = (new RawSprites()).get(name);
+    if (data == null) {
+      throw new Exception('Sprite ${this.name} is missing from sprites map!');
+    }
+
     this.id = data["id"];
     StringBuffer sb = new StringBuffer();
     sb.write("img/");
@@ -56,13 +54,13 @@ class Sprite extends Base {
     this.animationData = data["animations"];
     this.width = data["width"];
     this.height = data["height"];
-    this.offsetX = data["offset_x"] ? data["offset_x"] : -16;
-    this.offsetY = data["offset_y"] ? data["offset_y"] : -16;
+    this.offsetX = data["offset_x"] != null ? data["offset_x"] : -16;
+    this.offsetY = data["offset_y"] != null ? data["offset_y"] : -16;
 
     this.load();
   }
 
-  bool get isLoaded => _isLoaded; 
+  bool get isLoaded => _isLoaded;
   void set isLoaded(bool isLoaded) {
     this._isLoaded = isLoaded;
     this.trigger(isLoaded ? "Load" : "Unload");
@@ -81,7 +79,7 @@ class Sprite extends Base {
 
     for (var name in this.animationData) {
       var a = this.animationData[name];
-      Animation animation = 
+      Animation animation =
         new Animation(name, a.length, a.row, this.width, this.height);
       animations.putIfAbsent(name, () => animation);
     }
@@ -108,16 +106,20 @@ class Sprite extends Base {
         data[i] = 255;
         data[i + 1] = data[i + 2] = 75;
       }
-      spriteData.data = data;
+      // TODO: figure out if this is needed. this throws an error as there is
+      // no setter for data on ImageData. Is it possible to alter ImageData?
+//      spriteData.data = data;
 
       ctx.putImageData(spriteData, 0, 0);
 
       this.whiteSprite = new Sprite(
-        canvas, 
-        true, 
-        this.offsetX, 
-        this.offsetY, 
-        this.width, 
+        // TODO: what??? can't return canvas here, need imagelement
+        // canvas,
+        this.image,
+        true,
+        this.offsetX,
+        this.offsetY,
+        this.width,
         this.height
       );
     } catch (e) {
@@ -164,18 +166,18 @@ class Sprite extends Base {
       if (i < 0 || i >= data.length) {
         return true;
       }
-      return data[i] == 0 
-             && data[i + 1] == 0 
-             && data[i + 2] == 0 
+      return data[i] == 0
+             && data[i + 1] == 0
+             && data[i + 2] == 0
              && data[i + 3] == 0;
     };
 
     hasAdjacentPixel(i) {
       var pos = getPosition(i);
       return (pos["x"] < width && !isBlankPixel(getIndex(pos["x"] + 1, pos["y"])))
-             || (pos["x"] > 1 && !isBlankPixel(getIndex(pos["x"] - 1, pos["y"]))) 
-             || (pos["y"] < height && !isBlankPixel(getIndex(pos["x"], pos["y"] + 1))) 
-             || (pos["y"] > 1 && !isBlankPixel(getIndex(pos["x"], pos["y"] - 1))); 
+             || (pos["x"] > 1 && !isBlankPixel(getIndex(pos["x"] - 1, pos["y"])))
+             || (pos["y"] < height && !isBlankPixel(getIndex(pos["x"], pos["y"] + 1)))
+             || (pos["y"] > 1 && !isBlankPixel(getIndex(pos["x"], pos["y"] - 1)));
     };
 
     for (var i = 0; i < data.length; i += 4) {
@@ -185,12 +187,15 @@ class Sprite extends Base {
         fdata[i + 3] = 150;
       }
     }
-
-    finalData.data = fdata;
+    // TODO: figure out if this is needed. this throws an error as there is
+    // no setter for data on ImageData. Is it possible to alter ImageData?
+    //finalData.data = fdata;
     ctx.putImageData(finalData, 0, 0);
 
     this.silhouetteSprite = new Sprite(
-      canvas,
+      // TODO: what??? can't return canvas here, need imagelement
+      // canvas,
+      this.image,
       true,
       this.offsetX,
       this.offsetY,

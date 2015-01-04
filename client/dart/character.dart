@@ -13,9 +13,9 @@ import "lib/gametypes.dart";
 
 class Character extends Entity {
 
-  int _hp;
-  int _maxHP;
-  int _level;
+  int _hp = 0;
+  int _maxHP = 0;
+  int _level = 0;
 
   Entities _weapon;
   Entities _armor;
@@ -44,7 +44,7 @@ class Character extends Entity {
   Character _target;
   Character unconfirmedTarget;
   Character previousTarget;
-  Map<int, Character> attackers = new Map<int, Entity>();
+  Map<int, Character> attackers = {};
 
   // Modes
   bool isDead = false;

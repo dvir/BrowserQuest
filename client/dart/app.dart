@@ -1,7 +1,7 @@
 library app;
 
 import "dart:async";
-import 'dart:html';
+import 'dart:html' hide Player;
 import 'dart:math';
 
 import 'base.dart';
@@ -14,7 +14,7 @@ import 'position.dart';
 class Config {
   String host = "localhost";
   int port = 8000;
-  bool dispatcher = true;
+  bool dispatcher = false;
 }
 
 class Application extends Base {
@@ -76,7 +76,7 @@ class Application extends Base {
 
   void initHealthBar() {
     int scale = Game.renderer.getScaleFactor();
-    Healthbar healthbar = new Healthbar(document.querySelector("#player"), Game.player, scale);
+    Healthbar healthbar = new Healthbar(document.getElementById("player"), Game.player, scale);
 
     Game.events.on("HealthChange", () {
       healthbar.update();
@@ -86,18 +86,22 @@ class Application extends Base {
   void initXPBar() {
     Game.events.on("XPChange", () {
       int scale = Game.renderer.getScaleFactor();
-      int XPMaxWidth = int.parse(document.querySelector("#xpbar").style.width) - (12 * scale);
+      Element xpBar = document.getElementById('xpbar');
+      int XPMaxWidth = (xpBar.style.width.isEmpty ? 0 : int.parse(xpBar.style.width)) - (12 * scale);
       Player player = Game.player;
 
-      int barWidth = ((XPMaxWidth / player.maxXP) * (player.xp > 0 ? player.xp : 0)).round();
-      document.querySelector("#xpbar").innerHtml = "${player.xp}/${player.maxXP}";
-      document.querySelector("#xp").style.width = "${barWidth}px";
-      document.querySelector("#level").innerHtml = player.level.toString();
+      int barWidth = 0;
+      if (barWidth > 0) {
+        barWidth = ((XPMaxWidth / player.maxXP) * (player.xp > 0 ? player.xp : 0)).round();
+      }
+      xpBar.innerHtml = "${player.xp}/${player.maxXP}";
+      document.getElementById("xp").style.width = "${barWidth}px";
+      document.getElementById("level").innerHtml = player.level.toString();
     });
   }
 
   void initTargetBar() {
-    Element $target = document.querySelector("#target");
+    Element $target = document.getElementById("target");
 
     Game.events.on("TargetChange", () {
       int scale = Game.renderer.getScaleFactor();
@@ -448,7 +452,7 @@ class Application extends Base {
     Element playButton = document.querySelector('.play');
     Element playDiv = playButton.querySelector('div');
     
-    if (this.canStartGame) {
+    if (!this.canStartGame) {
       if (!this.isMobile) {
         // on desktop and tablets, add a spinner to the play button
         playButton.classes.add('loading');

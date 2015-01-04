@@ -173,16 +173,16 @@ class Player extends Character {
 
   void loadFromObject(data) {
     // x and y in server are mapped to gridX and gridY on client
-    this.gridPosition = new Position(data.x, data.y);
+    this.gridPosition = new Position(data['x'], data['y']);
 
-    this.name = data.name;
-    this.hp = data.hp;
-    this.maxHP = data.maxHP;
-    this.xp = data.xp;
-    this.maxXP = data.maxXP;
-    this.level = data.level;
-    this.guild = data.guild;
-    this.weapon = data.weapon;
-    this.armor = data.armor;
+    this.name = data['name'];
+    this.hp = data['hp'];
+    this.maxHP = data['maxHP'];
+    this.xp = data['xp'];
+    this.maxXP = data['maxXP'];
+    this.level = data['level'];
+    this.guild = data['guild'];
+    this.weapon = Entities.get(data['weapon']);
+    this.armor = Entities.get(data['armor']);
   }
 }

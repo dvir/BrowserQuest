@@ -5,6 +5,7 @@ import "dart:math";
 class Message {
   final int index;
   const Message(int this.index);
+  toString() => 'Message.${this.index}';
 
   static const HELLO = const Message(0);
   static const WELCOME = const Message(1);
@@ -75,80 +76,163 @@ class Message {
 }
 
 class Entities {
-  final int index;
-  const Entities(int this.index);
 
-  static const PLAYER = const Entities(1);
+  static EntityKind get(int index) {
+    if (!_entities.containsKey(index)) {
+      throw new Exception("EntityKind: unknown entity kind '${index}'.");
+    }
+    return _entities[index];
+  }
+
+  static Map<int, EntityKind> _entities = {
+    1: EntityKind.PLAYER,
+    
+    // Mobs
+    2: EntityKind.RAT,
+    3: EntityKind.SKELETON,
+    4: EntityKind.GOBLIN,
+    5: EntityKind.OGRE,
+    6: EntityKind.SPECTRE,
+    7: EntityKind.CRAB,
+    8: EntityKind.BAT,
+    9: EntityKind.WIZARD,
+    10: EntityKind.EYE,
+    11: EntityKind.SNAKE,
+    12: EntityKind.SKELETON2,
+    13: EntityKind.BOSS,
+    14: EntityKind.DEATHKNIGHT,
+    
+    // Armors
+    20: EntityKind.FIREFOX,
+    21: EntityKind.CLOTHARMOR,
+    22: EntityKind.LEATHERARMOR,
+    23: EntityKind.MAILARMOR,
+    24: EntityKind.PLATEARMOR,
+    25: EntityKind.REDARMOR,
+    26: EntityKind.GOLDENARMOR,
+    
+    // Objects
+    35: EntityKind.FLASK,
+    36: EntityKind.BURGER,
+    37: EntityKind.CHEST,
+    38: EntityKind.FIREPOTION,
+    39: EntityKind.CAKE,
+    
+    // NPCs
+    40: EntityKind.GUARD,
+    41: EntityKind.KING,
+    42: EntityKind.OCTOCAT,
+    43: EntityKind.VILLAGEGIRL,
+    44: EntityKind.VILLAGER,
+    45: EntityKind.PRIEST,
+    46: EntityKind.SCIENTIST,
+    47: EntityKind.AGENT,
+    48: EntityKind.RICK,
+    49: EntityKind.NYAN,
+    50: EntityKind.SORCERER,
+    51: EntityKind.BEACHNPC,
+    52: EntityKind.FORESTNPC,
+    53: EntityKind.DESERTNPC,
+    54: EntityKind.LAVANPC,
+    55: EntityKind.CODER,
+    
+    // Weapons
+    60: EntityKind.SWORD1,
+    61: EntityKind.SWORD2,
+    62: EntityKind.REDSWORD,
+    63: EntityKind.GOLDENSWORD,
+    64: EntityKind.MORNINGSTAR,
+    65: EntityKind.AXE,
+    66: EntityKind.BLUESWORD,
+
+    // Spells
+    100: EntityKind.FROSTNOVA,
+    101: EntityKind.FROSTBOLT,
+    102: EntityKind.ICEBARRIER,
+    103: EntityKind.FIREBALL,
+    104: EntityKind.BLINK,
+    105: EntityKind.POLYMORPH,
+
+    // using this so I won't have to mess with ending commas
+    999: EntityKind.UNKNOWN,
+    9999: EntityKind.DEATH
+  };
+}
+
+class EntityKind {
+  final int index;
+  const EntityKind(int this.index);
+
+  static const PLAYER = const EntityKind(1);
   
   // Mobs
-  static const RAT = const Entities(2);
-  static const SKELETON = const Entities(3);
-  static const GOBLIN = const Entities(4);
-  static const OGRE = const Entities(5);
-  static const SPECTRE = const Entities(6);
-  static const CRAB = const Entities(7);
-  static const BAT = const Entities(8);
-  static const WIZARD = const Entities(9);
-  static const EYE = const Entities(10);
-  static const SNAKE = const Entities(11);
-  static const SKELETON2 = const Entities(12);
-  static const BOSS = const Entities(13);
-  static const DEATHKNIGHT = const Entities(14);
+  static const RAT = const EntityKind(2);
+  static const SKELETON = const EntityKind(3);
+  static const GOBLIN = const EntityKind(4);
+  static const OGRE = const EntityKind(5);
+  static const SPECTRE = const EntityKind(6);
+  static const CRAB = const EntityKind(7);
+  static const BAT = const EntityKind(8);
+  static const WIZARD = const EntityKind(9);
+  static const EYE = const EntityKind(10);
+  static const SNAKE = const EntityKind(11);
+  static const SKELETON2 = const EntityKind(12);
+  static const BOSS = const EntityKind(13);
+  static const DEATHKNIGHT = const EntityKind(14);
   
   // Armors
-  static const FIREFOX = const Entities(20);
-  static const CLOTHARMOR = const Entities(21);
-  static const LEATHERARMOR = const Entities(22);
-  static const MAILARMOR = const Entities(23);
-  static const PLATEARMOR = const Entities(24);
-  static const REDARMOR = const Entities(25);
-  static const GOLDENARMOR = const Entities(26);
+  static const FIREFOX = const EntityKind(20);
+  static const CLOTHARMOR = const EntityKind(21);
+  static const LEATHERARMOR = const EntityKind(22);
+  static const MAILARMOR = const EntityKind(23);
+  static const PLATEARMOR = const EntityKind(24);
+  static const REDARMOR = const EntityKind(25);
+  static const GOLDENARMOR = const EntityKind(26);
   
   // Objects
-  static const FLASK = const Entities(35);
-  static const BURGER = const Entities(36);
-  static const CHEST = const Entities(37);
-  static const FIREPOTION = const Entities(38);
-  static const CAKE = const Entities(39);
+  static const FLASK = const EntityKind(35);
+  static const BURGER = const EntityKind(36);
+  static const CHEST = const EntityKind(37);
+  static const FIREPOTION = const EntityKind(38);
+  static const CAKE = const EntityKind(39);
   
   // NPCs
-  static const GUARD = const Entities(40);
-  static const KING = const Entities(41);
-  static const OCTOCAT = const Entities(42);
-  static const VILLAGEGIRL = const Entities(43);
-  static const VILLAGER = const Entities(44);
-  static const PRIEST = const Entities(45);
-  static const SCIENTIST = const Entities(46);
-  static const AGENT = const Entities(47);
-  static const RICK = const Entities(48);
-  static const NYAN = const Entities(49);
-  static const SORCERER = const Entities(50);
-  static const BEACHNPC = const Entities(51);
-  static const FORESTNPC = const Entities(52);
-  static const DESERTNPC = const Entities(53);
-  static const LAVANPC = const Entities(54);
-  static const CODER = const Entities(55);
+  static const GUARD = const EntityKind(40);
+  static const KING = const EntityKind(41);
+  static const OCTOCAT = const EntityKind(42);
+  static const VILLAGEGIRL = const EntityKind(43);
+  static const VILLAGER = const EntityKind(44);
+  static const PRIEST = const EntityKind(45);
+  static const SCIENTIST = const EntityKind(46);
+  static const AGENT = const EntityKind(47);
+  static const RICK = const EntityKind(48);
+  static const NYAN = const EntityKind(49);
+  static const SORCERER = const EntityKind(50);
+  static const BEACHNPC = const EntityKind(51);
+  static const FORESTNPC = const EntityKind(52);
+  static const DESERTNPC = const EntityKind(53);
+  static const LAVANPC = const EntityKind(54);
+  static const CODER = const EntityKind(55);
   
   // Weapons
-  static const SWORD1 = const Entities(60);
-  static const SWORD2 = const Entities(61);
-  static const REDSWORD = const Entities(62);
-  static const GOLDENSWORD = const Entities(63);
-  static const MORNINGSTAR = const Entities(64);
-  static const AXE = const Entities(65);
-  static const BLUESWORD = const Entities(66);
+  static const SWORD1 = const EntityKind(60);
+  static const SWORD2 = const EntityKind(61);
+  static const REDSWORD = const EntityKind(62);
+  static const GOLDENSWORD = const EntityKind(63);
+  static const MORNINGSTAR = const EntityKind(64);
+  static const AXE = const EntityKind(65);
+  static const BLUESWORD = const EntityKind(66);
 
   // Spells
-  static const FROSTNOVA = const Entities(100);
-  static const FROSTBOLT = const Entities(101);
-  static const ICEBARRIER = const Entities(102);
-  static const FIREBALL = const Entities(103);
-  static const BLINK = const Entities(104);
-  static const POLYMORPH = const Entities(105);
+  static const FROSTNOVA = const EntityKind(100);
+  static const FROSTBOLT = const EntityKind(101);
+  static const ICEBARRIER = const EntityKind(102);
+  static const FIREBALL = const EntityKind(103);
+  static const BLINK = const EntityKind(104);
+  static const POLYMORPH = const EntityKind(105);
 
-  // using this so I won't have to mess with ending commas
-  static const UNKNOWN = const Entities(999);
-  static const DEATH = const Entities(9999);
+  static const UNKNOWN = const EntityKind(999);
+  static const DEATH = const EntityKind(9999);
 }
 
 class Orientation {
@@ -162,123 +246,161 @@ class Orientation {
 }
 
 class Keys {
-  final int index;
-  const Keys(int this.index);
 
-  static const ENTER = const Keys(13);
-  static const ESC = const Keys(27);
-  static const UP = const Keys(38);
-  static const DOWN = const Keys(40);
-  static const LEFT = const Keys(37);
-  static const RIGHT = const Keys(39);
-  static const W = const Keys(87);
-  static const A = const Keys(65);
-  static const S = const Keys(83);
-  static const D = const Keys(68);
-  static const TAB = const Keys(9);
-  static const SPACE = const Keys(32);
-  static const F = const Keys(70);
-  static const H = const Keys(72);
-  static const I = const Keys(73);
-  static const K = const Keys(75);
-  static const M = const Keys(77);
-  static const P = const Keys(80);
-  static const T = const Keys(84);
-  static const Y = const Keys(89);
-  static const KEYPAD_4 = const Keys(100);
-  static const KEYPAD_6 = const Keys(102);
-  static const KEYPAD_8 = const Keys(104);
-  static const KEYPAD_2 = const Keys(98);
-  static const SLASH = const Keys(191);
+  static Key get(int index) {
+    if (!_keys.containsKey(index)) {
+      throw new Exception("Key: unknown entity key '${index}'.");
+    }
+    return _keys[index];
+  }
+
+  static Map<int, Key> _keys = {
+    13: Key.ENTER,
+    27: Key.ESC,
+    38: Key.UP,
+    40: Key.DOWN,
+    37: Key.LEFT,
+    39: Key.RIGHT,
+    87: Key.W,
+    65: Key.A,
+    83: Key.S,
+    68: Key.D,
+    9: Key.TAB,
+    32: Key.SPACE,
+    70: Key.F,
+    72: Key.H,
+    73: Key.I,
+    75: Key.K,
+    77: Key.M,
+    80: Key.P,
+    84: Key.T,
+    89: Key.Y,
+    100: Key.KEYPAD_4,
+    102: Key.KEYPAD_6,
+    104: Key.KEYPAD_8,
+    98: Key.KEYPAD_2,
+    191: Key.SLASH
+  };
+}
+
+class Key {
+  final int index;
+  const Key(int this.index);
+
+  static const ENTER = const Key(13);
+  static const ESC = const Key(27);
+  static const UP = const Key(38);
+  static const DOWN = const Key(40);
+  static const LEFT = const Key(37);
+  static const RIGHT = const Key(39);
+  static const W = const Key(87);
+  static const A = const Key(65);
+  static const S = const Key(83);
+  static const D = const Key(68);
+  static const TAB = const Key(9);
+  static const SPACE = const Key(32);
+  static const F = const Key(70);
+  static const H = const Key(72);
+  static const I = const Key(73);
+  static const K = const Key(75);
+  static const M = const Key(77);
+  static const P = const Key(80);
+  static const T = const Key(84);
+  static const Y = const Key(89);
+  static const KEYPAD_4 = const Key(100);
+  static const KEYPAD_6 = const Key(102);
+  static const KEYPAD_8 = const Key(104);
+  static const KEYPAD_2 = const Key(98);
+  static const SLASH = const Key(191);
 }
 
 class Types {
 
-  static var kinds = {
-    "unknown": [Entities.UNKNOWN, "unknown"],
+  static Map<String, List<dynamic>> kinds = {
+    "unknown": [EntityKind.UNKNOWN, "unknown"],
 
-    "death": [Entities.DEATH, "death"],
+    "death": [EntityKind.DEATH, "death"],
 
-    "player": [Entities.PLAYER, "player"],
+    "player": [EntityKind.PLAYER, "player"],
 
-    "rat": [Entities.RAT, "mob"],
-    "skeleton": [Entities.SKELETON , "mob"],
-    "goblin": [Entities.GOBLIN, "mob"],
-    "ogre": [Entities.OGRE, "mob"],
-    "spectre": [Entities.SPECTRE, "mob"],
-    "deathknight": [Entities.DEATHKNIGHT, "mob"],
-    "crab": [Entities.CRAB, "mob"],
-    "snake": [Entities.SNAKE, "mob"],
-    "bat": [Entities.BAT, "mob"],
-    "wizard": [Entities.WIZARD, "mob"],
-    "eye": [Entities.EYE, "mob"],
-    "skeleton2": [Entities.SKELETON2, "mob"],
-    "boss": [Entities.BOSS, "mob"],
+    "rat": [EntityKind.RAT, "mob"],
+    "skeleton": [EntityKind.SKELETON , "mob"],
+    "goblin": [EntityKind.GOBLIN, "mob"],
+    "ogre": [EntityKind.OGRE, "mob"],
+    "spectre": [EntityKind.SPECTRE, "mob"],
+    "deathknight": [EntityKind.DEATHKNIGHT, "mob"],
+    "crab": [EntityKind.CRAB, "mob"],
+    "snake": [EntityKind.SNAKE, "mob"],
+    "bat": [EntityKind.BAT, "mob"],
+    "wizard": [EntityKind.WIZARD, "mob"],
+    "eye": [EntityKind.EYE, "mob"],
+    "skeleton2": [EntityKind.SKELETON2, "mob"],
+    "boss": [EntityKind.BOSS, "mob"],
 
-    "sword1": [Entities.SWORD1, "weapon"],
-    "sword2": [Entities.SWORD2, "weapon"],
-    "axe": [Entities.AXE, "weapon"],
-    "redsword": [Entities.REDSWORD, "weapon"],
-    "bluesword": [Entities.BLUESWORD, "weapon"],
-    "goldensword": [Entities.GOLDENSWORD, "weapon"],
-    "morningstar": [Entities.MORNINGSTAR, "weapon"],
+    "sword1": [EntityKind.SWORD1, "weapon"],
+    "sword2": [EntityKind.SWORD2, "weapon"],
+    "axe": [EntityKind.AXE, "weapon"],
+    "redsword": [EntityKind.REDSWORD, "weapon"],
+    "bluesword": [EntityKind.BLUESWORD, "weapon"],
+    "goldensword": [EntityKind.GOLDENSWORD, "weapon"],
+    "morningstar": [EntityKind.MORNINGSTAR, "weapon"],
 
-    "firefox": [Entities.FIREFOX, "armor"],
-    "clotharmor": [Entities.CLOTHARMOR, "armor"],
-    "leatherarmor": [Entities.LEATHERARMOR, "armor"],
-    "mailarmor": [Entities.MAILARMOR, "armor"],
-    "platearmor": [Entities.PLATEARMOR, "armor"],
-    "redarmor": [Entities.REDARMOR, "armor"],
-    "goldenarmor": [Entities.GOLDENARMOR, "armor"],
+    "firefox": [EntityKind.FIREFOX, "armor"],
+    "clotharmor": [EntityKind.CLOTHARMOR, "armor"],
+    "leatherarmor": [EntityKind.LEATHERARMOR, "armor"],
+    "mailarmor": [EntityKind.MAILARMOR, "armor"],
+    "platearmor": [EntityKind.PLATEARMOR, "armor"],
+    "redarmor": [EntityKind.REDARMOR, "armor"],
+    "goldenarmor": [EntityKind.GOLDENARMOR, "armor"],
 
-    "flask": [Entities.FLASK, "object"],
-    "cake": [Entities.CAKE, "object"],
-    "burger": [Entities.BURGER, "object"],
-    "chest": [Entities.CHEST, "object"],
-    "firepotion": [Entities.FIREPOTION, "object"],
+    "flask": [EntityKind.FLASK, "object"],
+    "cake": [EntityKind.CAKE, "object"],
+    "burger": [EntityKind.BURGER, "object"],
+    "chest": [EntityKind.CHEST, "object"],
+    "firepotion": [EntityKind.FIREPOTION, "object"],
 
-    "guard": [Entities.GUARD, "npc"],
-    "villagegirl": [Entities.VILLAGEGIRL, "npc"],
-    "villager": [Entities.VILLAGER, "npc"],
-    "coder": [Entities.CODER, "npc"],
-    "scientist": [Entities.SCIENTIST, "npc"],
-    "priest": [Entities.PRIEST, "npc"],
-    "king": [Entities.KING, "npc"],
-    "rick": [Entities.RICK, "npc"],
-    "nyan": [Entities.NYAN, "npc"],
-    "sorcerer": [Entities.SORCERER, "npc"],
-    "agent": [Entities.AGENT, "npc"],
-    "octocat": [Entities.OCTOCAT, "npc"],
-    "beachnpc": [Entities.BEACHNPC, "npc"],
-    "forestnpc": [Entities.FORESTNPC, "npc"],
-    "desertnpc": [Entities.DESERTNPC, "npc"],
-    "lavanpc": [Entities.LAVANPC, "npc"],
+    "guard": [EntityKind.GUARD, "npc"],
+    "villagegirl": [EntityKind.VILLAGEGIRL, "npc"],
+    "villager": [EntityKind.VILLAGER, "npc"],
+    "coder": [EntityKind.CODER, "npc"],
+    "scientist": [EntityKind.SCIENTIST, "npc"],
+    "priest": [EntityKind.PRIEST, "npc"],
+    "king": [EntityKind.KING, "npc"],
+    "rick": [EntityKind.RICK, "npc"],
+    "nyan": [EntityKind.NYAN, "npc"],
+    "sorcerer": [EntityKind.SORCERER, "npc"],
+    "agent": [EntityKind.AGENT, "npc"],
+    "octocat": [EntityKind.OCTOCAT, "npc"],
+    "beachnpc": [EntityKind.BEACHNPC, "npc"],
+    "forestnpc": [EntityKind.FORESTNPC, "npc"],
+    "desertnpc": [EntityKind.DESERTNPC, "npc"],
+    "lavanpc": [EntityKind.LAVANPC, "npc"],
 
-    "frostnova": [Entities.FROSTNOVA, "spell"],
-    "frostbolt": [Entities.FROSTBOLT, "spell"],
-    "icebarrier": [Entities.ICEBARRIER, "spell"],
-    "fireball": [Entities.FIREBALL, "spell"],
-    "blink": [Entities.BLINK, "spell"],
-    "polymorph": [Entities.POLYMORPH, "spell"] 
+    "frostnova": [EntityKind.FROSTNOVA, "spell"],
+    "frostbolt": [EntityKind.FROSTBOLT, "spell"],
+    "icebarrier": [EntityKind.ICEBARRIER, "spell"],
+    "fireball": [EntityKind.FIREBALL, "spell"],
+    "blink": [EntityKind.BLINK, "spell"],
+    "polymorph": [EntityKind.POLYMORPH, "spell"] 
   };
       
   static var rankedWeapons = [
-    Entities.SWORD1,
-    Entities.SWORD2,
-    Entities.AXE,
-    Entities.MORNINGSTAR,
-    Entities.BLUESWORD,
-    Entities.REDSWORD,
-    Entities.GOLDENSWORD
+    EntityKind.SWORD1,
+    EntityKind.SWORD2,
+    EntityKind.AXE,
+    EntityKind.MORNINGSTAR,
+    EntityKind.BLUESWORD,
+    EntityKind.REDSWORD,
+    EntityKind.GOLDENSWORD
   ];
 
   static var rankedArmors = [
-    Entities.CLOTHARMOR,
-    Entities.LEATHERARMOR,
-    Entities.MAILARMOR,
-    Entities.PLATEARMOR,
-    Entities.REDARMOR,
-    Entities.GOLDENARMOR
+    EntityKind.CLOTHARMOR,
+    EntityKind.LEATHERARMOR,
+    EntityKind.MAILARMOR,
+    EntityKind.PLATEARMOR,
+    EntityKind.REDARMOR,
+    EntityKind.GOLDENARMOR
   ];
 
   static int getWeaponRank(weaponKind) {
@@ -326,11 +448,11 @@ class Types {
   }
 
   static bool isStackable(kind) {
-    return (kind == Entities.FLASK);
+    return (kind == EntityKind.FLASK);
   }
 
   static bool isUseOnPickup(kind) {
-    return (kind == Entities.FIREPOTION);
+    return (kind == EntityKind.FIREPOTION);
   }
 
   static bool isObject(kind) {
@@ -338,7 +460,7 @@ class Types {
   }
 
   static bool isChest(kind) {
-    return kind == Entities.CHEST;
+    return kind == EntityKind.CHEST;
   }
 
   static bool isItem(kind) {
@@ -352,22 +474,22 @@ class Types {
   }
 
   static bool isHealingItem(kind) {
-    return kind == Entities.FLASK 
-           || kind == Entities.BURGER;
+    return kind == EntityKind.FLASK 
+           || kind == EntityKind.BURGER;
   }
 
   static bool isExpendableItem(kind) {
     return Types.isHealingItem(kind)
-           || kind == Entities.FIREPOTION
-           || kind == Entities.CAKE;
+           || kind == EntityKind.FIREPOTION
+           || kind == EntityKind.CAKE;
   }
 
   static String getType(kind) {
-    if (!kind) {
+    if (kind == null) {
       throw "Undefiend kind given to Types.getType";
     }
 
-    if (kinds[Types.getKindAsString(kind)]) {
+    if (kinds.containsKey(Types.getKindAsString(kind))) {
       return kinds[Types.getKindAsString(kind)][1];
     }
 
@@ -383,13 +505,13 @@ class Types {
   }
 
   static String getKindAsString(kind) {
-    if (!kind) {
+    if (kind == null) {
       throw "Null kind given to Types.getKindAsString ${kind}";
     }
 
-    for (var k in kinds) {
+    for (final k in kinds.keys) {
       if (k != "getType" && kinds[k][0] == kind) {
-          return k;
+        return k;
       }
     }
 
@@ -397,9 +519,9 @@ class Types {
   }
 
   static void forEachKind(callback) {
-    for (var k in kinds) {
-      callback(kinds[k][0], k);
-    }
+    kinds.forEach((String name, List<dynamic> data) {
+      callback(data[0], name);
+    });
   }
 
   static void forEachArmor(callback) {
@@ -442,8 +564,8 @@ class Types {
     List<Entities> all = new List<Entities>();
     all.addAll(rankedWeapons);
     all.addAll(rankedArmors);
-    all.remove(Entities.SWORD1);
-    all.remove(Entities.CLOTHARMOR);
+    all.remove(EntityKind.SWORD1);
+    all.remove(EntityKind.CLOTHARMOR);
     int randIndex = rng.nextInt(all.length).floor();
     
     return all[randIndex];
