@@ -234,6 +234,7 @@ initGame() {
 }
 
 void main() {
+  window.console.log('Started');
   initGame();
   Game.app.center();
 
