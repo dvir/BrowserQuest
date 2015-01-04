@@ -271,7 +271,7 @@ DB = cls.Class.extend({
   init: function () {
     mongoose.connect("mongodb://localhost/browserquest");
     this.connection = mongoose.connection;
-    this.connection.on('error', console.error.bind(console, 'connection error:'));
+    this.connection.on('error', console.error.bind(console, 'Mongoose connection error:'));
 
     this.defaultCallback = function (err) {
       if (err) {
