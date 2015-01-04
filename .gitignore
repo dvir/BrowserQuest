@@ -8,3 +8,4 @@ client/audio/music
 *.swp
 client/shared
 TODO
+npm-debug.log
