@@ -961,7 +961,7 @@ class GameClient extends Base {
     ]);
   }
 
-  void sendChat(String text, String channel) {
+  void sendChat(String text, [String channel]) {
     if (channel == null) {
       channel = this.chat.channel;
     }
