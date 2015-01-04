@@ -23,6 +23,10 @@ class Hero extends Player {
   LocalStorage storage;
 
   Hero(int id, String name): super(id, name, Entities.PLAYER) {
+    // TODO: implement!
+    this.skillbar = new Skillbar([]);
+    // TODO: implement!
+    this.inventory = new Inventory([]);
     this.on("EquipmentChange", () {
       // TODO: imeplement differently
 //      Game.storage.savePlayer(Game.renderer.getPlayerImage(), this);

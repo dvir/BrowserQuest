@@ -10,3 +10,4 @@ client/shared
 TODO
 .elasticbeanstalk/
 npm-debug.log
+packages/

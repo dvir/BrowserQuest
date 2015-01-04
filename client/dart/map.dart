@@ -27,16 +27,15 @@ class WorldMap extends Base {
   WorldMap(bool this.loadMultiTilesheets) {
     bool useWorker = !(Game.renderer.mobile || Game.renderer.tablet);
     this._loadMap(useWorker);
-    this._initTilesets();
   }
 
   int get width => this.map["width"];
   int get height => this.map["height"];
   int get tilesize => this.map["tilesize"];
   get data => this.map["data"];
-  get blocking => this.map["blocking"] ? this.map["blocking"] : [];
-  get plateau => this.map["plateau"] ? this.map["plateau"] : [];
-  get musicAreas => this.map["musicAreas"] ? this.map["musicAreas"] : [];
+  get blocking => this.map.containsKey("blocking") ? this.map["blocking"] : [];
+  get plateau => this.map.containsKey("plateau") ? this.map["plateau"] : [];
+  get musicAreas => this.map.containsKey("musicAreas") ? this.map["musicAreas"] : [];
   get collisions => this.map["collisions"];
   get high => this.map["high"];
   get animated => this.map["animated"];
@@ -50,16 +49,17 @@ class WorldMap extends Base {
       window.console.info("Loading map with web worker.");
       var worker = new Worker("js/mapworker.js");
       worker.postMessage(1);
-      worker.onMessage = (event) {
+      worker.onMessage.listen((event) {
         var map = event.data;
         this._initMap(map);
-        this.grid = map.grid;
-        this.plateauGrid = map.plateauGrid;
+        this.grid = map['grid'];
+        this.plateauGrid = map['plateauGrid'];
         this.mapLoaded = true;
         if (this.isLoaded) {
           this.trigger("Ready");
         }
-      };
+        this._initTilesets();
+      });
     } else {
       window.console.info("Loading map via Ajax.");
       HttpRequest.getString(filepath).then((String response) {
@@ -71,6 +71,7 @@ class WorldMap extends Base {
         if (this.isLoaded) {
           this.trigger("Ready");
         }
+        this._initTilesets();
       }).catchError((Error error) {
         window.console.error("Failed loading map via AJAX. Error: ${error}");
       });
@@ -80,7 +81,7 @@ class WorldMap extends Base {
   void _initMap(map) {
     this.map = map;
 
-    this.map.doors.forEach((doorData) {
+    this.map['doors'].forEach((doorData) {
       Orientation o;
 
       switch (doorData["to"]) {
@@ -100,12 +101,12 @@ class WorldMap extends Base {
           o = Orientation.DOWN;
       }
 
-      Door door = new Door(new Position(doorData.tx, doorData.ty), o, new Position(doorData.tcx, doorData.tcy), doorData.p == 1);
+      Door door = new Door(new Position(doorData['tx'], doorData['ty']), o, new Position(doorData['tcx'], doorData['tcy']), doorData['p'] == 1);
       doors[this.gridPositionToTileIndex(door.position)] = door;
     });
 
-    this.map.checkpoints.forEach((cp) {
-      Checkpoint checkpoint = new Checkpoint(cp.id, cp.x, cp.y, cp.w, cp.h);
+    this.map['checkpoints'].forEach((cp) {
+      Checkpoint checkpoint = new Checkpoint(cp['id'], cp['x'], cp['y'], cp['w'], cp['h']);
       this.checkpoints.add(checkpoint);
     });
   }

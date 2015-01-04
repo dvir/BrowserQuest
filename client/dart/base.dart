@@ -42,15 +42,17 @@ class Base {
     handlers.forEach((String name, EventHandler eh) => this.callbacks[name].remove(eh));
   }
 
-  void trigger(var names, [List args]) {
-    if (!(names is List)) {
-      names = [names];
+  void trigger(dynamic names, [List args]) {
+    if (!(names is List<String>)) {
+      names = [names as String];
     }
 
-    this.callbacks.forEach((String name, Map<EventHandler, Function> ehs) {
-      ehs.forEach((EventHandler handler, Function callback) {
-        Function.apply(callback, args);
-      });
+    names.forEach((String name) {
+      if (this.callbacks.containsKey(name)) {
+        this.callbacks[name].forEach((EventHandler ehs, Function callback) {
+          Function.apply(callback, args);
+        });
+      }
 
       this.bubbleTargets.forEach((Base object) => object.trigger(name, args));
     });

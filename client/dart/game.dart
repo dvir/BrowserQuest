@@ -91,11 +91,11 @@ class Game extends Base {
   static Hero player;
   static String playerName;
 
-  static Map<int, Player> players;
-  static Map<String, Player> playersByName;
+  static Map<int, Player> players = {};
+  static Map<String, Player> playersByName = {};
 
-  static Map<int, Entity> entities;
-  static Map<int, Entity> obsoleteEntities;
+  static Map<int, Entity> entities = {};
+  static Map<int, Entity> obsoleteEntities = {};
 
   static Application app = new Application();
   static AudioManager audioManager = new AudioManager();
@@ -122,11 +122,11 @@ class Game extends Base {
 
   static List<AnimatedTile> animatedTiles;
 
-  static Map<String, Sprite> cursors;
+  static Map<String, Sprite> cursors = new Map<String, Sprite>();
   static Sprite currentCursor;
   static Orientation currentCursorOrientation;
 
-  static Map<String, Sprite> shadows;
+  static Map<String, Sprite> shadows = new Map<String, Sprite>();
 
   static Door townPortalDoor = new Door(new Position(36, 210), Orientation.DOWN, new Position(36, 210), true);
   
@@ -196,10 +196,12 @@ class Game extends Base {
     Game.client.sendResurrect();
   }
 
+  // depends on setSpriteScale
   static void initShadows() {
     Game.shadows["small"] = Game.sprites["shadow16"];
   }
 
+  // depends on setSpriteScale
   static void initCursors() {
     Game.cursors["hand"] = Game.sprites["hand"];
     Game.cursors["sword"] = Game.sprites["sword"];
@@ -233,6 +235,8 @@ class Game extends Base {
   }
 
   static void loadSprite(String name) {
+    html.window.console.debug("-- loading ${name}");
+
     if (Game.renderer.upscaledRendering) {
       Game.spriteSets[0][name] = new Sprite.FromJSON(name, 1);
       return;
@@ -258,6 +262,7 @@ class Game extends Base {
   static bool hasAllSpritesLoaded() {
     for (Sprite sprite in Game.sprites.values) {
       if (!sprite.isLoaded) {
+        html.window.console.info("Still waiting for ${sprite.name} (${sprite.id})");
         return false;
       }
     }
@@ -402,9 +407,9 @@ class Game extends Base {
   }
 
   static void initPathingGrid() {
-    Game.pathingGrid = new List<List<int>>();
+    Game.pathingGrid = new List<List<int>>(Game.map.height);
     for (var i = 0; i < Game.map.height; i += 1) {
-      Game.pathingGrid[i] = new List<int>();
+      Game.pathingGrid[i] = new List<int>(Game.map.width);
       for (var j = 0; j < Game.map.width; j += 1) {
         Game.pathingGrid[i][j] = Game.map.grid[i][j];
       }
@@ -414,9 +419,9 @@ class Game extends Base {
   }
 
   static void initEntityGrid() {
-    Game.entityGrid = new List<List<Map<int, Entity>>>();
+    Game.entityGrid = new List<List<Map<int, Entity>>>(Game.map.height);
     for (var i = 0; i < Game.map.height; i += 1) {
-      Game.entityGrid[i] = new List<Map<int, Entity>>();
+      Game.entityGrid[i] = new List<Map<int, Entity>>(Game.map.width);
       for (var j = 0; j < Game.map.width; j += 1) {
         Game.entityGrid[i][j] = new Map<int, Entity>();
       }
@@ -426,9 +431,9 @@ class Game extends Base {
   }
 
   static void initRenderingGrid() {
-    Game.renderingGrid = new List<List<Map<int, Entity>>>();
+    Game.renderingGrid = new List<List<Map<int, Entity>>>(Game.map.height);
     for (var i = 0; i < Game.map.height; i += 1) {
-      Game.renderingGrid[i] = new List<Map<int, Entity>>();
+      Game.renderingGrid[i] = new List<Map<int, Entity>>(Game.map.width);
       for (var j = 0; j < Game.map.width; j += 1) {
         Game.renderingGrid[i][j] = new Map<int, Entity>();
       }
@@ -438,9 +443,9 @@ class Game extends Base {
   }
 
   static void initItemGrid() {
-    Game.itemGrid = new List<List<Map<int, Item>>>();
+    Game.itemGrid = new List<List<Map<int, Item>>>(Game.map.height);
     for (var i = 0; i < Game.map.height; i += 1) {
-      Game.itemGrid[i] = new List<Map<int, Item>>();
+      Game.itemGrid[i] = new List<Map<int, Item>>(Game.map.width);
       for (var j = 0; j < Game.map.width; j += 1) {
         Game.itemGrid[i][j] = new Map<int, Item>();
       }
@@ -560,10 +565,11 @@ class Game extends Base {
 
     // check every 100 milliseconds if all sprites and map has loaded.
     // @TODO: listen for the relevant events instead.
-    new Timer.periodic(new Duration(milliseconds: 100), (Timer timer) {
+    new Timer.periodic(new Duration(milliseconds: 500), (Timer timer) {
       if (!Game.map.isLoaded || !Game.hasAllSpritesLoaded()) {
         return;
       }
+      timer.cancel();
 
       Game.ready = true;
 
@@ -593,8 +599,6 @@ class Game extends Base {
       Game.setCursor("hand");
 
       Game.connect(started_callback);
-
-      timer.cancel();
     });
   }
 
@@ -937,7 +941,7 @@ class Game extends Base {
      }, Game.renderer.mobile ? 0 : 2);
    }
 
-   static void forEachVisibleTileIndex(void callback(int), [int extra = 0]) {
+   static void forEachVisibleTileIndex(void callback(int index), [int extra = 0]) {
      Game.camera.forEachVisiblePosition((Position position) {
        if (!Game.map.isOutOfBounds(position)) {
          callback(Game.map.gridPositionToTileIndex(position) - 1);
@@ -945,7 +949,7 @@ class Game extends Base {
      }, extra);
    }
 
-   static void forEachVisibleTile(void callback(int, int), [int extra = 0]) {
+   static void forEachVisibleTile(void callback(int id, int index), [int extra = 0]) {
      if (!Game.map.isLoaded) {
        return;
      }
