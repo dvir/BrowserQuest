@@ -12,7 +12,7 @@ class SpellEffect extends Entity {
   bool interactable = false;
   Timer travelingTimer;
   
-  SpellEffect(int id, Entities kind): super(id, kind);
+  SpellEffect(int id, EntityKind kind): super(id, kind);
 
   String get name => "";
 

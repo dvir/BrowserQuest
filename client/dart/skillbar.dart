@@ -14,7 +14,7 @@ class Skillbar {
     return false;
   }
   
-  void add(Entities spellType) {
+  void add(EntityKind spellType) {
     
   }
   

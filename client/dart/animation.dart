@@ -25,16 +25,10 @@ class Animation extends Base {
   int height;
   int speed = 0;
   int count = 0;
-  int lastTime = 0;
+  int lastTime;
   Frame currentFrame;
 
-  Animation(String name, int length, int row, int width, int height) {
-    this.name = name;
-    this.length = length;
-    this.row = row;
-    this.width = width;
-    this.height = height;
-
+  Animation(String this.name, int this.length, int this.row, int this.width, int this.height) {
     this.reset();
   }
 

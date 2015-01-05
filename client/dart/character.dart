@@ -17,8 +17,8 @@ class Character extends Entity {
   int _maxHP = 0;
   int _level = 0;
 
-  Entities _weapon;
-  Entities _armor;
+  EntityKind _weapon;
+  EntityKind _armor;
 
   // Position and orientation
   int nextGridX = -1;
@@ -58,7 +58,7 @@ class Character extends Entity {
   bool isHurting = false;
   Timer hurtingTimer;
 
-  Character(int id, Entities kind): super(id, kind);
+  Character(int id, EntityKind kind): super(id, kind);
 
   void reset() {
     super.reset();
@@ -141,16 +141,16 @@ class Character extends Entity {
     this.trigger("change");
   }
 
-  Entities get armor => this._armor;
-  void set armor(Entities armor) {
+  EntityKind get armor => this._armor;
+  void set armor(EntityKind armor) {
     this._armor = armor;
     this.trigger("ArmorChange");
     this.trigger("EquipmentChange");
     this.trigger("change");
   }
 
-  Entities get weapon => this._weapon;
-  void set weapon(Entities weapon) {
+  EntityKind get weapon => this._weapon;
+  void set weapon(EntityKind weapon) {
     this._weapon = weapon;
     this.trigger("WeaponChange");
     this.trigger("EquipmentChange");
@@ -160,10 +160,10 @@ class Character extends Entity {
   // TODO: remove completely the next four methods.
   // they serve no purpose and armor/weapon should have their own classes to retrieve such
   // information from, and not from some properties data structure.
-  void equipArmor(Entities armor) {
+  void equipArmor(EntityKind armor) {
     this.armor = armor;
   }
-  void equipWeapon(Entities weapon) {
+  void equipWeapon(EntityKind weapon) {
     this.weapon = weapon;
   }
   int getArmorRank() => Types.getArmorRank(this.armor);
@@ -177,7 +177,7 @@ class Character extends Entity {
 
   bool hasShadow() => false;
 
-  void animate(String animationName, int speed, [int count, Function onEndCount]) {
+  void animate(String animationName, int speed, [int count = 0, Function onEndCount]) {
     var oriented = ['atk', 'walk', 'idle'];
 
     // don't change animation if the character is dying
@@ -246,7 +246,7 @@ class Character extends Entity {
     // TODO: maybe we should stop ignoring the target??
     //       if we want to move to a location, we just want to get there asap.
     var target = this.hasTarget() ? this.target : this.previousTarget;
-    if (target) {
+    if (target != null) {
       ignored.add(target);
 
       // TODO: maybe we should stop ignoring attackers of the target entity?
@@ -265,6 +265,7 @@ class Character extends Entity {
 
   void startPathing(var path) {
   }
+
   void stopPathing(Position position) {
     if (this.isDying) {
       return;
@@ -284,7 +285,7 @@ class Character extends Entity {
     Game.registerEntityPosition(this);
   }
 
-  void followPath(var path) {
+  void followPath(List path) {
     if (path.length <= 1) { // Length of 1 means the player has clicked on himself
       return;
     }
@@ -293,7 +294,7 @@ class Character extends Entity {
     this.step = 0;
 
     if (this.followingMode) { // following a character
-      path.pop();
+      path.removeLast();
     }
 
     this.startPathing(path);
@@ -325,8 +326,6 @@ class Character extends Entity {
 
   void nextStep() {
     bool stop = false;
-    int x;
-    int y;
     var path;
 
     if (!this.isMoving()) {

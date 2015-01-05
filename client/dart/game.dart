@@ -85,7 +85,7 @@ class Game extends Base {
   static bool hasNeverStarted = true;
 
   static Transition currentZoning;
-  static List<Position> zoningQueue;
+  static List<Position> zoningQueue = [];
   static Orientation zoningOrientation;
 
   static Hero player;
@@ -220,13 +220,13 @@ class Game extends Base {
   }
 
   static void initHurtSprites() {
-    Types.forEachArmorKind((Entities kind, String kindName) {
+    Types.forEachArmorKind((EntityKind kind, String kindName) {
       Game.sprites[kindName].createHurtSprite();
     });
   }
 
   static void initSilhouettes() {
-    Types.forEachMobOrNpcKind((Entities kind, String kindName) {
+    Types.forEachMobOrNpcKind((EntityKind kind, String kindName) {
       Game.sprites[kindName].createSilhouette();
     });
 
@@ -517,12 +517,13 @@ class Game extends Base {
    *
    * @param {Entity} entity The moving entity
    */
-  static void unregisterEntityPosition(Character entity) {
+  static void unregisterEntityPosition(Entity entity) {
     Game.removeFromEntityGrid(entity, entity.gridPosition);
     Game.removeFromPathingGrid(entity.gridPosition);
     Game.removeFromRenderingGrid(entity, entity.gridPosition);
 
-    if (entity.nextGridX >= 0 && entity.nextGridY >= 0) {
+    // TODO: I don't like this checks. get rid of them
+    if (entity is Character && entity.nextGridX >= 0 && entity.nextGridY >= 0) {
       Game.removeFromEntityGrid(entity, new Position(entity.nextGridX, entity.nextGridY));
       Game.removeFromPathingGrid(new Position(entity.nextGridX, entity.nextGridY));
     }
@@ -861,7 +862,7 @@ class Game extends Base {
 
      int t = 16 * Game.renderer.scale; // tile size
      int x = ((character.x - Game.camera.x) * Game.renderer.scale);
-     int w = int.parse(bubble.element.style.width) + 24;
+     int w = (bubble.element.style.width.isEmpty ? 0 : int.parse(bubble.element.style.width)) + 24;
      int offset = ((w / 2) - (t / 2)).round();
      int offsetY;
      int y;
@@ -955,13 +956,19 @@ class Game extends Base {
      }
 
      Game.forEachVisibleTileIndex((int tileIndex) {
-       if (Game.map.data[tileIndex] == null) {
-         callback(Game.map.data[tileIndex] - 1, tileIndex);
-       } else {
+       if (Game.map.data[tileIndex] is List) {
          Game.map.data[tileIndex].forEach((int id) {
            callback(id - 1, tileIndex);
          });
+         return;
        }
+       
+       if (Game.map.data[tileIndex] is int) {
+         callback(Game.map.data[tileIndex] - 1, tileIndex);
+         return;
+       }
+
+       throw new Exception("Game.forEachVisibleTile: unsupported type '${Game.map.data[tileIndex]}'");
      }, extra);
    }
 
@@ -1657,9 +1664,9 @@ class Game extends Base {
       });
 
       Game.client.on("EntityList", (List<int> list) {
-        List<int> entityIds = Game.entities.keys;
-        List<int> knownIds = list.where((int id) => entityIds.contains(id));
-        List<int> newIds = list.where((int id) => !knownIds.contains(id));
+        List<int> entityIds = Game.entities.keys.toList();
+        List<int> knownIds = list.where((int id) => entityIds.contains(id)).toList();
+        List<int> newIds = list.where((int id) => !knownIds.contains(id)).toList();
 
         Game.obsoleteEntities.clear();
         Game.entities.forEach((int id, Entity entity) {

@@ -41,12 +41,15 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.MOVE.index}', (data) {
-      var id = data[1];
+      int id = data[1];
+      if (data[2] == null || data[3] == null) {
+        throw new Exception("Move coordinates cannot be null. (${data})"); 
+      }
       Position position = new Position(data[2], data[3]);
 
       if (Game.player != null && id != Game.player.id) {
-        var entity = Game.getEntityByID(id);
-        if (entity) {
+        Entity entity = Game.getEntityByID(id);
+        if (entity != null) {
           if (Game.player.isAttackedBy(entity)) {
             Game.tryUnlockingAchievement("COWARD");
           }
@@ -279,10 +282,10 @@ class GameClient extends Base {
       var attacker = Game.getEntityByID(attackerId),
         target = Game.getEntityByID(targetId);
 
-      if (attacker && target && attacker.id != Game.player.id) {
-        html.window.console.debug(attacker.id + " attacks " + target.id);
+      if (attacker != null && target != null && attacker.id != Game.player.id) {
+        html.window.console.debug('${attacker.id} attacks ${target.id}');
 
-        if (attacker && target is Player && target.id != Game.player.id && target.target && target.target.id == attacker.id && attacker.getDistanceToEntity(target) < 3) {
+        if (target is Player && target.id != Game.player.id && target.target != null&& target.target.id == attacker.id && attacker.getDistanceToEntity(target) < 3) {
           // TODO: eh? remove this crap and let the server decide on this AI behavior
 
           // delay to prevent other players attacking mobs
@@ -319,15 +322,18 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.PLAYER_EXIT.index}', (data) {
-      var id = data[1];
+      int id = data[1];
 
       Game.removePlayer(id);
     });
 
     this.on('Message.${Message.SPAWN.index}', (data) {
-      var id = data[1],
-        kind = data[2];
+      int id = data[1];
+      EntityKind kind = Entities.get(data[2]);
 
+      if (data[3] == null || data[4] == null) {
+        throw new Exception("Spawn coordinates cannot be null. (${data})"); 
+      }
       Position position = new Position(data[3], data[4]);
 
       if (Types.isSpell(kind)) {
@@ -346,19 +352,29 @@ class GameClient extends Base {
         chest.gridPosition = position;
         chest.setAnimation("idle_down", 150);
         Game.addEntity(chest);
+      } else if (Types.isNpc(kind)) {
+        var npc = EntityFactory.createEntity(kind, id);
+
+        html.window.console.info("Spawned ${Types.getKindAsString(npc.kind)} (${npc.id}) at ${npc.gridPosition}");
+        npc.setSprite(Game.sprites[npc.getSpriteName()]);
+        npc.gridPosition = position;
+        npc.setAnimation("idle_down", 150);
+        Game.addEntity(npc);
       } else {
-        var name, orientation, targetId, weapon, armor, hp, maxHP;
+        String name;
+        EntityKind weapon;
+        EntityKind armor;
 
-        hp = data[5];
-        maxHP = data[6];
-        orientation = data[7];
-        targetId = data[8];
+        int hp = data[5];
+        int maxHP = data[6];
+        Orientation orientation = Orientations.get(data[7]);
+        int targetId = data[8];
 
-        var character;
+        Character character;
         if (Types.isPlayer(kind)) {
           name = data[9];
-          armor = data[10];
-          weapon = data[11];
+          armor = Entities.get(data[10]);
+          weapon = Entities.get(data[11]);
 
           // get existing player entity
           character = Game.getPlayerByID(id);
@@ -378,7 +394,7 @@ class GameClient extends Base {
         if (!Game.entityIdExists(character.id)) {
           try {
             if (character.id != Game.player.id) {
-              var kindString = Types.getKindAsString(character.skin);
+              String kindString = Types.getKindAsString(character.skin);
               character.setSprite(Game.sprites[kindString]);
               character.gridPosition = position;
               character.orientation = orientation;
@@ -389,7 +405,7 @@ class GameClient extends Base {
               html.window.console.info("Spawned ${Types.getKindAsString(character.kind)} (${character.id}) at ${character.gridPosition}");
 
               if (character is Mob) {
-                if (targetId) {
+                if (targetId != null) {
                   Player player = Game.getEntityByID(targetId);
                   if (player != null) {
                     Game.createAttackLink(character, player);
@@ -397,18 +413,18 @@ class GameClient extends Base {
                 }
               }
             }
-          } catch (e) {
-            html.window.console.error("ReceiveSpawn failed. Error: " + e);
-            html.window.console.error(e.stack);
+          } catch (exception, stackTrace) {
+            html.window.console.error("ReceiveSpawn failed. Error: ${exception}");
+            html.window.console.error(stackTrace);
           }
         } else {
-          html.window.console.debug("Character " + character.id + " already exists. Don't respawn.");
+          html.window.console.debug("Character ${character.id} already exists. Don't respawn.");
         }
       }
     });
 
     this.on('Message.${Message.DESPAWN.index}', (data) {
-      var id = data[1];
+      int id = data[1];
 
       if (!Game.entityIdExists(id)) {
         // entity was already removed
@@ -493,7 +509,7 @@ class GameClient extends Base {
       Player player = Game.getPlayerByID(playerID);
 
       if (channel == "say" || channel == "yell") {
-        Game.createBubble(playerID, message);
+        Game.createBubble(player, message);
         Game.assignBubbleTo(player);
       }
 
@@ -509,7 +525,7 @@ class GameClient extends Base {
 
     this.on('Message.${Message.EQUIP.index}', (data) {
       var playerId = data[1],
-        itemKind = data[2];
+        itemKind = Entities.get(data[2]);
 
       var player = Game.getEntityByID(playerId),
         itemName = Types.getKindAsString(itemKind);
@@ -522,7 +538,7 @@ class GameClient extends Base {
     this.on('Message.${Message.DROP.index}', (data) {
       var entityId = data[1],
         id = data[2],
-        kind = data[3];
+        kind = Entities.get(data[3]);
 
       var item = EntityFactory.createEntity(kind, id);
       item.wasDropped = true;
@@ -538,7 +554,10 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.TELEPORT.index}', (data) {
-      var id = data[1];
+      int id = data[1];
+      if (data[2] == null || data[3] == null) {
+        throw new Exception("Teleport coordinates cannot be null. (${data})"); 
+      }
       Position position = new Position(data[2], data[3]);
 
       if (id != Game.player.id) {
@@ -581,16 +600,16 @@ class GameClient extends Base {
         html.document.querySelector("#world-population span:nth-child(2)").text = str;
         };
 
-      html.document.querySelector("#playercount span.count").text = worldPlayers;
+      html.document.querySelector("#playercount span.count").text = '${worldPlayers}';
 
-      html.document.querySelector("#instance-population span").text =worldPlayers;
+      html.document.querySelector("#instance-population span").text = '${worldPlayers}';
       if (worldPlayers == 1) {
         setWorldPlayersString("player");
       } else {
         setWorldPlayersString("players");
       }
 
-      html.document.querySelector("#world-population span").text = totalPlayers;
+      html.document.querySelector("#world-population span").text = '${totalPlayers}';
       if (totalPlayers == 1) {
         setTotalPlayersString("player");
       } else {
@@ -599,8 +618,8 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.KILL.index}', (data) {
-      var kind = data[1];
-      var mobName = Types.getKindAsString(kind);
+      EntityKind kind = Entities.get(data[1]);
+      String mobName = Types.getKindAsString(kind);
 
       if (mobName == 'skeleton2') {
         mobName = 'greater skeleton';
@@ -651,13 +670,13 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.LIST.index}', (data) {
-      data.shift();
+      data.removeAt(0);
 
       this.trigger("EntityList", [data]);
     });
 
     this.on('Message.${Message.DESTROY.index}', (data) {
-      var id = data[1];
+      int id = data[1];
 
       if (!Game.entityIdExists(id)) {
         html.window.console.debug("Entity was already destroyed. (id=${id})");
@@ -692,7 +711,7 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.BLINK.index}', (data) {
-      var id = data[1];
+      int id = data[1];
 
       if (!Game.entityIdExists(id)) {
         html.window.console.debug("Received BLINK message for an item that doesn't exist. (id=${id})");
@@ -1078,7 +1097,7 @@ class GameClient extends Base {
       return;
     }
 
-    player = EntityFactory.createEntity(playerData['kind'], playerData['id'], playerData['name']);
+    player = EntityFactory.createEntity(Entities.get(playerData['kind']), playerData['id'], playerData['name']);
     player.loadFromObject(playerData['data']);
     Game.addPlayer(player);
   }

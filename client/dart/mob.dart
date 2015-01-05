@@ -12,7 +12,7 @@ class Mob extends Character {
   bool isAggressive = true;
   bool targetable = true;
 
-  Mob(int id, Entities kind): super(id, kind);
+  Mob(int id, EntityKind kind): super(id, kind);
 
   bool isHostile(Entity entity) => (entity is Player);
 

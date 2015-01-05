@@ -12,7 +12,7 @@ class InventoryItem extends Item {
   int slot = 0;
   int barSlot = 0;
 
-  InventoryItem(Entities kind, [data = null]): super(0, kind) {
+  InventoryItem(EntityKind kind, [data = null]): super(0, kind) {
 
     if (data != null) {
       this.load(data);

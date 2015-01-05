@@ -13,7 +13,7 @@ import "lib/gametypes.dart";
 
 class Entity extends Base {
   int id;
-  Entities kind;
+  EntityKind kind;
   bool interactable = true;
   String name;
   
@@ -35,7 +35,7 @@ class Entity extends Base {
 
   // Renderer
   Sprite _sprite;
-  Map<String, Animation> animations;
+  Map<String, Animation> animations = {};
   Animation currentAnimation;
   int nameOffsetY = -10;
   int shadowOffsetY = 0;
@@ -45,10 +45,13 @@ class Entity extends Base {
   Rect dirtyRect;
   Rect oldDirtyRect;
 
-  Entity(int this.id, Entities this.kind);
+  Entity(int this.id, EntityKind this.kind);
 
   Position get gridPosition => this._gridPosition;
   void set gridPosition(Position position) {
+    if (position == null) {
+      throw new Exception("position set to null!");
+    }
     this._gridPosition = position;
     this.trigger("PositionChange");
   }
@@ -125,7 +128,7 @@ class Entity extends Base {
     this.trigger("Ready");
   }
 
-  Entities get skin => this.kind;
+  EntityKind get skin => this.kind;
 
   String getSpriteName() => Types.getKindAsString(this.kind);
 

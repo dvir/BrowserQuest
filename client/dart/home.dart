@@ -192,13 +192,13 @@ initGame() {
           if (Game.player != null) {
             Game.say(chat.value);
           }
+
           chat.value = '';
-          Game.app.hideChat();
           document.getElementById('foreground').focus();
-          return false;
         }
-        
+         
         Game.app.hideChat();
+        event.stopPropagation();
         return false;
        
       case Key.ESC:
@@ -211,7 +211,7 @@ initGame() {
     InputElement nameElement = document.getElementById('nameinput');
     String name = nameElement.value;
 
-    if (event.keyCode != Key.ENTER) {
+    if (Keys.get(event.keyCode) != Key.ENTER) {
       return true;
     }
     

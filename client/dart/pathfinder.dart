@@ -1,7 +1,9 @@
 library pathfinder;
 
+import 'dart:html';
+
 import 'package:pathfinding/core/grid.dart';
-import 'package:pathfinding/finders/jps.dart';
+import 'package:pathfinding/finders/astar.dart';
 
 import "base.dart";
 import "character.dart";
@@ -24,9 +26,9 @@ class Pathfinder extends Base {
   }
 
   dynamic _AStarCompute(List<List<int>> rawGrid, List<int> start, List<int> end) {
-    Grid grid = new Grid(rawGrid.length, rawGrid.first.length, rawGrid);
-    JumpPointFinder jpf = new JumpPointFinder();
-    return jpf.findPath(start[0], start[1], end[0], end[1], grid);
+    Grid grid = new Grid(rawGrid.first.length, rawGrid.length, rawGrid);
+    AStarFinder astarf = new AStarFinder();
+    return astarf.findPath(start[0], start[1], end[0], end[1], grid);
   }
 
   List<List<int>> findPath(

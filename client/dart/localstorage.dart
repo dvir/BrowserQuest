@@ -59,11 +59,11 @@ class LocalStorage extends Base {
   int get level => this.data["player"].level;
   void set level(int level) { this.data["player"].level = level; }
 
-  Entities get armor => this.data["player"].armor;
-  void set armor(Entities armor) { this.data["player"].armor = armor; }
+  EntityKind get armor => this.data["player"].armor;
+  void set armor(EntityKind armor) { this.data["player"].armor = armor; }
 
-  Entities get weapon => this.data["player"].weapon;
-  void set weapon(Entities weapon) { this.data["player"].weapon = weapon; }
+  EntityKind get weapon => this.data["player"].weapon;
+  void set weapon(EntityKind weapon) { this.data["player"].weapon = weapon; }
 
   String get image => this.data["player"].image;
   void set image(String image) { this.data["player"].image = image; }
@@ -112,7 +112,7 @@ class LocalStorage extends Base {
     this.totalRevives++;
   }
 
-  void recordKill(Entities kind) {
+  void recordKill(EntityKind kind) {
     if (this.data["kills"].containsKey(kind)) {
       this.data["kills"][kind]++;
       return;
@@ -121,7 +121,7 @@ class LocalStorage extends Base {
     this.data["kills"][kind] = 0;
   }
 
-  int getKillCount(Entities kind) {
+  int getKillCount(EntityKind kind) {
     if (this.data["kills"].containsKey(kind)) {
       return this.data["kills"][kind];
     }

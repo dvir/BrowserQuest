@@ -22,7 +22,7 @@ class ChatMessage extends Base {
 
   ChatMessage(String this.text, String this.channel, [Entity entity = null, String prefix = ""]) {
     if (entity != null) {
-      this.name = prefix + entity.name;
+      this.name = '${prefix}${entity.name}';
     }
 
     this.time = new DateTime.now();

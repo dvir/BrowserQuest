@@ -4,6 +4,7 @@ import "dart:async";
 
 import "character.dart";
 import "chest.dart";
+import "entity.dart";
 import "game.dart";
 import "inventory.dart";
 import "inventoryitem.dart";
@@ -119,8 +120,8 @@ class Hero extends Player {
    */
   void beforeStep() {
     // TODO: entities shouldn't block each other anymore, so this could be removed.
-    var blockingEntity = Game.getEntityAt(new Position(this.nextGridX, this.nextGridY));
-    if (blockingEntity && blockingEntity.id != this.id) {
+    Entity blockingEntity = Game.getEntityAt(new Position(this.nextGridX, this.nextGridY));
+    if (blockingEntity != null && blockingEntity.id != this.id) {
       this.log_debug("Blocked by ${blockingEntity.id}");
     }
 
@@ -286,7 +287,7 @@ class Hero extends Player {
     super.stopInvincibility();
   }
 
-  void equip(Entities itemKind) {
+  void equip(EntityKind itemKind) {
     super.equip(itemKind);
 
     Game.app.initEquipmentIcons();
@@ -314,6 +315,9 @@ class Hero extends Player {
 
     /*this.loadSkillbar(data.skillbar);*/
     /*data.remove("skillbar");*/
+
+    // we need to load the id as we start with a fake id
+    this.id = data['id'];
 
     super.loadFromObject(data);
   }

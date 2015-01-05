@@ -38,13 +38,15 @@ class BubbleManager extends Base {
   }
 
   void clean() {
-    this.bubbles.forEach((int id, Bubble bubble) {
+    Map<int, Bubble> bubbles = new Map<int, Bubble>.from(this.bubbles);
+    bubbles.forEach((int id, Bubble bubble) {
       bubble.destroy();
     });
   }
 
   void update(int time) {
-    this.bubbles.forEach((int id, Bubble bubble) {
+    Map<int, Bubble> bubbles = new Map<int, Bubble>.from(this.bubbles);
+    bubbles.forEach((int id, Bubble bubble) {
       bubble.update(time);
     });
   }
