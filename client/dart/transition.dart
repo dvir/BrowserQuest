@@ -19,8 +19,8 @@ class Transition extends Base {
              int endValue, 
              int duration) {
     this.startTime = currentTime;
-    this.on("Update", updateFunction);
-    this.on("Stop", stopFunction);
+    this.on("Update", updateFunction, true);
+    this.on("Stop", stopFunction, true);
     this.startValue = startValue;
     this.endValue = endValue;
     this.duration = duration;

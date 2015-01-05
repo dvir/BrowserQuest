@@ -77,10 +77,10 @@ class Sprite extends Base {
   Map<String, Animation> createAnimations() {
     Map<String, Animation> animations = new Map<String, Animation>();
 
-    for (var name in this.animationData) {
+    for (var name in this.animationData.keys) {
       var a = this.animationData[name];
       Animation animation =
-        new Animation(name, a.length, a.row, this.width, this.height);
+        new Animation(name, a['length'], a['row'], this.width, this.height);
       animations.putIfAbsent(name, () => animation);
     }
 

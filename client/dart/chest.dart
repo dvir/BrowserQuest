@@ -8,7 +8,7 @@ import "lib/gametypes.dart";
 
 class Chest extends Entity {
 
-  Chest(int id, Entities kind): super(id, Entities.CHEST);
+  Chest(int id): super(id, Entities.CHEST);
 
   // TODO: remove eventually! sprites should be handled directly from the sprite member.
   String getSpriteName() => "chest";

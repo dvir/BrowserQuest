@@ -611,6 +611,10 @@ class Renderer extends Base {
   }
 
   void drawTerrain() {
+    if (this.tileset == null) {
+      return;
+    }
+
     var tilesetwidth = this.tileset.width / Game.map.tilesize;
     Game.forEachVisibleTile((int id, int index) {
       if (!Game.map.isHighTile(id) && !Game.map.isAnimatedTile(id)) { // Don't draw unnecessary tiles
@@ -620,6 +624,10 @@ class Renderer extends Base {
   }
 
   void drawAnimatedTiles([bool dirtyOnly = false]) {
+    if (this.tileset == null) {
+      return;
+    }
+
     var tilesetwidth = this.tileset.width / Game.map.tilesize;
 
     this.animatedTileCount = 0;
@@ -641,6 +649,10 @@ class Renderer extends Base {
   }
 
   void drawHighTiles(html.CanvasRenderingContext2D ctx) {
+    if (this.tileset == null) {
+      return;
+    }
+
     var tilesetwidth = this.tileset.width / Game.map.tilesize;
 
     this.highTileCount = 0;

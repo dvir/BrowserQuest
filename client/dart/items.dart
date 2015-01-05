@@ -1,5 +1,6 @@
 library items;
 
+import "hero.dart";
 import "item.dart";
 import "lib/gametypes.dart";
 
@@ -56,4 +57,24 @@ class RedArmor extends Armor {
 class GoldenArmor extends Armor {
 
   GoldenArmor(int id): super(id, Entities.GOLDENARMOR, "Golden Armor", "You pick up the ultimate armor");
+}
+
+class Flask extends Item {
+  Flask(int id): super(id, Entities.FLASK, "Potion", "You drink a health potion"); 
+}
+
+class Cake extends Item {
+  Cake(int id): super(id, Entities.CAKE, "Cake", "You eat a cake");
+}
+
+class Burger extends Item {
+  Burger(int id): super(id, Entities.BURGER, "Burger", "You can haz rat burger");
+}
+
+class FirePotion extends Item {
+  FirePotion(int id): super(id, Entities.FIREPOTION, "Fire Potion", "You feel the power of Firefox!");
+
+  looted(Hero hero) {
+    hero.startInvincibility();
+  }
 }

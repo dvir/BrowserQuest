@@ -12,7 +12,7 @@ import "lib/gametypes.dart";
 class Spell extends Base {
 
   int id = 0;
-  Entities kind;
+  EntityKind kind;
   Character target;
   int cooldown = 1;
   int castTime = 1;
@@ -21,7 +21,7 @@ class Spell extends Base {
   String spellType = "single";
   String type = "spell";
 
-  Spell(Entities this.kind, Character this.target);
+  Spell(EntityKind this.kind, Character this.target);
 
   SpellEffect getEffect() => new SpellEffect(null, this.kind);
 

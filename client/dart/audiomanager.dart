@@ -1,5 +1,6 @@
 library audiomanager;
 
+import "dart:html";
 import "dart:web_audio";
 
 import "audio.dart";
@@ -55,6 +56,10 @@ class AudioManager extends Base {
       return;
     }
 
+    if (!this.sounds.containsKey(name)) {
+      window.console.error("Cannot play '${name}' before it's loaded.");
+      return;
+    }
     this.sounds[name].play();
   }
 
@@ -94,8 +99,7 @@ class AudioManager extends Base {
   }
 
   void addArea(var data) {
-    Area area = new Area(data["x"], data["y"], data["width"], data["height"]);
-    area.musicName = data["name"];
+    Area area = new Area(data["x"], data["y"], data["w"], data["h"], data["id"]);
     this.areas.add(area);
   }
 

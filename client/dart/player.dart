@@ -32,7 +32,7 @@ class Player extends Character {
   bool isInvincible = false;
   Timer invincibilityTimer;
 
-  Player(int id, String this.name, Entities kind): super(id, kind);
+  Player(int id, String this.name, EntityKind kind): super(id, kind);
 
   void reset() {
     super.reset();
@@ -73,7 +73,7 @@ class Player extends Character {
 
   String getSpriteName() => this.sprite.name;
 
-  Entities get skin {
+  EntityKind get skin {
     if (this.isDying) {
       return Entities.DEATH;
     }
@@ -163,7 +163,7 @@ class Player extends Character {
     }
   }
 
-  void equip(Entities itemKind) {
+  void equip(EntityKind itemKind) {
     if (Types.isArmor(itemKind)) {
       this.equipArmor(itemKind);
     } else if (Types.isWeapon(itemKind)) {
@@ -172,8 +172,16 @@ class Player extends Character {
   }
 
   void loadFromObject(data) {
-    // x and y in server are mapped to gridX and gridY on client
-    this.gridPosition = new Position(data['x'], data['y']);
+    // we need better mechanisms here to verify data integrity.
+    // also, it would be better to split this function into two use cases:
+    // either creating a new entity and filling it with data, 
+    // or just updating an existing one. this will allow us to verify the data
+    // per case.
+
+    if (data.containsKey('x') && data.containsKey('y')) {
+      // x and y in server are mapped to gridX and gridY on client
+      this.gridPosition = new Position(data['x'], data['y']);
+    }
 
     this.name = data['name'];
     this.hp = data['hp'];
@@ -182,7 +190,11 @@ class Player extends Character {
     this.maxXP = data['maxXP'];
     this.level = data['level'];
     this.guild = data['guild'];
-    this.weapon = Entities.get(data['weapon']);
-    this.armor = Entities.get(data['armor']);
+    if (data.containsKey('weapon')) {
+      this.weapon = Entities.get(data['weapon']);
+    }
+    if (data.containsKey('armor')) {
+      this.armor = Entities.get(data['armor']);
+    }
   }
 }

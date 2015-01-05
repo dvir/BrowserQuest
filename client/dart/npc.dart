@@ -158,7 +158,7 @@ class Npc extends Character {
   int talkCount;
   int talkIndex = 0;
 
-  Npc(int id, Entities kind, String name): super(id, kind) {
+  Npc(int id, EntityKind kind, String name): super(id, kind) {
     this.name = name;
     this.talkCount = NpcTalk[Types.getKindAsString(kind)].length;
   }

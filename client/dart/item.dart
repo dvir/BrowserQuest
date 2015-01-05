@@ -17,7 +17,7 @@ abstract class Item extends Entity {
 
   Item(
     int id,
-    Entities kind,
+    EntityKind kind,
     [String name,
     String this.lootMessage]
   ): super(id, kind) {
@@ -40,7 +40,7 @@ abstract class Item extends Entity {
 
 class Weapon extends Item {
 
-  Weapon(int id, Entities kind, String name, String lootMessage): super(id, kind, name, lootMessage);
+  Weapon(int id, EntityKind kind, String name, String lootMessage): super(id, kind, name, lootMessage);
 
   void looted(Hero hero) {
     hero.lootedWeapon(this);
@@ -49,7 +49,7 @@ class Weapon extends Item {
 
 class Armor extends Item {
 
-  Armor(int id, Entities kind, String name, String lootMessage): super(id, kind, name, lootMessage);
+  Armor(int id, EntityKind kind, String name, String lootMessage): super(id, kind, name, lootMessage);
 
   void looted(Hero hero) {
     hero.lootedArmor(this);

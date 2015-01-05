@@ -1,6 +1,7 @@
 library updater;
 
 import "dart:async";
+import "dart:html";
 
 import "animatedtile.dart";
 import "base.dart";
@@ -238,19 +239,19 @@ class Updater extends Base {
 
     switch (Game.player.direction) {
       case Orientation.UP:
-        Game.keys(new Position(pos.x, pos.y-1), Orientation.UP);
+        Game.keys(pos.decY(), Orientation.UP);
         break;
 
       case Orientation.DOWN:
-        Game.keys(new Position(pos.x, pos.y+1), Orientation.DOWN);
+        Game.keys(pos.incY(), Orientation.DOWN);
         break;
 
       case Orientation.RIGHT:
-        Game.keys(new Position(pos.x+1, pos.y), Orientation.RIGHT);
+        Game.keys(pos.incX(), Orientation.RIGHT);
         break;
 
       case Orientation.LEFT:
-        Game.keys(new Position(pos.x-1, pos.y), Orientation.LEFT);
+        Game.keys(pos.decX(), Orientation.LEFT);
         break;
     }
   }

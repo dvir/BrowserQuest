@@ -101,7 +101,14 @@ class WorldMap extends Base {
           o = Orientation.DOWN;
       }
 
-      Door door = new Door(new Position(doorData['tx'], doorData['ty']), o, new Position(doorData['tcx'], doorData['tcy']), doorData['p'] == 1);
+      if (doorData['tx'] == null || doorData['ty'] == null) {
+        throw new Exception("Door coordinates cannot be null. (${doorData})"); 
+      }
+      Position cameraPosition = null;
+      if (doorData['tcx'] != null && doorData['tcy'] != null) {
+        cameraPosition = new Position(doorData['tcx'], doorData['tcy']);
+      }
+      Door door = new Door(new Position(doorData['tx'], doorData['ty']), o, cameraPosition, doorData['p'] == 1);
       doors[this.gridPositionToTileIndex(door.position)] = door;
     });
 
