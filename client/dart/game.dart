@@ -190,6 +190,8 @@ class Game extends Base {
 
       int tilesetIndex = Game.renderer.upscaledRendering ? 0 : (Game.renderer.scale - 1);
       Game.renderer.tileset = Game.map.tilesets[tilesetIndex];
+
+      Game.app.trigger('start');
     });
   }
 
