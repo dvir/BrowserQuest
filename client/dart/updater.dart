@@ -24,17 +24,19 @@ class Updater extends Base {
   }
 
   void update() {
-    this.updateZoning();
-    this.updateCharacters();
-    this.updateTransitions();
-    this.updateAnimations();
-    this.updateAnimatedTiles();
-    this.updateChatBubbles();
-    this.updateInfos();
-    this.updateKeyboardMovement();
+    int t = Game.currentTime;
+
+    this.updateZoning(t);
+    this.updateCharacters(t);
+    this.updateTransitions(t);
+    this.updateAnimations(t);
+    this.updateAnimatedTiles(t);
+    this.updateChatBubbles(t);
+    this.updateInfos(t);
+    this.updateKeyboardMovement(t);
   }
 
-  void updateCharacters() {
+  void updateCharacters(int t) {
     Game.forEachEntity((Entity entity) {
       if (!entity.isLoaded) {
         return;
@@ -65,19 +67,19 @@ class Updater extends Base {
     }
   }
 
-  void updateTransitions() {
+  void updateTransitions(int t) {
     Game.forEachCharacter((Character character) {
       if (character.movement.inProgress) {
-        character.movement.step(Game.currentTime);
+        character.movement.step(t);
       }
     });
 
     if (Game.currentZoning != null && Game.currentZoning.inProgress) {
-      Game.currentZoning.step(Game.currentTime);
+      Game.currentZoning.step(t);
     }
   }
 
-  void updateZoning() {
+  void updateZoning(int t) {
     int s = 3;
     int ts = 16;
     int speed = 500;
@@ -121,7 +123,7 @@ class Updater extends Base {
       };
     }
 
-    Game.currentZoning.start(Game.currentTime, updateFunc, endFunc, startValue, endValue, speed);
+    Game.currentZoning.start(t, updateFunc, endFunc, startValue, endValue, speed);
   }
 
   void updateCharacter(Character c) {
@@ -197,37 +199,37 @@ class Updater extends Base {
     }
   }
 
-  void updateAnimations() {
+  void updateAnimations(int t) {
     Game.forEachEntity((Entity entity) {
-      if (entity.currentAnimation != null && entity.currentAnimation.update(Game.currentTime)) {
+      if (entity.currentAnimation != null && entity.currentAnimation.update(t)) {
         entity.dirty();
       }
     });
 
     if (Game.sparksAnimation != null) {
-      Game.sparksAnimation.update(Game.currentTime);
+      Game.sparksAnimation.update(t);
     }
 
     if (Game.targetAnimation != null) {
-      Game.targetAnimation.update(Game.currentTime);
+      Game.targetAnimation.update(t);
     }
   }
 
-  void updateAnimatedTiles() {
+  void updateAnimatedTiles(int t) {
     Game.forEachAnimatedTile((AnimatedTile tile) {
-      tile.update(Game.currentTime);
+      tile.update(t);
     });
   }
 
-  void updateChatBubbles() {
-    Game.bubbleManager.update(Game.currentTime);
+  void updateChatBubbles(int t) {
+    Game.bubbleManager.update(t);
   }
 
-  void updateInfos() {
-    Game.infoManager.update(Game.currentTime);
+  void updateInfos(int t) {
+    Game.infoManager.update(t);
   }
 
-  void updateKeyboardMovement() {
+  void updateKeyboardMovement(int t) {
     if (Game.player == null || Game.player.isMoving()) {
       return;
     }

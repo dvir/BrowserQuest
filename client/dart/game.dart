@@ -611,7 +611,7 @@ class Game extends Base {
 
     num dt = time - Game.lastAnimateTime;
 
-    if (dt < 40) { // limit to 50 fps
+    if (dt < 20) { // limit to 50 fps
       return;
     }
 
