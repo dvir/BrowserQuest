@@ -166,12 +166,10 @@ Messages.Health = Message.extend({
     var health = [Types.Messages.HEALTH,
       this.entity.id,
       this.entity.hp,
-      this.entity.maxHP
+      this.entity.maxHP,
+      this.isRegen ? 1 : 0
     ];
 
-    if (this.isRegen) {
-      health.push(1);
-    }
     return health;
   }
 });
