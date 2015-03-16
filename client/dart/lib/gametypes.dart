@@ -569,7 +569,7 @@ class Types {
     throw "Inexistant orientation given to Types.getOrientationAsString ${orientation}";
   }
 
-  static EntityKind getRandomItemKind(item) {
+  static Entities getRandomItemKind(item) {
     var rng = new Random();
     List<Entities> all = new List<Entities>();
     all.addAll(rankedWeapons);

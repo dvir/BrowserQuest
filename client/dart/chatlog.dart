@@ -1,6 +1,5 @@
 library chatlog;
 
-import "dart:html";
 import "dart:math";
 
 import "base.dart";

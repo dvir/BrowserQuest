@@ -1,7 +1,5 @@
 library pathfinder;
 
-import 'dart:html';
-
 import 'package:pathfinding/core/grid.dart';
 import 'package:pathfinding/finders/astar.dart';
 

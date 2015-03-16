@@ -42,6 +42,7 @@ class Game extends Base {
   static Base events = new Base();
 
   static int currentTime = 0;
+  static int lastAnimateTime = 0;
 
   static String host;
   static int port;
@@ -60,7 +61,7 @@ class Game extends Base {
   static Animation targetAnimation;
   static Animation sparksAnimation;
 
-  static Map<int, Position> deathpositions;
+  static Map<int, Position> deathpositions = new Map<int, Position>();
 
   static Position mouse;
   static Position selected; // selected grid position
@@ -184,7 +185,7 @@ class Game extends Base {
 
   static void loadMap() {
     Game.map = new WorldMap(!Game.renderer.upscaledRendering);
-    Game.map.on("ready", () {
+    Game.map.on("Ready", () {
       html.window.console.info("Map loaded.");
 
       int tilesetIndex = Game.renderer.upscaledRendering ? 0 : (Game.renderer.scale - 1);
@@ -604,13 +605,26 @@ class Game extends Base {
   }
 
   static void tick(num time) {
-    Game.currentTime = new DateTime.now().millisecondsSinceEpoch;
+    html.window.requestAnimationFrame(Game.tick);
+
+    num dt = time - Game.lastAnimateTime;
+
+    if (dt < 40) { // limit to 50 fps
+      return;
+    }
+
+    Game.lastAnimateTime = time;
+
+    if (dt > 200) { // consider only one frame elapsed if update took too long
+      dt = 20;
+    }
+
+    Game.currentTime += dt;
 
     if (Game.started) {
       Game.updateCursorLogic();
       Game.updater.update();
       Game.renderer.renderFrame();
-      html.window.requestAnimationFrame(Game.tick);
     }
   }
 
@@ -618,7 +632,7 @@ class Game extends Base {
     Game.started = true;
     Game.hasNeverStarted = false;
 
-    Game.tick(new DateTime.now().millisecondsSinceEpoch);
+    Game.tick(0);
 
     html.window.console.info("Game loop started.");
   }
@@ -888,13 +902,15 @@ class Game extends Base {
    }
 
    static void forEachEntity(void callback(Entity)) {
-     Game.entities.forEach((int id, Entity entity) {
+     var entities = new Map.from(Game.entities);
+     entities.forEach((int id, Entity entity) {
        callback(entity);
      });
    }
 
    static void forEachCharacter(void callback(Character)) {
-     Game.entities.forEach((int id, Entity entity) {
+     var entities = new Map.from(Game.entities);
+     entities.forEach((int id, Entity entity) {
        if (entity is Character) {
          callback(entity);
        }
@@ -902,7 +918,8 @@ class Game extends Base {
    }
 
    static void forEachMob(void callback(Mob)) {
-     Game.entities.forEach((int id, Entity entity) {
+     var entities = new Map.from(Game.entities);
+     entities.forEach((int id, Entity entity) {
        if (entity is Mob) {
          callback(entity);
        }
@@ -910,21 +927,29 @@ class Game extends Base {
    }
 
    static void forEachAnimatedTile(void callback(AnimatedTile)) {
-     Game.animatedTiles.forEach(callback);
+     var animatedTiles = new List.from(Game.animatedTiles);
+     animatedTiles.forEach(callback);
    }
 
    static void forEachEntityAround(Position position, int radius, void callback(Entity)) {
      int maxX = position.x + radius;
      int maxY = position.y + radius;
+     var entities = new Map<int, Entity>();
+
+     // collect all entities around the entity, and then execute the callback
+     // on each of them. we do this so changes while executing the callback
+     // won't affect which entities we will process.
      for (var i = position.x - radius; i <= maxX; i += 1) {
        for (var j = position.y - radius; j <= maxY; j += 1) {
          if (!Game.map.isOutOfBounds(new Position(i, j))) {
-           Game.renderingGrid[j][i].forEach((int id, Entity entity) {
-             callback(entity);
-           });
+           entities.addAll(Game.renderingGrid[j][i]);
          }
        }
      }
+
+     entities.forEach((int id, Entity entity) {
+       callback(entity);
+     });
    }
 
    /**
@@ -1008,7 +1033,7 @@ class Game extends Base {
      }
 
      // If there are potions/burgers stacked with equipment items on the same tile>
-     for (final item in Game.itemGrid[position.y][position.x]) {
+     for (final item in Game.itemGrid[position.y][position.x].values) {
        if (Types.isExpendableItem(item.kind)) {
          return item;
        }
@@ -1669,7 +1694,8 @@ class Game extends Base {
         List<int> newIds = list.where((int id) => !knownIds.contains(id)).toList();
 
         Game.obsoleteEntities.clear();
-        Game.entities.forEach((int id, Entity entity) {
+        var entities = new Map.from(Game.entities);
+        entities.forEach((int id, Entity entity) {
           if (knownIds.contains(id) || id == Game.player.id) {
             return;
           }

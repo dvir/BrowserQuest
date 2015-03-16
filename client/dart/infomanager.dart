@@ -18,11 +18,12 @@ class InfoManager extends Base {
   }
   
   void forEachInfo(void callback(Info info)) {
+    var infos = new HashSet.from(this.infos);
     infos.forEach(callback);
   }
 
   void update(int time) {
-    this.infos.forEach((Info info) {
+    this.forEachInfo((Info info) {
       info.update(time);
     });
   }

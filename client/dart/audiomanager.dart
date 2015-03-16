@@ -27,6 +27,7 @@ class AudioManager extends Base {
     this.gainNode.connectNode(this.audioContext.destination, 0, 0);
 
     return; // TODO: support - we do not have the assets atm
+    /*
     AudioManager.soundNames.forEach((String name) {
       var sound = new Sound(this.audioContext, this.gainNode, name);
       sound.load(() {
@@ -40,6 +41,7 @@ class AudioManager extends Base {
         this.musics[name] = music;
       });
     });
+    */
   }
 
   Audio getSound(String name) {

@@ -1,7 +1,6 @@
 library updater;
 
 import "dart:async";
-import "dart:html";
 
 import "animatedtile.dart";
 import "base.dart";

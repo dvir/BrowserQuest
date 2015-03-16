@@ -50,12 +50,14 @@ class GameClient extends Base {
       if (Game.player != null && id != Game.player.id) {
         Entity entity = Game.getEntityByID(id);
         if (entity != null) {
-          if (Game.player.isAttackedBy(entity)) {
-            Game.tryUnlockingAchievement("COWARD");
+          if (entity is Character) {
+            if (Game.player.isAttackedBy(entity)) {
+              Game.tryUnlockingAchievement("COWARD");
+            }
+            entity.disengage();
+            entity.idle();
+            Game.makeCharacterGoTo(entity, position);
           }
-          entity.disengage();
-          entity.idle();
-          Game.makeCharacterGoTo(entity, position);
         } else {
           // TODO: this seems like a hack that was made for party updates. remove it
           // maybe it's a player location update
@@ -256,7 +258,7 @@ class GameClient extends Base {
       var members = data[1];
       this.notice("Members of ${Game.player.guild.name}:");
       for (var i in members) {
-        this.notice("${members[i].name} (${rankToTitle[members[i].rank]})" + (members[i].online ? " - Online" : ""));
+        this.notice("${members[i].name} (${rankToTitle[members[i].rank]}) ${(members[i].online ? ' - Online' : '')}");
       }
     });
 
@@ -487,14 +489,14 @@ class GameClient extends Base {
           //}
           if (isHurt) {
             player.hurt();
-            Game.infoManager.addInfo(new ReceivedDamageInfo(diff, player.x, player.y - 15));
+            Game.infoManager.addInfo(new ReceivedDamageInfo('${diff}', player.x, player.y - 15));
             Game.audioManager.playSound("hurt");
             // TODO: implement differently
 //            Game.storage.addDamage(-diff);
             Game.tryUnlockingAchievement("MEATSHIELD");
             Game.events.trigger("Hurt");
           } else if (!isRegen) {
-            Game.infoManager.addInfo(new HealedDamageInfo("+" + diff, player.x, player.y - 15));
+            Game.infoManager.addInfo(new HealedDamageInfo('+${diff}', player.x, player.y - 15));
           }
         }
         }
@@ -637,9 +639,9 @@ class GameClient extends Base {
         Game.showNotification("You killed the skeleton king");
       } else {
         if (['a', 'e', 'i', 'o', 'u'].contains(mobName[0])) {
-          Game.showNotification("You killed an " + mobName);
+          Game.showNotification("You killed an ${mobName}");
         } else {
-          Game.showNotification("You killed a " + mobName);
+          Game.showNotification("You killed a ${mobName}");
         }
       }
 
@@ -701,8 +703,8 @@ class GameClient extends Base {
       Player player = Game.player;
       player.xp = xp;
       if (gainedXP != 0) {
-        Game.showNotification("You " + (gainedXP > 0 ? "gained" : "lost") + " " + gainedXP + " XP");
-        Game.infoManager.addInfo(new XPInfo((gainedXP > 0 ? "+" : "-") + gainedXP + " XP", player.x + 5, player.y - 15));
+        Game.showNotification("You ${(gainedXP > 0 ? 'gained' : 'lost')} ${gainedXP} XP");
+        Game.infoManager.addInfo(new XPInfo("${(gainedXP > 0 ? '+' : '-')} ${gainedXP} XP", player.x + 5, player.y - 15));
       }
 
       if (player.maxXP != maxXP) {

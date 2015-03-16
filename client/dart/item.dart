@@ -35,7 +35,7 @@ abstract class Item extends Entity {
 
   String getSpriteName() => "item-${this.itemKind}";
 
-  void looted(Hero hero);
+  void looted(Hero hero) {}
 }
 
 class Weapon extends Item {
