@@ -1,0 +1,7 @@
+library config;
+
+class Config {
+  String host = "localhost";
+  int port = 8000;
+  bool dispatcher = false;
+}

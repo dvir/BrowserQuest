@@ -5,17 +5,12 @@ import 'dart:html' hide Player;
 import 'dart:math';
 
 import 'base.dart';
+import 'config.dart';
 import 'entity.dart';
 import 'game.dart';
 import 'healthbar.dart';
 import 'player.dart';
 import 'position.dart';
-
-class Config {
-  String host = "localhost";
-  int port = 8000;
-  bool dispatcher = false;
-}
 
 class Application extends Base {
 

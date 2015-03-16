@@ -3,6 +3,7 @@ client-build
 build.txt
 config_build.json
 config_local*
+config.dart
 client/audio/music
 .DS_Store
 *.swp
