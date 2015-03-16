@@ -31,8 +31,6 @@ class Entity extends Base {
 
   Timer blinkingTimer;
 
-  Orientation direction;
-
   // Renderer
   Sprite _sprite;
   Map<String, Animation> animations = {};

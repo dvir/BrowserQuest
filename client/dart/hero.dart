@@ -19,6 +19,8 @@ import 'position.dart';
 
 class Hero extends Player {
 
+  Set<Orientation> directions = new Set<Orientation>();
+
   Inventory inventory;
   Skillbar skillbar;
   LocalStorage storage;

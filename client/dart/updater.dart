@@ -235,8 +235,10 @@ class Updater extends Base {
     Game.selectedCellVisible = false;
 
     Position pos = Game.player.gridPosition;
+    List<Orientation> directions = Game.player.directions.toList();
+    Orientation direction = directions.isEmpty ? null : directions.last; 
 
-    switch (Game.player.direction) {
+    switch (direction) {
       case Orientation.UP:
         Game.keys(pos.decY(), Orientation.UP);
         break;

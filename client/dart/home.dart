@@ -98,22 +98,22 @@ initGame() {
 
         case Key.LEFT:
         case Key.A:
-          Game.player.direction = Orientation.LEFT;
+          Game.player.directions.add(Orientation.LEFT);
           break;
           
         case Key.RIGHT:
         case Key.D:
-          Game.player.direction = Orientation.RIGHT;
+          Game.player.directions.add(Orientation.RIGHT);
           break;
           
         case Key.UP:
         case Key.W:
-          Game.player.direction = Orientation.UP;
+          Game.player.directions.add(Orientation.UP);
           break;
           
         case Key.DOWN:
         case Key.S:
-          Game.player.direction = Orientation.DOWN;
+          Game.player.directions.add(Orientation.DOWN);
           break;        
 
         case Key.TAB:
@@ -165,6 +165,49 @@ initGame() {
           Game.toggleDebugInfo();
           Game.togglePathingGrid();
           break;
+
+        default:
+          if (Game.player != null && Game.player.skillbar.click(key, Game.player.target)) {
+            // was a skillbar action
+          } else {
+            knownKeybinding = false;
+          }
+          break;
+      }
+
+      if (knownKeybinding) {
+        event.preventDefault();
+        return false;
+      }
+    }
+  });
+
+  document.onKeyUp.listen((KeyboardEvent event) {
+    int key = event.which;
+    Element chat = document.getElementById('chatinput');
+
+    if (Game.started && !document.getElementById('chatbox').classes.contains('active')) {
+      var knownKeybinding = true;
+      switch (Keys.get(key)) {
+        case Key.LEFT:
+        case Key.A:
+          Game.player.directions.remove(Orientation.LEFT);
+          break;
+          
+        case Key.RIGHT:
+        case Key.D:
+          Game.player.directions.remove(Orientation.RIGHT);
+          break;
+          
+        case Key.UP:
+        case Key.W:
+          Game.player.directions.remove(Orientation.UP);
+          break;
+          
+        case Key.DOWN:
+        case Key.S:
+          Game.player.directions.remove(Orientation.DOWN);
+          break;        
 
         default:
           if (Game.player != null && Game.player.skillbar.click(key, Game.player.target)) {
