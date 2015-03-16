@@ -10,5 +10,8 @@
     , "sanitizer": "*"
     , "memcache": "*"
     , "mongoose": "*"
+    , "http-server": "*"
+    , "nodemon": "*"
+    , "path": "*"
   }
 }

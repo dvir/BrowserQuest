@@ -9,7 +9,7 @@ module.exports = Map = cls.Class.extend({
   init: function (filepath) {
     this.isLoaded = false;
 
-    path.exists(filepath, function (exists) {
+    fs.exists(filepath, function (exists) {
       if (!exists) {
         log.error(filepath + " doesn't exist.");
         return;
