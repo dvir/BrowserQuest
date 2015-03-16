@@ -17,6 +17,8 @@ class Entity extends Base {
   bool interactable = true;
   String name;
   
+  int x = 0;
+  int y = 0;
   Position _gridPosition = const Position(0, 0);
 
   bool isLoaded = false;
@@ -51,6 +53,8 @@ class Entity extends Base {
       throw new Exception("position set to null!");
     }
     this._gridPosition = position;
+    this.x = position.x * 16;
+    this.y = position.y * 16;
     this.trigger("PositionChange");
   }
 
@@ -64,16 +68,6 @@ class Entity extends Base {
 
   void set sprite(Sprite sprite) {
     this._sprite = sprite;
-  }
-
-  int get x => this.gridPosition.x * 16;
-  void set x(int x) { 
-    this.gridPosition = new Position((x / 16).floor(), this.gridPosition.y);
-  }
-
-  int get y => this.gridPosition.y * 16;
-  void set y(int y) {
-    this.gridPosition = new Position(this.gridPosition.x, (y / 16).floor());
   }
 
   void reset() {
