@@ -198,9 +198,9 @@ class Renderer extends Base {
     }
     this.context.strokeStyle = strokeColor;
     this.context.lineWidth = strokeSize;
-    this.context.strokeText(text, x, y);
+    this.context.strokeText('${text}', x, y);
     this.context.fillStyle = color;
-    this.context.fillText(text, x, y);
+    this.context.fillText('${text}', x, y);
     this.context.restore();
   }
 
@@ -356,6 +356,7 @@ class Renderer extends Base {
 
   void drawTile(ctx, tileid, tileset, setW, gridW, cellid) {
     int s = this.upscaledRendering ? 1 : this.scale;
+    
     if (tileid != -1) { // -1 when tile is empty in Tiled. Don't attempt to draw it.
       this.drawScaledImage(
         ctx,
@@ -388,8 +389,15 @@ class Renderer extends Base {
     int os = this.upscaledRendering ? 1 : this.scale;
     int ds = this.upscaledRendering ? this.scale : 1;
 
-    if (anim != null) {
+    if (anim == null) {
       return;
+    }
+
+    if (sprite == null) {
+      sprite = entity.sprite;
+      if (sprite == null) {
+        html.window.console.error("drawEntity sprite doesn't exist: ${kindString} (${entity.kind.index})");
+      }
     }
 
     Frame frame = anim.currentFrame;
