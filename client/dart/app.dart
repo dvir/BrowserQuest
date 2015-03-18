@@ -79,17 +79,12 @@ class Application extends Base {
 
   void initXPBar() {
     Game.events.on("XPChange", () {
-      int scale = Game.renderer.getScaleFactor();
       Element xpBar = document.getElementById('xpbar');
-      int XPMaxWidth = (xpBar.style.width.isEmpty ? 0 : int.parse(xpBar.style.width)) - (12 * scale);
       Player player = Game.player;
 
-      int barWidth = 0;
-      if (barWidth > 0) {
-        barWidth = ((XPMaxWidth / player.maxXP) * (player.xp > 0 ? player.xp : 0)).round();
-      }
+      int barWidth = player.maxXP > 0 ? (player.xp * 100 / player.maxXP).round() : 0;
       xpBar.innerHtml = "${player.xp}/${player.maxXP}";
-      document.getElementById("xp").style.width = "${barWidth}px";
+      document.getElementById("xp").style.width = "${barWidth}%";
       document.getElementById("level").innerHtml = player.level.toString();
     });
   }

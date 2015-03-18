@@ -154,6 +154,7 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
     .hitpoints.invincible {-moz-animation:invincible 0.3s steps(3, end) alternate infinite;-webkit-animation:invincible 0.3s steps(3, end) alternate infinite;-o-animation:invincible 0.3s steps(3, end) alternate infinite;-ms-animation:invincible 0.3s steps(3, end) alternate infinite;}
 
     #xp-container {
+      width: 173px;
       z-index: 20;
       bottom: 35px;
       left: 10px;
@@ -181,8 +182,8 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
       left: 20px;
     }
 
-    #xpbar {font-family:'GraphicPixel';background:url('../img/1/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;line-height:23px;text-align:center;vertical-align:middle;}
-    #xp {background:rgba(210, 216, 57, 0.94);-moz-transition:.5s width ease;-webkit-transition:.5s width ease;-o-transition:.5s width ease;-ms-transition:.5s width ease;transition:.5s width ease;}
+    #xpbar {font-family:'GraphicPixel';background:url('../img/2/barsheet.png');image-rendering:-moz-crisp-edges;position:absolute;line-height:23px;text-align:center;vertical-align:middle;}
+    #xp {margin-left: 5px; background:rgba(210, 216, 57, 0.94);-moz-transition:.5s width ease;-webkit-transition:.5s width ease;-o-transition:.5s width ease;-ms-transition:.5s width ease;transition:.5s width ease;}
 
     #level {
       color: whiteSmoke;
