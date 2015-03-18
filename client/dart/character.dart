@@ -30,6 +30,7 @@ class Character extends Entity {
   int moveSpeed = 120;
   int walkSpeed = 100;
   int idleSpeed = 450;
+  int attackRate = 800;
   Timer attackCooldown;
 
   // Pathing
@@ -216,6 +217,7 @@ class Character extends Entity {
       this.orientation = orientation;
     }
 
+    this.attackCooldown = new Timer(new Duration(milliseconds: this.attackRate), () {});
     this.animate("atk", this.atkSpeed, 1);
   }
 
@@ -542,7 +544,7 @@ class Character extends Entity {
 
   bool canAttack(int time) =>
       this.canReachTarget()
-      && (this.attackCooldown == null || this.attackCooldown.isActive);
+      && (this.attackCooldown == null || !this.attackCooldown.isActive);
 
   bool canReachTarget() => (this.hasTarget() && this.isAdjacentNonDiagonal(this.target));
 
@@ -610,6 +612,6 @@ class Character extends Entity {
   // and launching the timer only after an attack so we don't have it running
   // for each mob all the time.
   void setAttackRate(rate) {
-    this.attackCooldown = new Timer(new Duration(milliseconds: rate), () {});
+    this.attackRate = rate;
   }
 }
