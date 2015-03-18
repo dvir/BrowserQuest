@@ -497,7 +497,8 @@ class Character extends Entity {
    * @param {Function} callback Function which must accept one character argument.
    */
   void forEachAttacker(void callback(Character character)) {
-    this.attackers.forEach((int id, Character character) {
+    Map<int, Character> attackers = new Map.from(this.attackers);
+    attackers.forEach((int id, Character character) {
       callback(character);
     });
   }
