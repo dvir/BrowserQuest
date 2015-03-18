@@ -70,8 +70,7 @@ class Application extends Base {
   }
 
   void initHealthBar() {
-    int scale = Game.renderer.getScaleFactor();
-    Healthbar healthbar = new Healthbar(document.getElementById("player"), Game.player, scale);
+    Healthbar healthbar = new Healthbar(document.getElementById("player"), Game.player);
 
     Game.events.on("HealthChange", () {
       healthbar.update();
@@ -99,7 +98,6 @@ class Application extends Base {
     Element $target = document.getElementById("target");
 
     Game.events.on("TargetChange", () {
-      int scale = Game.renderer.getScaleFactor();
       Entity target = Game.player.target;
 
       if (target == null) {
@@ -108,7 +106,7 @@ class Application extends Base {
       }
 
       $target.style.display = 'block';
-      Healthbar healthbar = new Healthbar($target, target, scale);
+      Healthbar healthbar = new Healthbar($target, target);
       target.on("change", () {
         healthbar.update();
       });

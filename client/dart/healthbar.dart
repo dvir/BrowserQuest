@@ -12,29 +12,18 @@ class Healthbar extends Base {
   Element barContainer;
   Element hpContainer;
   Character character;
-  int scale;
-  int healthMaxWidth;
 
-  Healthbar(Element this.element, Character this.character, int this.scale) {
+  Healthbar(Element this.element, Character this.character) {
     this.barContainer = this.element.querySelector(".healthbar");
     this.hpContainer = this.element.querySelector(".hitpoints");
-    this.healthMaxWidth = (this.barContainer.style.width.isEmpty ? 0 : int.parse(this.barContainer.style.width)) - (12 * scale);
 
     this.update();
   }
 
   void update() {
-    if (this.character.hp <= 0 && !(this.character is Player)) {
-      this.element.style.display = 'none';
-    } else {
-      this.element.style.display = 'block';
-    }
-
-    int barWidth = 0;
-    if (this.character.maxHP > 0) {
-      barWidth = ((this.healthMaxWidth / this.character.maxHP) * (this.character.hp > 0 ? this.character.hp : 0)).round();
-    }
-    this.hpContainer.style.width = "${barWidth}px";
+    this.element.style.display = (this.character.hp == 0 && !(this.character is Player)) ? 'none' : 'block';
+    int barWidth = this.character.maxHP > 0 ? (this.character.hp * 100 / this.character.maxHP).round() : 0;
+    this.hpContainer.style.width = "${barWidth}%";
     this.barContainer.innerHtml = "${this.character.hp}/${this.character.maxHP}";
   }
 }

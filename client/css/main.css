@@ -591,16 +591,20 @@ canvas { position:absolute;image-rendering:optimizeSpeed;}
 }
 
 #player {
+  width: 176px;
   top: 16px;
   left: 16px;
 }
 #player > .hitpoints {
+  margin-left: 5px;
 }
 
 #target {
+  width: 176px;
   top: 16px;
 }
 #target > .hitpoints {
+  margin-left: 5px;
 }
 
 #skillbar {
