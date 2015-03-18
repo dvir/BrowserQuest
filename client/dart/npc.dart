@@ -155,17 +155,17 @@ import "lib/gametypes.dart";
 
 class Npc extends Character {
 
-  int talkCount;
   int talkIndex = 0;
+  List<string> sentences;
 
   Npc(int id, EntityKind kind, String name): super(id, kind) {
     this.name = name;
-    this.talkCount = NpcTalk[Types.getKindAsString(kind)].length;
+    this.sentences = NpcTalk[Types.getKindAsString(kind)];
   }
 
   String talk() {
-    String msg = NpcTalk[this.kind][this.talkIndex];
-    this.talkIndex = (this.talkIndex+1) % NpcTalk[this.kind][this.talkIndex].length;
+    String msg = this.sentences[this.talkIndex];
+    this.talkIndex = (this.talkIndex+1) % this.sentences.length;
     return msg;
   }
 }
