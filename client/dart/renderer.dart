@@ -46,7 +46,7 @@ class Renderer extends Base {
   int animatedTileCount = 0;
   int highTileCount = 0;
   html.ImageElement _tileset;
-  int scale;
+  int scale = 2;
   Camera camera;
   Position lastTargetPos;
   Rect targetRect;
@@ -90,6 +90,9 @@ class Renderer extends Base {
   bool get mobile => html.window.innerWidth <= 1000;
 
   int getScaleFactor() {
+    return 2;
+// TODO: get rid of the idea of scale in the game
+/*
     if (html.window.innerWidth <= 1000) {
       return 2;
     }
@@ -99,6 +102,7 @@ class Renderer extends Base {
     }
 
     return 3;
+*/
   }
 
   void rescale() {
