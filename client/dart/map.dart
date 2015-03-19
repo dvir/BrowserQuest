@@ -108,7 +108,7 @@ class WorldMap extends Base {
       if (doorData['tcx'] != null && doorData['tcy'] != null) {
         cameraPosition = new Position(doorData['tcx'], doorData['tcy']);
       }
-      Door door = new Door(new Position(doorData['tx'], doorData['ty']), o, cameraPosition, doorData['p'] == 1);
+      Door door = new Door(new Position(doorData['x'], doorData['y']), new Position(doorData['tx'], doorData['ty']), o, cameraPosition, doorData['p'] == 1);
       doors[this.gridPositionToTileIndex(door.position)] = door;
     });
 

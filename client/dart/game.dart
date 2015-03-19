@@ -129,7 +129,7 @@ class Game extends Base {
 
   static Map<String, Sprite> shadows = new Map<String, Sprite>();
 
-  static Door townPortalDoor = new Door(new Position(36, 210), Orientation.DOWN, new Position(36, 210), true);
+  static Door townPortalDoor = new Door(new Position(27, 195), new Position(36, 210), Orientation.DOWN, new Position(36, 210), true);
   
   static List<Character> get characters => Game.entities.values.where((Entity entity) => entity is Character).toList(); 
 
@@ -670,11 +670,11 @@ class Game extends Base {
   }
 
   static void teleport(Door dest) {
-    Game.player.gridPosition = dest.position;
-    Game.player.nextGridX = dest.position.x;
-    Game.player.nextGridY = dest.position.y;
+    Game.player.gridPosition = dest.destination;
+    Game.player.nextGridX = dest.destination.x;
+    Game.player.nextGridY = dest.destination.y;
     Game.player.turnTo(dest.orientation);
-    Game.client.sendTeleport(dest.position);
+    Game.client.sendTeleport(dest.destination);
 
     if (Game.renderer.mobile && dest.cameraPosition != null) {
       Game.camera.gridPosition = dest.cameraPosition;
