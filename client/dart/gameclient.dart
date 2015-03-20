@@ -475,6 +475,10 @@ class GameClient extends Base {
 
       Character entity = Game.getEntityByID(entityId);
       var diff = hp - entity.hp;
+      if (diff == 0) {
+        // nothing to show in this case
+        return;
+      }
 
       entity.maxHP = maxHP;
       entity.hp = hp;
