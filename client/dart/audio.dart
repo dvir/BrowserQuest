@@ -69,6 +69,8 @@ class Audio extends Base {
 
   void play() {
     if (this.source == null) {
+// TODO: for now, just return instead of crashing
+return;
       throw "Audio ${name} has not been loaded yet";
     }
 
@@ -77,6 +79,8 @@ class Audio extends Base {
 
   void stop() {
     if (this.source == null) {
+// TODO: for now, just return instead of crashing
+return;
       throw "Audio ${name} has not been loaded yet";
     }
 

@@ -33,14 +33,14 @@ class AudioManager extends Base {
       });
     });
 
-/*
     AudioManager.musicNames.forEach((String name) {
       var music = new Music(this.audioContext, this.gainNode, name);
-      music.load(() {
+      // TODO: fill in music with a placeholder music and load it properly
+      // for now, we will just add the music optimistically so we have zone names
+      //music.load(() {
         this.musics[name] = music;
-      });
+      //});
     });
-*/
   }
 
   Audio getSound(String name) {
