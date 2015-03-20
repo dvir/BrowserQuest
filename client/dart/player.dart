@@ -64,7 +64,7 @@ class Player extends Character {
     return Game.findPath(this, position, ignored);
   }
 
-  String get areaName => "n/a";
+  String get areaName => "";
 
   void loot(Item item) {
     window.console.info("Player ${this.id} has looted ${item.id}");
