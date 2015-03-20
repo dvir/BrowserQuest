@@ -38,7 +38,7 @@ class Audio extends Base {
   );
   
   void load(Function callback) {
-    var path = "${this.path_prefix}${this.name}${this.extension}";
+    var path = "${this.path_prefix}${this.name}.${this.extension}";
     HttpRequest request = new HttpRequest();
     request.open("GET", path, async: true);
     request.responseType = "arraybuffer";
@@ -129,7 +129,7 @@ class Audio extends Base {
 
 class Sound extends Audio {
 
-  String path_prefix = Audio.MUSIC_PATH;
+  String path_prefix = Audio.SOUND_PATH;
 
   Sound(
     AudioContext audioContext, 
