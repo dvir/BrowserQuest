@@ -472,7 +472,7 @@ module.exports = World = cls.Class.extend({
 
   addStaticItem: function (item) {
     item.isStatic = true;
-    item.on("Respawn", this.addStaticItem.bind(this, item));
+    item.on("Respawn", this.addItem.bind(this, item));
 
     return this.addItem(item);
   },
