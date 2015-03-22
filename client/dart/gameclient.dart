@@ -389,8 +389,8 @@ class GameClient extends Base {
         character.maxHP = maxHP;
 
         if (character is Player) {
-          character.equipWeapon(weapon);
-          character.equipArmor(armor);
+          character.weapon = weapon;
+          character.armor = armor;
         }
 
         if (!Game.entityIdExists(character.id)) {

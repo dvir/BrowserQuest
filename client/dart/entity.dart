@@ -6,9 +6,10 @@ import "dart:math";
 
 import "animation.dart";
 import "base.dart";
+import "game.dart";
+import "position.dart";
 import "rect.dart";
 import "sprite.dart";
-import "position.dart";
 import "lib/gametypes.dart";
 
 class Entity extends Base {
@@ -20,7 +21,10 @@ class Entity extends Base {
   int x = 0;
   int y = 0;
   Position _gridPosition = const Position(0, 0);
+  Orientation orientation = Orientation.DOWN;
 
+  bool isDead = false;
+  bool isDying = false;
   bool isLoaded = false;
   bool isHighlighted = false;
   bool isVisible = true;
@@ -71,6 +75,8 @@ class Entity extends Base {
   }
 
   void reset() {
+    this.orientation = Orientation.DOWN;
+
     // Renderer
     this.isRemoved = false;
     this.flipSpriteX = false;
@@ -79,10 +85,62 @@ class Entity extends Base {
     this.shadowOffsetY = 0;
 
     // Modes
+    this.isDead = false;
+    this.isDying = false;
     this.isHighlighted = false;
     this.isVisible = true;
     this.isFading = false;
     this.dirty();
+  }
+  
+  void die() {
+    html.window.console.info("${this.id} is dead");
+
+    this.isDead = true;
+    this.isDying = true;
+    this.setSprite(Game.sprites["death"]);
+
+    this.animate("death", 120, 1, () {
+      html.window.console.info("${this.id} was removed");
+
+      Game.removeEntity(this);
+      Game.removeFromRenderingGrid(this, this.gridPosition);
+    });
+
+    // Upon death, this entity is removed from both grids, allowing the player
+    // to click very fast in order to loot the dropped item and not be blocked.
+    // The entity is completely removed only after the death animation has ended.
+    Game.removeFromEntityGrid(this, this.gridPosition);
+    Game.removeFromPathingGrid(this.gridPosition);
+
+    Game.updateCursor();
+  }
+
+  /**
+   * Returns whether we changed to the new animation or not.
+   */
+  bool animate(String animationName, int speed, [int count = 0, Function onEndCount]) {
+    // don't change animation if the character is dying
+    if (this.currentAnimation != null 
+        && this.currentAnimation.name == "death" 
+        && this.isDying) {
+      return false;
+    }
+
+    this.flipSpriteX = false;
+    this.flipSpriteY = false;
+    List<String> oriented = ['atk', 'walk', 'idle'];
+    if (oriented.contains(animationName)) {
+      animationName += "_";
+      animationName += 
+        this.orientation == Orientation.LEFT 
+        ? Types.getOrientationAsString(Orientation.RIGHT)
+        : Types.getOrientationAsString(this.orientation);
+      this.flipSpriteX = this.orientation == Orientation.LEFT;
+    }
+
+    this.setAnimation(animationName, speed, count, onEndCount);
+    return true;
   }
 
   void moveSteps(int steps, Orientation orientation) {

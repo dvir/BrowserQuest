@@ -23,7 +23,7 @@ class Skeleton extends Mob {
     this.atkSpeed = 100;
     this.idleSpeed = 800;
     this.shadowOffsetY = 1;
-    this.setAttackRate(1300);
+    this.attackRate = 1300;
   }
 }
 
@@ -37,7 +37,7 @@ class SkeletonWarrior extends Mob {
     this.idleSpeed = 800;
     this.walkSpeed = 200;
     this.shadowOffsetY = 1;
-    this.setAttackRate(1300);
+    this.attackRate = 1300;
   }
 }
 
@@ -50,7 +50,7 @@ class Spectre extends Mob {
     this.idleSpeed = 200;
     this.walkSpeed = 200;
     this.shadowOffsetY = 1;
-    this.setAttackRate(900);
+    this.attackRate = 900;
   }
 }
 
@@ -63,7 +63,7 @@ class Deathknight extends Mob {
     this.moveSpeed = 220;
     this.walkSpeed = 100;
     this.idleSpeed = 450;
-    this.setAttackRate(800);
+    this.attackRate = 800;
     this.aggroRange = 3;
   }
 
@@ -83,7 +83,7 @@ class Goblin extends Mob {
     this.moveSpeed = 150;
     this.atkSpeed = 60;
     this.idleSpeed = 600;
-    this.setAttackRate(700);
+    this.attackRate = 700;
   }
 }
 
@@ -161,7 +161,7 @@ class Boss extends Mob {
     this.atkSpeed = 50;
     this.idleSpeed = 400;
     this.aggroRange = 3;
-    this.setAttackRate(2000);
+    this.attackRate = 2000;
   }
 
   void idle([Orientation orientation]) {

@@ -433,68 +433,68 @@ class Types {
     throw "Cannot compare rank of items not of the same type.";
   }
 
-  static bool isPlayer(kind) {
+  static bool isPlayer(EntityKind kind) {
     return Types.getType(kind) == "player";
   }
 
-  static bool isMob(kind) {
+  static bool isMob(EntityKind kind) {
     return Types.getType(kind) == "mob";
   }
 
-  static bool isNpc(kind) {
+  static bool isNpc(EntityKind kind) {
     return Types.getType(kind) == "npc";
   }
 
-  static bool isCharacter(kind) {
+  static bool isCharacter(EntityKind kind) {
     return Types.isMob(kind) || Types.isNpc(kind) || Types.isPlayer(kind);
   }
 
-  static bool isArmor(kind) {
+  static bool isArmor(EntityKind kind) {
     return Types.getType(kind) == "armor";
   }
 
-  static bool isWeapon(kind) {
+  static bool isWeapon(EntityKind kind) {
     return Types.getType(kind) == "weapon";
   }
 
-  static bool isStackable(kind) {
+  static bool isStackable(EntityKind kind) {
     return (kind == Entities.FLASK);
   }
 
-  static bool isUseOnPickup(kind) {
+  static bool isUseOnPickup(EntityKind kind) {
     return (kind == Entities.FIREPOTION);
   }
 
-  static bool isObject(kind) {
+  static bool isObject(EntityKind kind) {
     return Types.getType(kind) == "object";
   }
 
-  static bool isChest(kind) {
+  static bool isChest(EntityKind kind) {
     return kind == Entities.CHEST;
   }
 
-  static bool isItem(kind) {
+  static bool isItem(EntityKind kind) {
     return Types.isWeapon(kind) 
            || Types.isArmor(kind) 
            || (Types.isObject(kind) && !Types.isChest(kind));
   }
 
-  static bool isSpell(kind) {
+  static bool isSpell(EntityKind kind) {
     return (Types.getType(kind) == "spell");
   }
 
-  static bool isHealingItem(kind) {
+  static bool isHealingItem(EntityKind kind) {
     return kind == Entities.FLASK 
            || kind == Entities.BURGER;
   }
 
-  static bool isExpendableItem(kind) {
+  static bool isExpendableItem(EntityKind kind) {
     return Types.isHealingItem(kind)
            || kind == Entities.FIREPOTION
            || kind == Entities.CAKE;
   }
 
-  static String getType(kind) {
+  static String getType(EntityKind kind) {
     if (kind == null) {
       throw "Undefiend kind given to Types.getType";
     }
@@ -506,15 +506,15 @@ class Types {
     throw "Inexistant kind given to Types.getType ${kind}";
   }
 
-  static String getKindFromString(kind) {
-    if (kinds.containsKey(kind)) {
-      return kinds[kind][0];
+  static String getKindFromString(String str) {
+    if (kinds.containsKey(str)) {
+      return kinds[str][0];
     }
 
-    throw "Inexistant kind given to Types.getKindFromString ${kind}";
+    throw "Inexistant kind given to Types.getKindFromString ${str}";
   }
 
-  static String getKindAsString(kind) {
+  static String getKindAsString(EntityKind kind) {
     if (kind == null) {
       throw "Null kind given to Types.getKindAsString ${kind}";
     }

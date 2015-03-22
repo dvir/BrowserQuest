@@ -165,9 +165,9 @@ class Player extends Character {
 
   void equip(EntityKind itemKind) {
     if (Types.isArmor(itemKind)) {
-      this.equipArmor(itemKind);
+      this.armor = itemKind;
     } else if (Types.isWeapon(itemKind)) {
-      this.equipWeapon(itemKind);
+      this.weapon = itemKind;
     }
   }
 

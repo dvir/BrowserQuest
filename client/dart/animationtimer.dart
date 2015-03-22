@@ -3,8 +3,6 @@ library animationtimer;
 import "base.dart";
 import "game.dart";
 
-// TODO: save all instances of animationtimers in a static field
-// and update them all together when a time is given
 class AnimationTimer extends Base {
 
   Duration duration;

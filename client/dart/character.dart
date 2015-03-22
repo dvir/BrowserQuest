@@ -1,7 +1,6 @@
 library character;
 
 import "dart:async";
-import "dart:html";
 import "dart:math";
 
 import "entity.dart";
@@ -23,7 +22,6 @@ class Character extends Entity {
   // Position and orientation
   int nextGridX = -1;
   int nextGridY = -1;
-  Orientation orientation = Orientation.DOWN;
 
   // Speeds
   int atkSpeed = 50;
@@ -47,8 +45,6 @@ class Character extends Entity {
   Map<int, Character> attackers = {};
 
   // Modes
-  bool isDead = false;
-  bool isDying = false;
   bool isMovementInterrupted = false;
   bool attackingMode = false;
   bool followingMode = false;
@@ -66,14 +62,13 @@ class Character extends Entity {
     // Position and orientation
     this.nextGridX = -1;
     this.nextGridY = -1;
-    this.orientation = Orientation.DOWN;
 
     // Speeds
     this.atkSpeed = 50;
     this.moveSpeed = 120;
     this.walkSpeed = 100;
     this.idleSpeed = 450;
-    this.setAttackRate(800);
+    this.attackRate = 800;
 
     // Pathing
     this.movement = new Transition();
@@ -86,8 +81,6 @@ class Character extends Entity {
     this.attackers = new Map<int, Entity>();
 
     // Modes
-    this.isDead = false;
-    this.isDying = false;
     this.attackingMode = false;
     this.followingMode = false;
   }
@@ -117,8 +110,7 @@ class Character extends Entity {
   void set target(Character target) {
     this._target = target;
     this.trigger("TargetChange");
-    // TODO: remove or uncomment
-    // this.trigger("change");
+    this.trigger("change");
   }
 
   int get hp => this._hp;
@@ -160,16 +152,8 @@ class Character extends Entity {
     this.trigger("change");
   }
 
-  // TODO: remove completely the next four methods.
-  // they serve no purpose and armor/weapon should have their own classes to retrieve such
-  // information from, and not from some properties data structure.
-  void equipArmor(EntityKind armor) {
-    this.armor = armor;
-  }
-  void equipWeapon(EntityKind weapon) {
-    this.weapon = weapon;
-  }
   int getArmorRank() => Types.getArmorRank(this.armor);
+
   int getWeaponRank() => Types.getWeaponRank(this.weapon);
 
   bool hasWeapon() => this.weapon != null;
@@ -179,25 +163,6 @@ class Character extends Entity {
   }
 
   bool hasShadow() => false;
-
-  void animate(String animationName, int speed, [int count = 0, Function onEndCount]) {
-    List<String> oriented = ['atk', 'walk', 'idle'];
-
-    // don't change animation if the character is dying
-    if (this.currentAnimation != null && this.currentAnimation.name == "death" && this.isDying) {
-      return;
-    }
-
-    this.flipSpriteX = false;
-    this.flipSpriteY = false;
-
-    if (oriented.contains(animationName)) {
-      animationName += "_" + (this.orientation == Orientation.LEFT ? "right" : Types.getOrientationAsString(this.orientation));
-      this.flipSpriteX = (this.orientation == Orientation.LEFT);
-    }
-
-    this.setAnimation(animationName, speed, count, onEndCount);
-  }
 
   void turnTo(Orientation orientation) {
     this.orientation = orientation;
@@ -240,30 +205,8 @@ class Character extends Entity {
     this.followPath(this.requestPathfindingTo(position));
   }
 
-  // TODO: give a real type to paths
-  requestPathfindingTo(Position position) {
-    List<Character> ignored = [];
-    // Always ignore self
-    ignored.add(this);
-
-    // TODO: maybe we should stop ignoring the target??
-    //       if we want to move to a location, we just want to get there asap.
-    Character target = this.hasTarget() ? this.target : this.previousTarget;
-    if (target != null) {
-      ignored.add(target);
-
-      // TODO: maybe we should stop ignoring attackers of the target entity?
-      //       it might be cool to make the attackers spread around the target entity,
-      //       but that is not practical for a lot of attackers and looks pretty stupid
-      //       not mentioning moving targets to locations where they are not really present
-
-      // also ignore other attackers of the target entity
-      target.forEachAttacker((Entity attacker) {
-        ignored.add(attacker);
-      });
-    }
-
-    return Game.findPath(this, position, ignored);
+  List<List<int>> requestPathfindingTo(Position position) {
+    return Game.findPath(this, position, new List<Character>()..add(this));
   }
 
   void startPathing(List<List<int>> path) {
@@ -548,20 +491,8 @@ class Character extends Entity {
   bool canReachTarget() => (this.hasTarget() && this.isAdjacentNonDiagonal(this.target));
 
   void die() {
+    super.die();
     this.removeTarget();
-    this.isDead = true;
-
-    window.console.info("${this.id} is dead");
-
-    this.isDying = true;
-    this.setSprite(Game.sprites["death"]);
-
-    this.animate("death", 120, 1, () {
-      window.console.info("${this.id} was removed");
-
-      Game.removeEntity(this);
-      Game.removeFromRenderingGrid(this, this.gridPosition);
-    });
 
     this.forEachAttacker((Character attacker) {
       attacker.disengage();
@@ -571,21 +502,12 @@ class Character extends Entity {
       Game.player.disengage();
     }
 
-    // Upon death, this entity is removed from both grids, allowing the player
-    // to click very fast in order to loot the dropped item and not be blocked.
-    // The entity is completely removed only after the death animation has ended.
-    Game.removeFromEntityGrid(this, this.gridPosition);
-    Game.removeFromPathingGrid(this.gridPosition);
-
     if (Game.camera.isVisible(this)) {
       Random rng = new Random();
       Game.audioManager.playSound("kill${rng.nextInt(2)+1}");
     }
-
-    Game.updateCursor();
   }
 
-  // TODO: can this turn into .on/.trigger event?
   void moved() {
     this.dirty();
 
@@ -604,13 +526,5 @@ class Character extends Entity {
     if (this.hurtingTimer != null && this.hurtingTimer.isActive) {
       this.hurtingTimer.cancel();
     }
-  }
-
-  // TODO: figure out all the usages of this method. we might be better off
-  // with just calculating it off this.atkRate (to be created),
-  // and launching the timer only after an attack so we don't have it running
-  // for each mob all the time.
-  void setAttackRate(rate) {
-    this.attackRate = rate;
   }
 }

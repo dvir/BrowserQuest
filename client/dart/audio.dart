@@ -59,7 +59,7 @@ class Audio extends Base {
     request.send();
   }
 
-  // TODO: might need to take care of channels
+  // TODO(soundtrack): might need to take care of channels
   void initBuffer(AudioBuffer buffer) {
     this.buffer = buffer;
     this.source = this.audioContext.createBufferSource();
@@ -69,7 +69,7 @@ class Audio extends Base {
 
   void play() {
     if (this.source == null) {
-// TODO: for now, just return instead of crashing
+// TODO(soundtrack): for now, just return instead of crashing
 return;
 //      throw "Audio ${name} has not been loaded yet";
     }
@@ -79,7 +79,7 @@ return;
 
   void stop() {
     if (this.source == null) {
-// TODO: for now, just return instead of crashing
+// TODO(soundtrack): for now, just return instead of crashing
 return;
 //      throw "Audio ${name} has not been loaded yet";
     }

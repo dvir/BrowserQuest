@@ -11,6 +11,7 @@ import 'game.dart';
 import 'healthbar.dart';
 import 'player.dart';
 import 'position.dart';
+import "lib/gametypes.dart";
 
 class Application extends Base {
 
@@ -20,7 +21,6 @@ class Application extends Base {
   int currentPage = 0;
   bool isParchmentReady = true;
   Timer messageTimer;
-  // TODO: can probably be removed after factoring out
   String previousState;
   
   void center() {
@@ -46,13 +46,31 @@ class Application extends Base {
     document.querySelector('#player > .hitpoints').classes.toggle('invincible', state);
   }
 
-  // TODO: implement
   void initEquipmentIcons() {
     window.console.log("initEquipmentIcons");
+    Game.player.on("ArmorChange", () {
+      if (Game.player.armor == Entities.FIREFOX) { 
+        return;
+      }
+
+      int scale = Game.renderer.getScaleFactor();
+      String armorName = Types.getKindAsString(Game.player.armor);
+      document.getElementById('armor').style.backgroundImage =
+        'url("img/${scale}/item-${armorName}.png")';
+    });
+
+    Game.player.on("WeaponChange", () {
+      int scale = Game.renderer.getScaleFactor();
+      String weaponName = Types.getKindAsString(Game.player.weapon);
+      document.getElementById('weapon').style.backgroundImage =
+        'url("img/${scale}/item-${weaponName}.png")';
+    });
   }
 
-  // TODO: implement or remove. the relevant code is complicated
+  // TODO(inventory): implement or remove. the relevant code is complicated
   void updateInventory() {}
+
+  // TODO(skillbar): implement or remove. the relevant code is complicated
   void updateSkillbar() {}
 
   void disconnected(String message) {
@@ -253,7 +271,7 @@ class Application extends Base {
     } else {
       if (currentState != 'animate') {
         if (currentState == 'about') {
-          // TODO: implement properly
+          // TODO(localstorage): implement properly
           /*
           if (localStorage && localStorage.data) {
             this.animateParchment(currentState, 'loadcharacter');
@@ -381,17 +399,12 @@ class Application extends Base {
   }
   
   void start(String username) {
-    // TODO: implement properly
+    // TODO(localstorage): implement properly
     //bool firstTimePlaying = !this.storage.hasAlreadyPlayed();
     bool firstTimePlaying = true;
 
     if (username.isEmpty) {
       throw new Exception('Cannot start the game with an empty username');
-    }
-    
-    // TODO: eh? this doesn't make sense
-    if (Game.started) {
-      throw new Exception('Game.started must equal true before starting it from the app');
     }
 
     window.console.debug("Starting game with build config.");
