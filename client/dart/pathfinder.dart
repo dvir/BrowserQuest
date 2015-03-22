@@ -70,7 +70,7 @@ class Pathfinder extends Base {
 
     perfect = this._AStarCompute(this.blankGrid, start, end);
 
-    for (var i = perfect.length - 1; i > 0; i -= 1) {
+    for (int i = perfect.length - 1; i > 0; i -= 1) {
       x = perfect[i][0];
       y = perfect[i][1];
 
@@ -91,8 +91,6 @@ class Pathfinder extends Base {
   }
 
   void applyIgnoreList_(bool ignored) {
-    var x, y, g;
-
     this.ignored.forEach((Character character) {
       int x = character.isMoving() ? character.nextGridX : character.gridPosition.x;
       int y = character.isMoving() ? character.nextGridY : character.gridPosition.y;

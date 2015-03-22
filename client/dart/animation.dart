@@ -33,7 +33,7 @@ class Animation extends Base {
   }
 
   void tick() {
-    var i = (this.currentFrame.index + 1) % this.length;
+    int i = (this.currentFrame.index + 1) % this.length;
 
     if (this.count > 0 && i == 0) {
       this.count--;

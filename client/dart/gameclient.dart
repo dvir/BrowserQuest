@@ -87,10 +87,10 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.LOOT.index}', (data) {
-      var itemId = data[1];
+      int itemId = data[1];
 
-      var item = Game.player.inventory.find(itemId);
-      if (!item) {
+      Item item = Game.player.inventory.find(itemId);
+      if (item == null) {
         html.window.console.error("Loot was picked up but couldn't be found in inventory. (${itemId})");
         return;
       }
@@ -143,10 +143,10 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.PARTY_INITIAL_JOIN.index}', (data) {
-      var leaderID = data[1];
-      var membersIDs = data[2];
+      int leaderID = data[1];
+      List<int> membersIDs = data[2];
 
-      Game.player.party = new Party(leaderID, Game.getPlayersByIDs(membersIDs));
+      Game.player.party = new Party(Game.getPlayerByID(leaderID), Game.getPlayersByIDs(membersIDs));
     });
 
     this.on('Message.${Message.PARTY_LEAVE.index}', (data) {
@@ -156,8 +156,8 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.PARTY_INVITE.index}', (data) {
-      var inviter = Game.getPlayerByID(data[1]);
-      var invitee = Game.getPlayerByID(data[2]);
+      Player inviter = Game.getPlayerByID(data[1]);
+      Player invitee = Game.getPlayerByID(data[2]);
 
       if (invitee == Game.player) {
         if (Game.player.party != null) {
@@ -176,8 +176,8 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.PARTY_KICK.index}', (data) {
-      var kicker = Game.getPlayerByID(data[1]);
-      var kicked = Game.getPlayerByID(data[2]);
+      Player kicker = Game.getPlayerByID(data[1]);
+      Player kicked = Game.getPlayerByID(data[2]);
 
       Game.player.party.kicked(kicker, kicked);
     });
@@ -189,7 +189,7 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.GUILD_INVITE.index}', (data) {
-      var inviterName = data[1];
+      String inviterName = data[1];
       String guildName = data[2];
 
       this.notice("You were invited to join the guild '${guildName}' by ${inviterName}. '/gaccept ${inviterName}' to accept.");
@@ -197,8 +197,8 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.GUILD_KICK.index}', (data) {
-      var kickerName = data[1];
-      var kickedName = data[2];
+      String kickerName = data[1];
+      String kickedName = data[2];
 
       if (kickedName == Game.player.name) {
         this.notice("You were kicked from the guild by ${kickerName}.");
@@ -253,36 +253,36 @@ class GameClient extends Base {
 
     this.on('Message.${Message.GUILD_MEMBERS.index}', (data) {
       // @TODO: move to a config
-      var rankToTitle = {0: "Leader", 1: "Member", 2: "Officer"};
+      Map<int, String> rankToTitle = {0: "Leader", 1: "Member", 2: "Officer"};
 
-      var members = data[1];
-      this.notice("Members of ${Game.player.guild.name}:");
-      for (var i in members) {
-        this.notice("${members[i].name} (${rankToTitle[members[i].rank]}) ${(members[i].online ? ' - Online' : '')}");
-      }
+      List<dynamic> members = data[1];
+      this.notice("Members of ${Game.player.guild['name']}:");
+      members.forEach((dynamic member) {
+        this.notice("${member.name} (${rankToTitle[member.rank]}) ${(member.online ? ' - Online' : '')}");
+      });
     });
 
     this.on('Message.${Message.COMMAND_NOTICE.index}', (data) {
-      var noticeMessage = data[1];
+      String noticeMessage = data[1];
       this.notice(noticeMessage);
     });
 
     this.on('Message.${Message.COMMAND_ERROR.index}', (data) {
-      var errorMessage = data[1];
+      String errorMessage = data[1];
       this.error(errorMessage);
     });
 
     this.on('Message.${Message.ERROR.index}', (data) {
-      var errorMessage = data[1];
+      String errorMessage = data[1];
       this.error(errorMessage);
     });
 
     this.on('Message.${Message.ATTACK.index}', (data) {
-      var attackerId = data[1],
-        targetId = data[2];
+      int attackerId = data[1];
+      int targetId = data[2];
 
-      var attacker = Game.getEntityByID(attackerId),
-        target = Game.getEntityByID(targetId);
+      Entity attacker = Game.getEntityByID(attackerId);
+      Entity target = Game.getEntityByID(targetId);
 
       if (attacker != null && target != null && attacker.id != Game.player.id) {
         html.window.console.debug('${attacker.id} attacks ${target.id}');
@@ -313,7 +313,7 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.PLAYER_UPDATE.index}', (data) {
-      var playerData = data[1];
+      dynamic playerData = data[1];
       Player player = Game.getPlayerByID(playerData.id);
       if (player == null || player.id == Game.player.id) {
         // irrelevant update
@@ -342,12 +342,12 @@ class GameClient extends Base {
         //@TODO: handle properly
 //        Entity spell = EntityFactory.createEntity(kind, id);
       } else if (Types.isItem(kind)) {
-        var item = EntityFactory.createEntity(kind, id);
+        Entity item = EntityFactory.createEntity(kind, id);
 
         html.window.console.info("Spawned ${Types.getKindAsString(item.kind)} (${item.id}) at ${position}");
         Game.addItem(item, position);
       } else if (Types.isChest(kind)) {
-        var chest = EntityFactory.createEntity(kind, id);
+        Entity chest = EntityFactory.createEntity(kind, id);
 
         html.window.console.info("Spawned chest (${chest.id}) at ${position}");
         chest.setSprite(Game.sprites[chest.getSpriteName()]);
@@ -355,7 +355,7 @@ class GameClient extends Base {
         chest.setAnimation("idle_down", 150);
         Game.addEntity(chest);
       } else if (Types.isNpc(kind)) {
-        var npc = EntityFactory.createEntity(kind, id);
+        Entity npc = EntityFactory.createEntity(kind, id);
 
         html.window.console.info("Spawned ${Types.getKindAsString(npc.kind)} (${npc.id}) at ${npc.gridPosition}");
         npc.setSprite(Game.sprites[npc.getSpriteName()]);
@@ -463,10 +463,10 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.HEALTH.index}', (data) {
-      var entityId = data[1],
-        hp = data[2],
-        maxHP = data[3],
-        isRegen = data[4] ? true : false;
+      int entityId = data[1];
+      int hp = data[2];
+      int maxHP = data[3];
+      bool isRegen = data[4] ? true : false;
 
       if (!Game.entityIdExists(entityId)) {
         html.window.console.debug("Received HEALTH message for an entity that doesn't exist. (id=${entityId})");
@@ -474,7 +474,7 @@ class GameClient extends Base {
       }
 
       Character entity = Game.getEntityByID(entityId);
-      var diff = hp - entity.hp;
+      int diff = hp - entity.hp;
       if (diff == 0) {
         // nothing to show in this case
         return;
@@ -507,10 +507,9 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.CHAT.index}', (data) {
-      var playerID = data[1],
-        message = data[2],
-        channel = data[3],
-        playerName = data[4];
+      int playerID = data[1];
+      String message = data[2];
+      String channel = data[3];
 
       Player player = Game.getPlayerByID(playerID);
 
@@ -521,39 +520,39 @@ class GameClient extends Base {
 
       Game.audioManager.playSound("chat");
 
-      var namePrefix = "";
-      if (channel == "party" && Game.player.party != null && Game.player.party.isLeader(player)) {
-        namePrefix = "\u2694 ";
-      }
+      String namePrefix = 
+        (channel == "party" 
+         && Game.player.party != null 
+         && Game.player.party.isLeader(player))
+        ? "\u2694 "
+        : "";
 
       this.chat.insertMessage(message, channel, player, namePrefix);
     });
 
     this.on('Message.${Message.EQUIP.index}', (data) {
-      var playerId = data[1],
-        itemKind = Entities.get(data[2]);
+      int playerId = data[1];
+      EntityKind itemKind = Entities.get(data[2]);
 
-      var player = Game.getEntityByID(playerId),
-        itemName = Types.getKindAsString(itemKind);
-
+      Player player = Game.getPlayerByID(playerId);
       if (player != null) {
         player.equip(itemKind);
       }
     });
 
     this.on('Message.${Message.DROP.index}', (data) {
-      var entityId = data[1],
-        id = data[2],
-        kind = Entities.get(data[3]);
+      int entityId = data[1];
+      int id = data[2];
+      EntityKind kind = Entities.get(data[3]);
 
-      var item = EntityFactory.createEntity(kind, id);
+      Item item = EntityFactory.createEntity(kind, id);
       item.wasDropped = true;
       item.playersInvolved = data[4];
 
-      var pos = data[5];
-      if (!pos) {
-        pos = Game.getDeadMobPosition(entityId);
-      }
+      Position pos = 
+        data[5] 
+        ? new Position(data[5]['x'], data[5]['y']) 
+        : Game.getDeadMobPosition(entityId);
 
       Game.addItem(item, pos);
       Game.updateCursor();
@@ -582,45 +581,37 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.DAMAGE.index}', (data) {
-      var entityId = data[1],
-        points = data[2],
-        attackerId = data[3];
+      int entityId = data[1];
+      int points = data[2];
+      int attackerId = data[3];
 
       Entity entity = Game.getEntityByID(entityId);
       if (attackerId == Game.player.id) {
-        Game.infoManager.addInfo(new InflictedDamageInfo(points, entity.x, entity.y - 15));
+        Game.infoManager.addInfo(new InflictedDamageInfo('${points}', entity.x, entity.y - 15));
       } else if (entityId == Game.player.id) {
-        Game.infoManager.addInfo(new ReceivedDamageInfo(-points, Game.player.x, Game.player.y - 15));
+        Game.infoManager.addInfo(new ReceivedDamageInfo('-${points}', Game.player.x, Game.player.y - 15));
       }
     });
 
     this.on('Message.${Message.POPULATION.index}', (data) {
-      var worldPlayers = data[1],
-        totalPlayers = data[2];
+      int worldPlayers = data[1];
+      int totalPlayers = data[2];
 
-      var setWorldPlayersString = (String str) {
+      void setWorldPlayersString(String str) {
         html.document.querySelector("#instance-population span:nth-child(2)").text = str;
         html.document.querySelector("#playercount span:nth-child(2)").text = str;
-      },
-        setTotalPlayersString = (String str) {
+      };
+      void setTotalPlayersString(String str) {
         html.document.querySelector("#world-population span:nth-child(2)").text = str;
-        };
+      };
 
       html.document.querySelector("#playercount span.count").text = '${worldPlayers}';
 
       html.document.querySelector("#instance-population span").text = '${worldPlayers}';
-      if (worldPlayers == 1) {
-        setWorldPlayersString("player");
-      } else {
-        setWorldPlayersString("players");
-      }
+      setWorldPlayersString(worldPlayers == 1 ? "player" : "players");
 
       html.document.querySelector("#world-population span").text = '${totalPlayers}';
-      if (totalPlayers == 1) {
-        setTotalPlayersString("player");
-      } else {
-        setTotalPlayersString("players");
-      }
+      setTotalPlayersString(totalPlayers == 1 ? "player" : "players");
     });
 
     this.on('Message.${Message.KILL.index}', (data) {
@@ -671,7 +662,7 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.DEFEATED.index}', (data) {
-      var actualData = data[1];
+      dynamic actualData = data[1];
       this.notice("*** ${actualData.attackerName} has defeated ${actualData.victimName} (${actualData.x}, ${actualData.y}) ***");
     });
 
@@ -700,9 +691,9 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.XP.index}', (data) {
-      var xp = data[1],
-        maxXP = data[2],
-        gainedXP = data[3];
+      int xp = data[1];
+      int maxXP = data[2];
+      int gainedXP = data[3];
 
       Player player = Game.player;
       player.xp = xp;
@@ -729,19 +720,19 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.LEVEL.index}', (data) {
-      var level = data[1];
-
+      int level = data[1];
+      
       Game.player.level = level;
     });
 
     this.on('Message.${Message.DATA.index}', (data) {
-      var dataObject = data[1];
+      dynamic dataObject = data[1];
 
       Game.player.loadFromObject(dataObject);
     });
 
     this.on('Message.${Message.INVENTORY.index}', (data) {
-      var dataObject = data[1];
+      dynamic dataObject = data[1];
 
       Game.player.loadInventory(dataObject);
     });
@@ -769,7 +760,7 @@ class GameClient extends Base {
     this.connection = new html.WebSocket(url);
     if (dispatcherMode) {
       this.connection.onMessage.listen((html.MessageEvent e) {
-        var reply = JSON.decode(e.data);
+        dynamic reply = JSON.decode(e.data);
         if (reply.status == "OK") {
           this.trigger("Dispatched", [reply.host, reply.port]);
         } else if (reply.status == "FULL") {
@@ -820,7 +811,7 @@ class GameClient extends Base {
     }
 
     data[0] = data[0].index;
-    var json = JSON.encode(data);
+    dynamic json = JSON.encode(data);
     this.connection.send(json);
     html.window.console.debug("dataOut: ${json}");
   }
@@ -831,7 +822,7 @@ class GameClient extends Base {
       return;
     }
 
-    var data = JSON.decode(message);
+    dynamic data = JSON.decode(message);
     html.window.console.debug("dataIn: ${message}");
 
     if (data[0] is List) {
@@ -882,7 +873,7 @@ class GameClient extends Base {
   }
 
   void sendUseItem(Item item, [Entity target = null]) {
-    var message = [Message.USEITEM,
+    List<dynamic> message = [Message.USEITEM,
       item.id
     ];
     if (target != null) {
@@ -898,11 +889,11 @@ class GameClient extends Base {
     Orientation orientation,
     int trackingId
   ) {
-    var message = [Message.USESPELL,
+    List<dynamic> message = [Message.USESPELL,
       spell.kind
     ];
 
-    var targetId = null;
+    int targetId = null;
     if (target != null) {
       targetId = target.id;
     }

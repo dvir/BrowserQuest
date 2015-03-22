@@ -32,7 +32,7 @@ class Spell extends Base {
   void use([Character target = null]) {
     this.target = target;
     Orientation orientation = Game.player.orientation;
-    var trackingId = null;
+    int trackingId = null;
 
     if (this.spellType == "single") {
       // maybe apply sparks to the target?

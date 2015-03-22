@@ -27,14 +27,14 @@ class AudioManager extends Base {
     this.gainNode.connectNode(this.audioContext.destination, 0, 0);
 
     AudioManager.soundNames.forEach((String name) {
-      var sound = new Sound(this.audioContext, this.gainNode, name);
+      Sound sound = new Sound(this.audioContext, this.gainNode, name);
       sound.load(() {
         this.sounds[name] = sound;
       });
     });
 
     AudioManager.musicNames.forEach((String name) {
-      var music = new Music(this.audioContext, this.gainNode, name);
+      Music music = new Music(this.audioContext, this.gainNode, name);
       // TODO: fill in music with a placeholder music and load it properly
       // for now, we will just add the music optimistically so we have zone names
       //music.load(() {
@@ -99,7 +99,7 @@ class AudioManager extends Base {
     this.currentMusic.stop();
   }
 
-  void addArea(var data) {
+  void addArea(Map<String, dynamic> data) {
     Area area = new Area(data["x"], data["y"], data["w"], data["h"], data["id"]);
     this.areas.add(area);
   }

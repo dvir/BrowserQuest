@@ -19,7 +19,7 @@ class Player extends Character {
 
   String name;
   Party party;
-  var guild;
+  Map<String, String> guild;
 
   bool isLootMoving = false;
 
@@ -46,8 +46,8 @@ class Player extends Character {
     || (entity is Player
         && this.id != entity.id
         && (this.guild == null
-            || !entity.guild
-            || this.guild.name != entity.guild.name)
+            || entity.guild == null
+            || this.guild['name'] != entity.guild['name'])
         && (this.party == null
             || !this.party.isMember(entity))
        );
@@ -107,11 +107,11 @@ class Player extends Character {
     }
 
     this.isSwitchingWeapon = true;
-    var count = 14;
+    int count = 14;
     this.switchingWeaponTimer = new Timer(new Duration(milliseconds: 90), () {
       this.showWeapon = !this.showWeapon;
 
-      count -= 1;
+      count--;
       if (count == 1) {
         this.switchingWeaponTimer.cancel();
         this.showWeapon = true;
@@ -126,11 +126,11 @@ class Player extends Character {
     }
 
     this.isSwitchingArmor = true;
-    var count = 14;
+    int count = 14;
     this.switchingArmorTimer = new Timer(new Duration(milliseconds: 90), () {
       this.showArmor = !this.showArmor;
 
-      count -= 1;
+      count--;
       if (count == 1) {
         this.switchingArmorTimer.cancel();
         this.showArmor = true;

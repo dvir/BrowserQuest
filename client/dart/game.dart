@@ -394,7 +394,7 @@ class Game extends Base {
     Game.entities.remove(spellEffect.id);
   }
 
-  static void addItem(Item item, Position position) {
+  static void addItem(Entity item, Position position) {
     item.setSprite(Game.sprites[item.getSpriteName()]);
     item.gridPosition = position;
     item.setAnimation("idle", 150);
@@ -411,9 +411,9 @@ class Game extends Base {
 
   static void initPathingGrid() {
     Game.pathingGrid = new List<List<int>>(Game.map.height);
-    for (var i = 0; i < Game.map.height; i += 1) {
+    for (int i = 0; i < Game.map.height; i++) {
       Game.pathingGrid[i] = new List<int>(Game.map.width);
-      for (var j = 0; j < Game.map.width; j += 1) {
+      for (int j = 0; j < Game.map.width; j++) {
         Game.pathingGrid[i][j] = Game.map.grid[i][j];
       }
     }
@@ -423,9 +423,9 @@ class Game extends Base {
 
   static void initEntityGrid() {
     Game.entityGrid = new List<List<Map<int, Entity>>>(Game.map.height);
-    for (var i = 0; i < Game.map.height; i += 1) {
+    for (int i = 0; i < Game.map.height; i++) {
       Game.entityGrid[i] = new List<Map<int, Entity>>(Game.map.width);
-      for (var j = 0; j < Game.map.width; j += 1) {
+      for (int j = 0; j < Game.map.width; j++) {
         Game.entityGrid[i][j] = new Map<int, Entity>();
       }
     }
@@ -435,9 +435,9 @@ class Game extends Base {
 
   static void initRenderingGrid() {
     Game.renderingGrid = new List<List<Map<int, Entity>>>(Game.map.height);
-    for (var i = 0; i < Game.map.height; i += 1) {
+    for (int i = 0; i < Game.map.height; i++) {
       Game.renderingGrid[i] = new List<Map<int, Entity>>(Game.map.width);
-      for (var j = 0; j < Game.map.width; j += 1) {
+      for (int j = 0; j < Game.map.width; j++) {
         Game.renderingGrid[i][j] = new Map<int, Entity>();
       }
     }
@@ -447,9 +447,9 @@ class Game extends Base {
 
   static void initItemGrid() {
     Game.itemGrid = new List<List<Map<int, Item>>>(Game.map.height);
-    for (var i = 0; i < Game.map.height; i += 1) {
+    for (int i = 0; i < Game.map.height; i++) {
       Game.itemGrid[i] = new List<Map<int, Item>>(Game.map.width);
-      for (var j = 0; j < Game.map.width; j += 1) {
+      for (int j = 0; j < Game.map.width; j++) {
         Game.itemGrid[i][j] = new Map<int, Item>();
       }
     }
@@ -556,7 +556,7 @@ class Game extends Base {
   }
 
   static void initMusicAreas() {
-    for (var area in Game.map.musicAreas) {
+    for (dynamic area in Game.map.musicAreas) {
       Game.audioManager.addArea(area);
     }
   }
@@ -896,14 +896,14 @@ class Game extends Base {
    }
 
    static void forEachEntity(void callback(Entity)) {
-     var entities = new Map.from(Game.entities);
+     Map<int, Entity> entities = new Map.from(Game.entities);
      entities.forEach((int id, Entity entity) {
        callback(entity);
      });
    }
 
    static void forEachCharacter(void callback(Character)) {
-     var entities = new Map.from(Game.entities);
+     Map<int, Entity> entities = new Map.from(Game.entities);
      entities.forEach((int id, Entity entity) {
        if (entity is Character) {
          callback(entity);
@@ -912,7 +912,7 @@ class Game extends Base {
    }
 
    static void forEachMob(void callback(Mob)) {
-     var entities = new Map.from(Game.entities);
+     Map<int, Entity> entities = new Map.from(Game.entities);
      entities.forEach((int id, Entity entity) {
        if (entity is Mob) {
          callback(entity);
@@ -921,20 +921,20 @@ class Game extends Base {
    }
 
    static void forEachAnimatedTile(void callback(AnimatedTile)) {
-     var animatedTiles = new List.from(Game.animatedTiles);
+     List<AnimatedTile> animatedTiles = new List.from(Game.animatedTiles);
      animatedTiles.forEach(callback);
    }
 
    static void forEachEntityAround(Position position, int radius, void callback(Entity)) {
      int maxX = position.x + radius;
      int maxY = position.y + radius;
-     var entities = new Map<int, Entity>();
+     Map<int, Entity> entities = new Map<int, Entity>();
 
      // collect all entities around the entity, and then execute the callback
      // on each of them. we do this so changes while executing the callback
      // won't affect which entities we will process.
-     for (var i = position.x - radius; i <= maxX; i += 1) {
-       for (var j = position.y - radius; j <= maxY; j += 1) {
+     for (int i = position.x - radius; i <= maxX; i++) {
+       for (int j = position.y - radius; j <= maxY; j++) {
          if (!Game.map.isOutOfBounds(new Position(i, j))) {
            entities.addAll(Game.renderingGrid[j][i]);
          }
@@ -1088,7 +1088,7 @@ class Game extends Base {
      // TODO: remove this mobile crap
      /*
      if (this.renderer.mobile || this.renderer.tablet) {
-       var z = this.zoningOrientation,
+       dynamic z = this.zoningOrientation,
          c = this.camera,
          ts = this.renderer.tilesize,
          x = c.x,
@@ -1328,10 +1328,10 @@ class Game extends Base {
       }
       
       // command given
-      var firstSpaceIndex = message.indexOf(' ');
-      var command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
-      var rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
-      var args = message.substring(1).split(' ');
+      int firstSpaceIndex = message.indexOf(' ');
+      String command = message.substring(1, firstSpaceIndex > -1 ? firstSpaceIndex : message.length);
+      String rest = message.substring(firstSpaceIndex > -1 ? firstSpaceIndex + 1 : message.length);
+      List<String> args = message.substring(1).split(' ');
 
       if (command == "global") {
         Game.client.chat.channel = "global";
@@ -1548,7 +1548,7 @@ class Game extends Base {
     }
     
     static void makePlayerTargetNearestEnemy() {
-      var enemies = Game.player.getNearestEnemies();
+      List<Character> enemies = Game.player.getNearestEnemies();
       if (enemies.length > 0) {
         Game.player.setTarget(enemies[0]);
       }
@@ -1604,7 +1604,7 @@ class Game extends Base {
       if (character.previousTarget != null
           && !character.isMoving()
           && character is Mob) {
-        var t = character.previousTarget;
+        Character t = character.previousTarget;
 
         if (Game.getEntityByID(t.id) != null) { // does it still exist?
           character.previousTarget = null;
@@ -1656,13 +1656,10 @@ class Game extends Base {
     }
 
     static void connect(Function started_callback) {
-      bool connecting = false; // always in dispatcher mode in the build version
-
       Game.client = new GameClient(Game.host, Game.port);
       Game.client.chat.input = Game.chatInput;
 
       Game.client.connect(Game.app.config.dispatcher); // false if the client connects directly to a game server
-      connecting = true;
 
       Game.client.on("Dispatched", (host, port) {
         html.window.console.debug("Dispatched to game server $host:$port");
@@ -1688,7 +1685,7 @@ class Game extends Base {
         List<int> newIds = list.where((int id) => !knownIds.contains(id)).toList();
 
         Game.obsoleteEntities.clear();
-        var entities = new Map.from(Game.entities);
+        Map<int, Entity> entities = new Map.from(Game.entities);
         entities.forEach((int id, Entity entity) {
           if (knownIds.contains(id) || id == Game.player.id) {
             return;
@@ -1746,7 +1743,7 @@ class Game extends Base {
         /*
         if (!Game.storage.hasAlreadyPlayed()) {
           Game.storage.initPlayer(Game.player.name);
-          Game.storage.savePlayer(Game.renderer.getPlayerImage(), Game.player);
+          Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
           Game.showNotification("Welcome to BrowserQuest!");
         } else {
           Game.showNotification("Welcome back to BrowserQuest!");

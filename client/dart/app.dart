@@ -294,12 +294,12 @@ class Application extends Base {
   }
 
   void openPopup(type, url) {
-    var h = window.innerHeight,
-      w = window.innerWidth,
-      popupHeight,
-      popupWidth,
-      top,
-      left;
+    int h = window.innerHeight;
+    int w = window.innerWidth;
+    int popupHeight;
+    int popupWidth;
+    num top;
+    num left;
 
     switch (type) {
     case 'twitter':
@@ -315,7 +315,7 @@ class Application extends Base {
     top = (h / 2) - (popupHeight / 2);
     left = (w / 2) - (popupWidth / 2);
 
-    var newwindow = window.open(url, 'name', 'height=' + popupHeight + ',width=' + popupWidth + ',top=' + top + ',left=' + left);
+    window.open(url, 'name', 'height=${popupHeight},width=${popupWidth},top=${top},left=${left}');
   }
 
   void animateParchment(origin, destination) {
@@ -394,7 +394,7 @@ class Application extends Base {
   
   void start(String username) {
     // TODO: implement properly
-    //var firstTimePlaying = !this.storage.hasAlreadyPlayed();
+    //bool firstTimePlaying = !this.storage.hasAlreadyPlayed();
     bool firstTimePlaying = true;
 
     if (username.isEmpty) {
@@ -438,7 +438,6 @@ class Application extends Base {
     }
     
     Element playButton = document.querySelector('.play');
-    Element playDiv = playButton.querySelector('div');
     
     if (!this.canStartGame) {
       if (!this.isMobile) {

@@ -80,7 +80,6 @@ class Updater extends Base {
   }
 
   void updateZoning(int t) {
-    int s = 3;
     int ts = 16;
     int speed = 500;
 

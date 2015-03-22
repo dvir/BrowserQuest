@@ -16,7 +16,7 @@ class WorldMap extends Base {
   bool tilesetsLoaded = false;
   bool mapLoaded = false;
   bool loadMultiTilesheets;
-  var map;
+  Map<String, dynamic> map;
   List<List<int>> grid;
   List<List<int>> plateauGrid;
   Map<int, Door> doors = {};
@@ -47,10 +47,10 @@ class WorldMap extends Base {
 
     if (useWorker) {
       window.console.info("Loading map with web worker.");
-      var worker = new Worker("js/mapworker.js");
+      Worker worker = new Worker("js/mapworker.js");
       worker.postMessage(1);
       worker.onMessage.listen((event) {
-        var map = event.data;
+        Map<String, dynamic> map = event.data;
         this._initMap(map);
         this.grid = map['grid'];
         this.plateauGrid = map['plateauGrid'];
@@ -63,7 +63,7 @@ class WorldMap extends Base {
     } else {
       window.console.info("Loading map via Ajax.");
       HttpRequest.getString(filepath).then((String response) {
-        var data = JSON.decode(response);
+        Map<String, dynamic> data = JSON.decode(response);
         this._initMap(data);
         this._generateCollisionGrid();
         this._generatePlateauGrid();
@@ -196,10 +196,8 @@ class WorldMap extends Base {
     && this.plateauGrid[pos.y][pos.x] == 1;
 
   void _generateCollisionGrid() {
-    var tileIndex = 0;
-
     this.grid = [];
-    for (var j, i = 0; i < this.height; i++) {
+    for (int i = 0; i < this.height; i++) {
       this.grid[i] = []..fillRange(0, this.width, 0);
     }
 
@@ -217,12 +215,12 @@ class WorldMap extends Base {
   }
 
   void _generatePlateauGrid() {
-    var tileIndex = 0;
+    int tileIndex = 0;
 
     this.plateauGrid = [];
-    for (var j, i = 0; i < this.height; i++) {
+    for (int i = 0; i < this.height; i++) {
       this.plateauGrid[i] = [];
-      for (j = 0; j < this.width; j++) {
+      for (int j = 0; j < this.width; j++) {
         this.plateauGrid[i][j] = this.plateau.contains(tileIndex) ? 1 : 0;
         tileIndex++;
       }

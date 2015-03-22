@@ -18,11 +18,11 @@ class Base {
   Map<String, Map<EventHandler, Function>> callbacks = new Map<String, Map<EventHandler, Function>>();
   List<Base> bubbleTargets = new List<Base>();
 
-  Map<String, EventHandler> on(var names, Function callback, [bool overwritePrevious = false]) {
-    if (!(names is List)) {
-      names = [names];
-    }
+  Map<String, EventHandler> on(String name, Function callback, [bool overwritePrevious = false]) {
+    return this.onMulti(new List<String>()..add(name), callback, overwritePrevious);
+  }
 
+  Map<String, EventHandler> onMulti(List<String> names, Function callback, [bool overwritePrevious = false]) {
     Map<String, EventHandler> handlers = new Map<String, EventHandler>();
 
     names.forEach((String name) {

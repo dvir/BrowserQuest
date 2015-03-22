@@ -77,7 +77,7 @@ initGame() {
     Element chat = document.getElementById('chatinput');
 
     if (Game.started && !document.getElementById('chatbox').classes.contains('active')) {
-      var knownKeybinding = true;
+      bool knownKeybinding = true;
       switch (Keys.get(key)) {
         case Key.ENTER:
           Game.app.showChat();
@@ -187,7 +187,7 @@ initGame() {
     Element chat = document.getElementById('chatinput');
 
     if (Game.started && !document.getElementById('chatbox').classes.contains('active')) {
-      var knownKeybinding = true;
+      bool knownKeybinding = true;
       switch (Keys.get(key)) {
         case Key.LEFT:
         case Key.A:
@@ -421,7 +421,7 @@ void main() {
 
   // TODO: implement properly
   /*
-  var data = Game.app.storage.data;
+  dynamic data = Game.app.storage.data;
   if (data.hasAlreadyPlayed) {
     if (data.player.name && data.player.name != "") {
       document.getElementById('playername').html(data.player.name);

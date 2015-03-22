@@ -18,7 +18,7 @@ class InfoManager extends Base {
   }
   
   void forEachInfo(void callback(Info info)) {
-    var infos = new HashSet.from(this.infos);
+    HashSet<Info> infos = new HashSet.from(this.infos);
     infos.forEach(callback);
   }
 

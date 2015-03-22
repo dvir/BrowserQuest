@@ -1,9 +1,11 @@
 library sprite;
 
 import "dart:html" as html;
+import "dart:typed_data";
 
 import "animation.dart";
 import "base.dart";
+import "position.dart";
 
 import "../sprites/all_sprites.dart";
 
@@ -19,7 +21,7 @@ class Sprite extends Base {
   int width;
   int height;
   html.ImageElement image;
-  var animationData;
+  Map<String, Map<String, int>> animationData;
   Sprite whiteSprite;
   Sprite silhouetteSprite;
 
@@ -38,7 +40,7 @@ class Sprite extends Base {
   }
 
   Sprite.FromJSON(String this.name, int this.scale) {
-    var data = (new RawSprites()).get(name);
+    dynamic data = (new RawSprites()).get(name);
     if (data == null) {
       throw new Exception('Sprite ${this.name} is missing from sprites map!');
     }
@@ -77,8 +79,8 @@ class Sprite extends Base {
   Map<String, Animation> createAnimations() {
     Map<String, Animation> animations = new Map<String, Animation>();
 
-    for (var name in this.animationData.keys) {
-      var a = this.animationData[name];
+    for (String name in this.animationData.keys) {
+      Map<String, int> a = this.animationData[name];
       Animation animation =
         new Animation(name, a['length'], a['row'], this.width, this.height);
       animations.putIfAbsent(name, () => animation);
@@ -91,10 +93,11 @@ class Sprite extends Base {
     if (!this.isLoaded) return;
 
     html.CanvasElement canvas = new html.CanvasElement(width: this.image.width, height: this.image.height);
-    var ctx = canvas.getContext('2d');
+    html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
-    var spriteData, data;
+    html.ImageData spriteData;
+    Uint8ClampedList data;
 
     ctx.drawImageScaled(this.image, 0, 0, width, height);
     try {
@@ -102,7 +105,7 @@ class Sprite extends Base {
 
       data = spriteData.data;
 
-      for (var i = 0; i < data.length; i += 4) {
+      for (int i = 0; i < data.length; i += 4) {
         data[i] = 255;
         data[i + 1] = data[i + 2] = 75;
       }
@@ -123,7 +126,7 @@ class Sprite extends Base {
         this.height
       );
     } catch (e) {
-      html.window.console.error("Error getting image data for sprite : " + this.name);
+      html.window.console.error("Error getting image data for sprite : ${this.name}");
       html.window.console.error(e);
     }
   }
@@ -134,35 +137,31 @@ class Sprite extends Base {
 
   void createSilhouette() {
     html.CanvasElement canvas = new html.CanvasElement(width: this.image.width, height: this.image.height);
-    var ctx = canvas.getContext('2d');
+    html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
-    var spriteData, data;
-    var finalData, fdata;
 
     ctx.drawImageScaled(this.image, 0, 0, width, height);
-    data = ctx.getImageData(0, 0, width, height).data;
-    finalData = ctx.getImageData(0, 0, width, height);
-    fdata = finalData.data;
+    Uint8ClampedList data = ctx.getImageData(0, 0, width, height).data;
+    html.ImageData finalData = ctx.getImageData(0, 0, width, height);
+    Uint8ClampedList fdata = finalData.data;
 
-    getIndex(x, y) {
+    int getIndex(int x, int y) {
       return ((width * (y - 1)) + x - 1) * 4;
     };
 
-    getPosition(i) {
-      var x, y;
+    Position getPosition(i) {
+      int x;
+      int y;
 
       i = (i / 4) + 1;
       x = i % width;
       y = ((i - x) / width) + 1;
 
-      return {
-        x: x,
-        y: y
-      };
+      return new Position(x, y);
     };
 
-    isBlankPixel(i) {
+    bool isBlankPixel(int i) {
       if (i < 0 || i >= data.length) {
         return true;
       }
@@ -173,14 +172,14 @@ class Sprite extends Base {
     };
 
     hasAdjacentPixel(i) {
-      var pos = getPosition(i);
-      return (pos["x"] < width && !isBlankPixel(getIndex(pos["x"] + 1, pos["y"])))
-             || (pos["x"] > 1 && !isBlankPixel(getIndex(pos["x"] - 1, pos["y"])))
-             || (pos["y"] < height && !isBlankPixel(getIndex(pos["x"], pos["y"] + 1)))
-             || (pos["y"] > 1 && !isBlankPixel(getIndex(pos["x"], pos["y"] - 1)));
+      Position pos = getPosition(i);
+      return (pos.x < width && !isBlankPixel(getIndex(pos.x + 1, pos.y)))
+             || (pos.x > 1 && !isBlankPixel(getIndex(pos.x - 1, pos.y)))
+             || (pos.y < height && !isBlankPixel(getIndex(pos.x, pos.y + 1)))
+             || (pos.y > 1 && !isBlankPixel(getIndex(pos.x, pos.y - 1)));
     };
 
-    for (var i = 0; i < data.length; i += 4) {
+    for (int i = 0; i < data.length; i += 4) {
       if (isBlankPixel(i) && hasAdjacentPixel(i)) {
         fdata[i] = fdata[i + 1] = 255;
         fdata[i + 2] = 150;

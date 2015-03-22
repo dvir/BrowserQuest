@@ -35,11 +35,10 @@ class Character extends Entity {
 
   // Pathing
   Transition movement = new Transition();
-  var path;
+  List<List<int>> path;
   int step = 0;
   Position destination;
   Position newDestination;
-  var adjacentTiles = {};
 
   // Combat
   Character _target;
@@ -80,7 +79,6 @@ class Character extends Entity {
     this.movement = new Transition();
     this.path = null;
     this.newDestination = null;
-    this.adjacentTiles = {};
 
     // Combat
     this.target = null;
@@ -104,7 +102,7 @@ class Character extends Entity {
   }
 
   Sprite get sprite {
-    var sprite = super.sprite;
+    Sprite sprite = super.sprite;
     if (this.armor != null) {
       String kindString = Types.getKindAsString(this._armor);
       sprite = Game.sprites[kindString];
@@ -136,6 +134,8 @@ class Character extends Entity {
     this.trigger("HealthChange");
     this.trigger("change");
   }
+
+  int get hpPercentage => this.maxHP == 0 ? 0 : (this.hp * 100 / this.maxHP).floor();
 
   int get level => this._level;
   void set level(int level) {
@@ -181,7 +181,7 @@ class Character extends Entity {
   bool hasShadow() => false;
 
   void animate(String animationName, int speed, [int count = 0, Function onEndCount]) {
-    var oriented = ['atk', 'walk', 'idle'];
+    List<String> oriented = ['atk', 'walk', 'idle'];
 
     // don't change animation if the character is dying
     if (this.currentAnimation != null && this.currentAnimation.name == "death" && this.isDying) {
@@ -231,7 +231,6 @@ class Character extends Entity {
 
   void moveTo_(Position position) {
     this.destination = position;
-    this.adjacentTiles = {};
 
     if (this.isMoving()) {
       this.continueTo(position);
@@ -243,13 +242,13 @@ class Character extends Entity {
 
   // TODO: give a real type to paths
   requestPathfindingTo(Position position) {
-    List<Entity> ignored = [];
+    List<Character> ignored = [];
     // Always ignore self
     ignored.add(this);
 
     // TODO: maybe we should stop ignoring the target??
     //       if we want to move to a location, we just want to get there asap.
-    var target = this.hasTarget() ? this.target : this.previousTarget;
+    Character target = this.hasTarget() ? this.target : this.previousTarget;
     if (target != null) {
       ignored.add(target);
 
@@ -267,7 +266,7 @@ class Character extends Entity {
     return Game.findPath(this, position, ignored);
   }
 
-  void startPathing(var path) {
+  void startPathing(List<List<int>> path) {
   }
 
   void stopPathing(Position position) {
@@ -330,7 +329,7 @@ class Character extends Entity {
 
   void nextStep() {
     bool stop = false;
-    var path;
+    List<List<int>> path;
 
     if (!this.isMoving()) {
       return;
@@ -579,7 +578,7 @@ class Character extends Entity {
     Game.removeFromPathingGrid(this.gridPosition);
 
     if (Game.camera.isVisible(this)) {
-      var rng = new Random();
+      Random rng = new Random();
       Game.audioManager.playSound("kill${rng.nextInt(2)+1}");
     }
 

@@ -32,7 +32,7 @@ class Hero extends Player {
     this.inventory = new Inventory([]);
     this.on("EquipmentChange", () {
       // TODO: imeplement differently
-//      Game.storage.savePlayer(Game.renderer.getPlayerImage(), this);
+//      Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), this);
       Game.playerChangedEquipment();
     });
   }
@@ -168,7 +168,7 @@ class Hero extends Player {
     }
   }
 
-  void startPathing(var path) {
+  void startPathing(List<List<int>> path) {
     int i = path.length - 1;
     int x = path[i][0];
     int y = path[i][1];

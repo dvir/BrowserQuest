@@ -87,7 +87,7 @@ class Renderer extends Base {
     this._tileset = tileset;
   }
   
-  bool get mobile => html.window.innerWidth <= 1000;
+  bool get mobile => false; //html.window.innerWidth <= 1000;
 
   int getScaleFactor() {
     return 2;
@@ -321,10 +321,10 @@ class Renderer extends Base {
   }
 
   void drawCursor() {
-    var mx = Game.mouse.x,
-      my = Game.mouse.y,
-      s = this.scale,
-      os = this.upscaledRendering ? 1 : this.scale;
+    int mx = Game.mouse.x;
+    int my = Game.mouse.y;
+    int s = this.scale;
+    int os = this.upscaledRendering ? 1 : this.scale;
 
     this.context.save();
     if (Game.currentCursor != null && Game.currentCursor.isLoaded) {
@@ -343,7 +343,7 @@ class Renderer extends Base {
     int dx, 
     int dy
   ) {
-    var s = this.upscaledRendering ? 1 : this.scale;
+    int s = this.upscaledRendering ? 1 : this.scale;
 
     ctx.drawImageScaledFromSource(
       image,
@@ -469,17 +469,24 @@ class Renderer extends Base {
 
     if (entity is Character && !entity.isDead && entity.hasWeapon()) {
       Sprite weapon = Game.sprites[Types.getKindAsString(entity.weapon)];
-      var weaponAnimData = weapon.animationData[anim.name];
-      var index = frame.index < weaponAnimData.length ? frame.index : frame.index % weaponAnimData.length;
+      Map<String, int> weaponAnimData = weapon.animationData[anim.name];
+      int index = frame.index < weaponAnimData.length ? frame.index : frame.index % weaponAnimData.length;
       int wx = weapon.width * index * os;
       int wy = weapon.height * anim.row * os;
       int ww = weapon.width * os;
       int wh = weapon.height * os;
 
-      this.context.drawImageScaledFromSource(weapon.image, wx, wy, ww, wh,
+      this.context.drawImageScaledFromSource(
+        weapon.image, 
+        wx, 
+        wy, 
+        ww, 
+        wh,
         weapon.offsetX * this.scale,
         weapon.offsetY * this.scale,
-        ww * ds, wh * ds);
+        ww * ds, 
+        wh * ds
+      );
     }
 
     this.context.restore();
@@ -608,7 +615,7 @@ class Renderer extends Base {
 
     if (entity is Player && entity.guild != null) {
       this.setFontSize(9);
-      String guildName = entity.guild.name;
+      String guildName = entity.guild['name'];
       this.drawText(
         guildName, 
         new Position(
@@ -627,7 +634,7 @@ class Renderer extends Base {
       return;
     }
 
-    var tilesetwidth = this.tileset.width / Game.map.tilesize;
+    num tilesetwidth = this.tileset.width / Game.map.tilesize;
     Game.forEachVisibleTile((int id, int index) {
       if (!Game.map.isHighTile(id) && !Game.map.isAnimatedTile(id)) { // Don't draw unnecessary tiles
         this.drawTile(this.background, id, this.tileset, tilesetwidth, Game.map.width, index);
@@ -640,7 +647,7 @@ class Renderer extends Base {
       return;
     }
 
-    var tilesetwidth = this.tileset.width / Game.map.tilesize;
+    num tilesetwidth = this.tileset.width / Game.map.tilesize;
 
     this.animatedTileCount = 0;
     Game.forEachAnimatedTile((AnimatedTile tile) {
@@ -665,7 +672,7 @@ class Renderer extends Base {
       return;
     }
 
-    var tilesetwidth = this.tileset.width / Game.map.tilesize;
+    num tilesetwidth = this.tileset.width / Game.map.tilesize;
 
     this.highTileCount = 0;
     Game.forEachVisibleTile((int id, int index) {
@@ -747,14 +754,14 @@ class Renderer extends Base {
     }
 
     Party party = Game.player.party;
-    var members = party.getMembers();
+    Map<int, Player> members = party.getMembers();
     int line_height = 22;
     int start_offset = 200;
     this.drawText("Party:", new Position(10, start_offset), false);
-    var i = 1;
-    for (final member in members) {
+    int i = 1;
+    for (final Player member in members) {
       bool isLeader = party.getLeader() == member;
-      String namePostfix = " - ${member.getHealthPercent}% (${member.gridX}, ${member.gridY})"; 
+      String namePostfix = " - ${member.hpPercentage}% (${member.gridPosition.x}, ${member.gridPosition.y})"; 
       this.drawText(
         "${i}. ${(isLeader ? "\u2694 " : "")} ${member.name} ${namePostfix}", 
         new Position(10, start_offset + (i * line_height)), 
@@ -836,14 +843,12 @@ class Renderer extends Base {
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  // TODO: keep re-factoring after this
-  String getPlayerImage() {
+  String getPlayerImage(Player player) {
     html.CanvasElement canvas = html.document.createElement('canvas');
     html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int os = this.upscaledRendering ? 1 : this.scale;
-    Player player = Game.player;
-    Sprite sprite = Game.sprites[Types.getKindAsString(Game.player.armor)];
-    Animation spriteAnim = sprite.animationData["idle_down"];
+    Sprite sprite = Game.sprites[Types.getKindAsString(player.armor)];
+    Animation spriteAnim = player.animations["idle_down"];
     
     // character
     int row = spriteAnim.row;
@@ -852,7 +857,7 @@ class Renderer extends Base {
     int y = row * h;
     
     // weapon
-    Sprite weapon = Game.sprites[Types.getKindAsString(Game.player.weapon)];
+    Sprite weapon = Game.sprites[Types.getKindAsString(player.weapon)];
     int ww = weapon.width * os;
     int wh = weapon.height * os;
     int wy = wh * row;

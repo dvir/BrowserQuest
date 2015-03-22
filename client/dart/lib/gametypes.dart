@@ -394,7 +394,7 @@ class Types {
     "polymorph": [Entities.POLYMORPH, "spell"] 
   };
       
-  static var rankedWeapons = [
+  static List<EntityKind> rankedWeapons = [
     Entities.SWORD1,
     Entities.SWORD2,
     Entities.AXE,
@@ -404,7 +404,7 @@ class Types {
     Entities.GOLDENSWORD
   ];
 
-  static var rankedArmors = [
+  static List<EntityKind> rankedArmors = [
     Entities.CLOTHARMOR,
     Entities.LEATHERARMOR,
     Entities.MAILARMOR,
@@ -558,8 +558,8 @@ class Types {
     });
   }
 
-  static String getOrientationAsString(orientation) {
-    switch(orientation) {
+  static String getOrientationAsString(Orientation orientation) {
+    switch (orientation) {
       case Orientation.LEFT: return "left";
       case Orientation.RIGHT: return "right";
       case Orientation.UP: return "up";
@@ -569,9 +569,9 @@ class Types {
     throw "Inexistant orientation given to Types.getOrientationAsString ${orientation}";
   }
 
-  static Entities getRandomItemKind(item) {
-    var rng = new Random();
-    List<Entities> all = new List<Entities>();
+  static EntityKind getRandomItemKind() {
+    Random rng = new Random();
+    List<EntityKind> all = new List<EntityKind>();
     all.addAll(rankedWeapons);
     all.addAll(rankedArmors);
     all.remove(Entities.SWORD1);

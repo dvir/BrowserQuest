@@ -34,14 +34,14 @@ class Transition extends Base {
         this.count -= 1;
         window.console.debug("${currentTime}: jumped frame");
       } else {
-        var elapsed = currentTime - this.startTime;
+        int elapsed = currentTime - this.startTime;
 
         if (elapsed > this.duration) {
           elapsed = this.duration;
         }
 
-        var diff = this.endValue - this.startValue;
-        var i = this.startValue + ((diff / this.duration) * elapsed);
+        int diff = this.endValue - this.startValue;
+        num i = this.startValue + ((diff / this.duration) * elapsed);
 
         i = i.round();
 

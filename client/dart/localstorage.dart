@@ -10,7 +10,7 @@ import "lib/gametypes.dart";
 class LocalStorage extends Base {
 
   html.Storage storage = html.window.localStorage;
-  var data;
+  dynamic data;
 
   LocalStorage() {
     if (this.storage.containsKey("data")) {

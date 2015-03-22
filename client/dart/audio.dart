@@ -38,7 +38,7 @@ class Audio extends Base {
   );
   
   void load(Function callback) {
-    var path = "${this.path_prefix}${this.name}.${this.extension}";
+    String path = "${this.path_prefix}${this.name}.${this.extension}";
     HttpRequest request = new HttpRequest();
     request.open("GET", path, async: true);
     request.responseType = "arraybuffer";
@@ -71,7 +71,7 @@ class Audio extends Base {
     if (this.source == null) {
 // TODO: for now, just return instead of crashing
 return;
-      throw "Audio ${name} has not been loaded yet";
+//      throw "Audio ${name} has not been loaded yet";
     }
 
     this.source.start(0);
@@ -81,7 +81,7 @@ return;
     if (this.source == null) {
 // TODO: for now, just return instead of crashing
 return;
-      throw "Audio ${name} has not been loaded yet";
+//      throw "Audio ${name} has not been loaded yet";
     }
 
     this.source.stop(0);
