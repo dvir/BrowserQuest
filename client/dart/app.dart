@@ -16,8 +16,6 @@ class Application extends Base {
 
   Config config = new Config();
   bool isDesktop = true;
-  bool isMobile = false;
-  bool isTablet = false;
   bool supportsWorkers = true;
   int currentPage = 0;
   bool isParchmentReady = true;
@@ -33,8 +31,8 @@ class Application extends Base {
     Rectangle gamePos = document.getElementById('container').offset;
 
     Game.mouse = new Position(
-      ((event.page.x - gamePos.left - (this.isMobile ? 0 : 5 * Game.renderer.getScaleFactor())) as num).clamp(0, Game.renderer.width - 1), 
-      ((event.page.y - gamePos.top - (this.isMobile ? 0 : 7 * Game.renderer.getScaleFactor())) as num).clamp(0, Game.renderer.height - 1)
+      ((event.page.x - gamePos.left - (5 * Game.renderer.getScaleFactor())) as num).clamp(0, Game.renderer.width - 1), 
+      ((event.page.y - gamePos.top - (7 * Game.renderer.getScaleFactor())) as num).clamp(0, Game.renderer.height - 1)
     );
   }
 
@@ -322,18 +320,8 @@ class Application extends Base {
     Element parchment = document.getElementById('parchment');
     int duration = 1;
 
-    if (this.isMobile) {
-      parchment.classes.remove(origin);
-      parchment.classes.add(destination);
-      return;
-    }
-
     if (!this.isParchmentReady) {
       return;
-    }
-
-    if (this.isTablet) {
-      duration = 0;
     }
 
     this.isParchmentReady = !this.isParchmentReady;
@@ -423,11 +411,6 @@ class Application extends Base {
       starting_callback();
     }
     this.hideIntro(() {
-      if (!this.isDesktop) {
-        // On mobile and tablet we load the map after the player has clicked
-        // on the PLAY button instead of loading it in a web worker.
-        Game.loadMap();
-      }
       this.start(username);
     });
   }
@@ -440,16 +423,12 @@ class Application extends Base {
     Element playButton = document.querySelector('.play');
     
     if (!this.canStartGame) {
-      if (!this.isMobile) {
-        // on desktop and tablets, add a spinner to the play button
-        playButton.classes.add('loading');
-      }
+      // add a spinner to the play button
+      playButton.classes.add('loading');
       window.console.debug("waiting...");
       this.on('start', () {
         new Timer(new Duration(milliseconds: 1500), () {
-          if (!this.isMobile) {
-            playButton.classes.remove('loading');
-          }            
+          playButton.classes.remove('loading');
         });
         
         this.startGame(username, starting_callback);

@@ -18,7 +18,7 @@ class Camera extends Base {
   }
 
   void rescale() {
-    int factor = this.renderer.mobile ? 1 : 2;
+    int factor = 2;
 
     this.gridW = 15 * factor;
     this.gridH = 7 * factor;

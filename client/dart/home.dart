@@ -52,7 +52,7 @@ initGame() {
       }
     }
 
-    if (Game.started && !Game.renderer.mobile && Game.player != null && !hasClosedParchment) {
+    if (Game.started && Game.player != null && !hasClosedParchment) {
       Game.click();
     }
     
@@ -270,10 +270,6 @@ initGame() {
   document.getElementById('mutebutton').onClick.listen((Event event) {
     Game.audioManager.toggle();
   });
-
-  if (Game.renderer.tablet) {
-    document.querySelector('body').classes.add('tablet');
-  }
 }
 
 void main() {

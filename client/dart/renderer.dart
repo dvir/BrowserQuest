@@ -55,7 +55,6 @@ class Renderer extends Base {
   // TODO: update to fetch real values
   bool upscaledRendering = false;
   bool supportsSilhouettes = false;
-  bool tablet = false;
 
   Renderer(
     html.CanvasElement this.canvas, 
@@ -86,8 +85,6 @@ class Renderer extends Base {
   void set tileset(html.ImageElement tileset) {
     this._tileset = tileset;
   }
-  
-  bool get mobile => false; //html.window.innerWidth <= 1000;
 
   int getScaleFactor() {
     return 2;
@@ -140,7 +137,7 @@ class Renderer extends Base {
   }
 
   void initFPS() {
-    this.FPS = this.mobile ? 50 : 50;
+    this.FPS = 50;
   }
 
   void initFont() {
@@ -285,16 +282,6 @@ class Renderer extends Base {
       return;
     }
 
-    if (this.mobile || this.tablet) {
-      if (Game.drawTarget) {
-        this.drawCellHighlight(Game.selected, "rgb(51, 255, 0)");
-        this.lastTargetPos = Game.selected;
-        Game.drawTarget = false;
-      }
-
-      return;
-    }
-
     if (sprite == null || anim == null) {
       return;
     }
@@ -426,9 +413,7 @@ class Renderer extends Base {
       this.context.globalAlpha = entity.fadingAlpha;
     }
 
-    if (!this.mobile && !this.tablet) {
-      this.drawEntityName(entity);
-    }
+    this.drawEntityName(entity);
 
     this.context.save();
     if (entity.flipSpriteX) {
@@ -887,22 +872,10 @@ class Renderer extends Base {
     this.setCameraView(this.background);
     this.drawTerrain();
     this.background.restore();
-
-    if (this.mobile || this.tablet) {
-      this.clearScreen(this.foreground);
-      this.foreground.save();
-      this.setCameraView(this.foreground);
-      this.drawHighTiles(this.foreground);
-      this.foreground.restore();
-    }
   }
 
   void renderFrame() {
-    if (this.mobile || this.tablet) {
-      this.renderFrameMobile();
-    } else {
-      this.renderFrameDesktop();
-    }
+    this.renderFrameDesktop();
   }
 
   void renderFrameDesktop() {
@@ -933,19 +906,6 @@ class Renderer extends Base {
     this.drawParty();
 
     this.drawCursor();
-  }
-
-  void renderFrameMobile() {
-    this.clearDirtyRects();
-    this.preventFlickeringBug();
-
-    this.context.save();
-    this.setCameraView(this.context);
-
-    this.drawDirtyAnimatedTiles();
-    this.drawSelectedCell();
-    this.drawDirtyEntities();
-    this.context.restore();
   }
 
   void preventFlickeringBug() {

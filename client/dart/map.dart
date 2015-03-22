@@ -7,7 +7,6 @@ import "base.dart";
 import "checkpoint.dart";
 import "door.dart";
 import "entity.dart";
-import "game.dart";
 import "lib/gametypes.dart";
 import 'position.dart';
 
@@ -25,8 +24,7 @@ class WorldMap extends Base {
   int tilesetCount;
 
   WorldMap(bool this.loadMultiTilesheets) {
-    bool useWorker = !(Game.renderer.mobile || Game.renderer.tablet);
-    this._loadMap(useWorker);
+    this._loadMap(true);
   }
 
   int get width => this.map["width"];
@@ -125,14 +123,9 @@ class WorldMap extends Base {
       this.tilesetCount = 1;
       tileset1 = this._loadTileset('img/1/tilesheet.png');
     } else {
-      if (Game.renderer.mobile || Game.renderer.tablet) {
-        this.tilesetCount = 1;
-        tileset2 = this._loadTileset('img/2/tilesheet.png');
-      } else {
-        this.tilesetCount = 2;
-        tileset2 = this._loadTileset('img/2/tilesheet.png');
-        tileset3 = this._loadTileset('img/3/tilesheet.png');
-      }
+      this.tilesetCount = 2;
+      tileset2 = this._loadTileset('img/2/tilesheet.png');
+      tileset3 = this._loadTileset('img/3/tilesheet.png');
     }
 
     this.tilesets = [tileset1, tileset2, tileset3];

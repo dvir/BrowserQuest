@@ -246,9 +246,6 @@ class Game extends Base {
     }
 
     Game.spriteSets[1][name] = new Sprite.FromJSON(name, 2);
-    if (Game.renderer.mobile || Game.renderer.tablet) {
-      Game.spriteSets[2][name] = new Sprite.FromJSON(name, 3);
-    }
   }
 
   static void loadSprites() {
@@ -331,18 +328,8 @@ class Game extends Base {
     Game.entities.putIfAbsent(entity.id, () => entity);
     Game.registerEntityPosition(entity);
 
-    if ((entity is Item && entity.wasDropped)
-        || (Game.renderer.mobile || Game.renderer.tablet)) {
+    if (entity is Item && entity.wasDropped) {
       entity.fadeIn(Game.currentTime);
-    }
-
-    if (Game.renderer.mobile || Game.renderer.tablet) {
-      entity.on("dirty", () {
-        if (Game.camera.isVisible(entity)) {
-          entity.dirtyRect = Game.renderer.getEntityBoundingRect(entity);
-          Game.checkOtherDirtyRects(entity.dirtyRect, entity, entity.gridPosition);
-        }
-      });
     }
   }
 
@@ -588,7 +575,7 @@ class Game extends Base {
       Game.initShadows();
       Game.initHurtSprites();
 
-      if (!Game.renderer.mobile && !Game.renderer.tablet && Game.renderer.upscaledRendering) {
+      if (Game.renderer.upscaledRendering) {
         Game.initSilhouettes();
       }
 
@@ -645,10 +632,6 @@ class Game extends Base {
     // TODO: implement properly
     //this.storage.incrementRevives();
 
-    if (Game.renderer.mobile || Game.renderer.tablet) {
-      Game.renderer.clearScreen(Game.renderer.context);
-    }
-
     html.window.console.debug("Finished restart");
   }
 
@@ -676,16 +659,11 @@ class Game extends Base {
     Game.player.turnTo(dest.orientation);
     Game.client.sendTeleport(dest.destination);
 
-    if (Game.renderer.mobile && dest.cameraPosition != null) {
-      Game.camera.gridPosition = dest.cameraPosition;
-      Game.resetZone();
+    if (dest.isPortal) {
+      Game.assignBubbleTo(Game.player);
     } else {
-      if (dest.isPortal) {
-        Game.assignBubbleTo(Game.player);
-      } else {
-        Game.camera.focusEntity(Game.player);
-        Game.resetZone();
-      }
+      Game.camera.focusEntity(Game.player);
+      Game.resetZone();
     }
 
     bool hadAttackers = Game.player.attackers.length > 0;
@@ -699,11 +677,6 @@ class Game extends Base {
 
     // TODO: emit an event, i.e "ZoneChange" and check it there
     Game.checkUndergroundAchievement();
-
-    if (Game.renderer.mobile || Game.renderer.tablet) {
-      // When rendering with dirty rects, clear the whole screen when entering a do>
-      Game.renderer.clearScreen(Game.renderer.context);
-    }
 
     if (dest.isPortal) {
       Game.audioManager.playSound("teleport");
@@ -878,15 +851,7 @@ class Game extends Base {
      if (character is Npc) {
        offsetY = 0;
      } else {
-       if (Game.renderer.scale == 2) {
-         if (Game.renderer.mobile) {
-           offsetY = 0;
-         } else {
-           offsetY = 15;
-         }
-       } else {
-         offsetY = 12;
-       }
+       offsetY = Game.renderer.scale == 2 ? 15 : 12;
      }
 
      y = ((character.y - Game.camera.y) * Game.renderer.scale) - (t * 2) - offsetY;
@@ -958,7 +923,7 @@ class Game extends Base {
            callback(entity);
          });
        }
-     }, Game.renderer.mobile ? 0 : 2);
+     }, 2);
    }
 
    static void forEachVisibleTileIndex(void callback(int index), [int extra = 0]) {
@@ -1084,36 +1049,6 @@ class Game extends Base {
 
    static void startZoningFrom(Position position) {
      Game.zoningOrientation = Game.getZoningOrientation(position);
-
-     // TODO: remove this mobile crap
-     /*
-     if (this.renderer.mobile || this.renderer.tablet) {
-       dynamic z = this.zoningOrientation,
-         c = this.camera,
-         ts = this.renderer.tilesize,
-         x = c.x,
-         y = c.y,
-         xoffset = (c.gridW - 2) * ts,
-         yoffset = (c.gridH - 2) * ts;
-
-       if (z === Types.Orientations.LEFT || z === Types.Orientations.RIGHT) {
-         x = (z === Types.Orientations.LEFT) ? c.x - xoffset : c.x + xoffset;
-       } else if (z === Types.Orientations.UP || z === Types.Orientations.DOWN) {
-         y = (z === Types.Orientations.UP) ? c.y - yoffset : c.y + yoffset;
-       }
-       c.setPosition(x, y);
-
-       this.renderer.clearScreen(this.renderer.context);
-       this.endZoning();
-
-       // Force immediate drawing of all visible entities in the new zone
-       this.forEachVisibleEntityByDepth((entity) {
-         entity.dirty();
-       });
-     } else {
-       this.currentZoning = new Transition();
-     }
-     */
      Game.currentZoning = new Transition();
      Game.bubbleManager.clean();
      Game.client.sendZone();
@@ -1185,9 +1120,7 @@ class Game extends Base {
    static void updateHoverTargets() {
      Position mousePosition = Game.getMouseGridPosition();
 
-     if (Game.player == null
-        || Game.renderer.mobile
-        || Game.renderer.tablet) {
+     if (Game.player == null) {
        return;
      }
 

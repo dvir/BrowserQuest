@@ -181,13 +181,6 @@ class Hero extends Player {
 
     // Target cursor position
     Game.selected = new Position(x, y);
-
-    if (Game.renderer.mobile || Game.renderer.tablet) {
-      Game.drawTarget = true;
-      Game.clearTarget = true;
-      Game.renderer.targetRect = Game.renderer.getTargetBoundingRect();
-      Game.checkOtherDirtyRects(Game.renderer.targetRect, null, Game.selected);
-    }
   }
   void stopPathing(Position position) {
     Game.selectedCellVisible = false;
