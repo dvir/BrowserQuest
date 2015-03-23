@@ -108,10 +108,6 @@ class Hero extends Player {
   }
 
   void doStep() {
-    // TODO: probably not needed.
-    /*if (this.hasNextStep()) {*/
-      /*Game.registerEntityDualPosition(this);*/
-    /*}*/
     super.doStep();
 
     if (Game.isZoningTile(this.gridPosition)) {
