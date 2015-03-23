@@ -22,8 +22,8 @@ class Sprite extends Base {
   int height;
   html.ImageElement image;
   Map<String, Map<String, int>> animationData;
-  Sprite whiteSprite;
-  Sprite silhouetteSprite;
+  Sprite _whiteSprite;
+  Sprite _silhouetteSprite;
 
   // private
   bool _isLoaded = false;
@@ -99,34 +99,31 @@ class Sprite extends Base {
     ctx.drawImageScaled(this.image, 0, 0, width, height);
     html.ImageData spriteData = ctx.getImageData(0, 0, width, height);
 
-    try {
-      for (int i = 0; i < spriteData.data.length; i += 4) {
-        spriteData.data[i] = 255;
-        spriteData.data[i + 1] = spriteData.data[i + 2] = 75;
-      }
-
-      ctx.putImageData(spriteData, 0, 0);
-
-      html.ImageElement image = new html.ImageElement(src: canvas.toDataUrl()); 
-      this.whiteSprite = new Sprite(
-        image,
-        true,
-        this.offsetX,
-        this.offsetY,
-        this.width,
-        this.height
-      );
-    } catch (e) {
-      html.window.console.error("Error getting image data for sprite : ${this.name}");
-      html.window.console.error(e);
+    for (int i = 0; i < spriteData.data.length; i += 4) {
+      spriteData.data[i] = 255;
+      spriteData.data[i + 1] = spriteData.data[i + 2] = 75;
     }
+
+    ctx.putImageData(spriteData, 0, 0);
+
+    html.ImageElement image = new html.ImageElement(src: canvas.toDataUrl()); 
+    this._whiteSprite = new Sprite(
+      image,
+      true,
+      this.offsetX,
+      this.offsetY,
+      this.width,
+      this.height
+    );
   }
 
   Sprite getHurtSprite() {
-    return this.whiteSprite;
+    return this._whiteSprite;
   }
 
   void createSilhouette() {
+    if (!this.isLoaded) return;
+
     html.CanvasElement canvas = new html.CanvasElement(width: this.image.width, height: this.image.height);
     html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int width = this.image.width;
@@ -139,13 +136,13 @@ class Sprite extends Base {
       return ((width * (y - 1)) + x - 1) * 4;
     };
 
-    Position getPosition(i) {
+    Position getPosition(int i) {
       int x;
       int y;
 
-      i = (i / 4) + 1;
+      i = (i / 4).floor() + 1;
       x = i % width;
-      y = ((i - x) / width) + 1;
+      y = ((i - x) / width).floor() + 1;
 
       return new Position(x, y);
     };
@@ -178,7 +175,7 @@ class Sprite extends Base {
 
     ctx.putImageData(finalData, 0, 0);
     html.ImageElement image = new html.ImageElement(src: canvas.toDataUrl()); 
-    this.silhouetteSprite = new Sprite(
+    this._silhouetteSprite = new Sprite(
       image,
       true,
       this.offsetX,
@@ -186,5 +183,9 @@ class Sprite extends Base {
       this.width,
       this.height
     );
+  }
+
+  Sprite getSilhouetteSprite() {
+    return this._silhouetteSprite;
   }
 }

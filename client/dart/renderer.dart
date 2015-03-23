@@ -53,8 +53,7 @@ class Renderer extends Base {
   AnimationTimer fixFlickeringTimer = new AnimationTimer(new Duration(milliseconds: 100));
 
   // TODO: update to fetch real values
-  bool upscaledRendering = false;
-  bool supportsSilhouettes = false;
+  bool upscaledRendering = true;
 
   Renderer(
     html.CanvasElement this.canvas, 
@@ -88,7 +87,7 @@ class Renderer extends Base {
 
   int getScaleFactor() {
     return 2;
-// TODO: get rid of the idea of scale in the game
+// TODO(scale): get rid of the idea of scale in the game
 /*
     if (html.window.innerWidth <= 1000) {
       return 2;
@@ -404,7 +403,7 @@ class Renderer extends Base {
     int dh = h * ds;
 
     if (entity.isRemoved) {
-      // @TODO: remove from grid?
+      // TODO: remove from grid?
       return;
     }
 
@@ -592,7 +591,7 @@ class Renderer extends Base {
 
     this.drawText(
       this.isDebugInfoVisible 
-        ? "${name} (${entity.id},${entity.distanceTo(Game.player)})" 
+        ? "${entity.name} (${entity.id},${entity.distanceTo(Game.player)})" 
         : entity.name,
       new Position((entity.x + 8) * this.scale, (entity.y + nameOffsetY) * this.scale),
       true,
@@ -675,7 +674,7 @@ class Renderer extends Base {
   }
 
   void drawChat() {
-    // @TODO: move to a proper config
+    // TODO(config): move to a proper config
     bool showTimestamp = false;
     Map<String, String> colors = {
       "global": "orange",

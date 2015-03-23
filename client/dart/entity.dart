@@ -63,11 +63,11 @@ class Entity extends Base {
   }
 
   Sprite get sprite {
-    if (this.isHighlighted) {
-      return this.sprite.silhouetteSprite;
+    if (this._sprite == null) {
+      return null;
     }
 
-    return this._sprite;
+    return this.isHighlighted ? this._sprite.getSilhouetteSprite() : this._sprite;
   }
 
   void set sprite(Sprite sprite) {
@@ -229,10 +229,6 @@ class Entity extends Base {
 
   void log_error(String message) {
     html.window.console.error("[$this.id] $message");
-  }
-
-  void setHighlight(bool isHighlighted) {
-    this.isHighlighted = isHighlighted;
   }
 
   bool isHostile(Entity entity) => false;
