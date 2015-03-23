@@ -1190,34 +1190,36 @@ class Game extends Base {
    /**
     * Processes game logic when the user triggers a click/touch event during the game
     */
-   // TODO(beautify): I'm sure this can be simplified / commented and prettified. Do it.
    static void processInput(Position position, [bool isKeyboard = false]) {
-     if (Game.started
-         && Game.player != null
-         && !Game.isZoning()
-         && !Game.isZoningTile(Game.player.nextGridPosition)
-         && !Game.player.isDead
-         && !Game.isHoveringCollidingTile
-         && !Game.isHoveringPlateauTile) {
-       Entity entity = Game.getEntityAt(position);
+     if (!Game.started
+         || Game.player == null
+         || Game.isZoning()
+         || (Game.player.nextGridPosition != null && Game.isZoningTile(Game.player.nextGridPosition))
+         || Game.player.isDead
+         || Game.isHoveringCollidingTile
+         || Game.isHoveringPlateauTile) {
+       return;
+     }
 
-       if (!isKeyboard && entity != null && entity.interactable) {
-         if (entity is Mob || entity is Player) {
-           Game.player.target = entity;
-         } else if (entity is Item) {
-           Game.makePlayerGoToItem(entity);
-         } else if (entity is Npc) {
-           if (!Game.player.isAdjacentNonDiagonal(entity)) {
-             Game.makePlayerTalkTo(entity);
-           } else {
-             Game.makeNpcTalk(entity);
-           }
-         } else if (entity is Chest) {
-           Game.makePlayerOpenChest(entity);
-         }
+     Entity entity = Game.getEntityAt(position);
+
+     if (isKeyboard || entity == null || !entity.interactable) {
+       Game.makePlayerGoTo(position);
+       return;
+     }
+
+     if (entity is Mob || entity is Player) {
+       Game.player.target = entity;
+     } else if (entity is Item) {
+       Game.makePlayerGoToItem(entity);
+     } else if (entity is Npc) {
+       if (!Game.player.isAdjacentNonDiagonal(entity)) {
+         Game.makePlayerTalkTo(entity);
        } else {
-         Game.makePlayerGoTo(position);
+         Game.makeNpcTalk(entity);
        }
+     } else if (entity is Chest) {
+       Game.makePlayerOpenChest(entity);
      }
    }
 
