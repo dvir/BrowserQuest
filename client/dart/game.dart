@@ -9,6 +9,7 @@ import "animation.dart";
 import "app.dart";
 import "audiomanager.dart";
 import "base.dart";
+import "config.dart";
 import "bubble.dart";
 import "bubblemanager.dart";
 import "door.dart";
@@ -1648,7 +1649,7 @@ class Game extends Base {
       Game.client = new GameClient(Game.host, Game.port);
       Game.client.chat.input = Game.chatInput;
 
-      Game.client.connect(Game.app.config.dispatcher); // false if the client connects directly to a game server
+      Game.client.connect(ServerConfig.dispatcher); // false if the client connects directly to a game server
 
       Game.client.on("Dispatched", (host, port) {
         html.window.console.debug("Dispatched to game server $host:$port");

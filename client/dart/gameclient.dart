@@ -7,6 +7,7 @@ import "base.dart";
 import "character.dart";
 import "chat.dart";
 import "chest.dart";
+import "config.dart";
 import "damageinfo.dart";
 import "entityfactory.dart";
 import "game.dart";
@@ -237,13 +238,10 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.GUILD_MEMBERS.index}', (data) {
-      // TODO(guild): move to a config
-      Map<int, String> rankToTitle = {0: "Leader", 1: "Member", 2: "Officer"};
-
       List<dynamic> members = data[1];
       this.notice("Members of ${Game.player.guild['name']}:");
       members.forEach((dynamic member) {
-        this.notice("${member.name} (${rankToTitle[member.rank]}) ${(member.online ? ' - Online' : '')}");
+        this.notice("${member.name} (${GuildConfig.rankToTitle[member.rank]}) ${(member.online ? ' - Online' : '')}");
       });
     });
 

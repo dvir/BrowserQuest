@@ -16,7 +16,6 @@ import "lib/gametypes.dart";
 
 class Application extends Base {
 
-  Config config = new Config();
   bool isDesktop = true;
   bool supportsWorkers = true;
   int currentPage = 0;
@@ -398,7 +397,7 @@ class Application extends Base {
     }
 
     window.console.debug("Starting game with build config.");
-    Game.setServerOptions(config.host, config.port, username);
+    Game.setServerOptions(ServerConfig.host, ServerConfig.port, username);
 
     this.center();
     Game.run(() {

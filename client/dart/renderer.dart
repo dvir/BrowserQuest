@@ -9,6 +9,7 @@ import "base.dart";
 import "camera.dart";
 import "character.dart";
 import "chatmessage.dart";
+import "config.dart";
 import "entity.dart";
 import "game.dart";
 import "info.dart";
@@ -672,60 +673,26 @@ class Renderer extends Base {
   }
 
   void drawChat() {
-    // TODO(config): move to a proper config
-    bool showTimestamp = false;
-    Map<String, String> colors = {
-      "global": "orange",
-      "party": "cyan",
-      "guild": "#1eff00",
-      "say": "white",
-      "yell": "red",
-      "error": "#f2db2c",
-      "notice": "#f2db2c"
-    };
-    Map<String, String> channelNamePrefix = {
-      "global": "[General] ",
-      "party": "[Party] ",
-      "guild": "[Guild] ",
-      "say": "",
-      "yell": "",
-      "error": "",
-      "notice": ""
-    };
-    Map<String, String> channelNamePostfix = {
-      "global": "",
-      "party": "",
-      "guild": "",
-      "say": " says",
-      "yell": " yells",
-      "error": "",
-      "notice": ""
-    };
-
     List<ChatMessage> messages = Game.client.chat.getMessages();
     int line_height = 22;
     int start_offset = -110;
 
     int i = 0;
     for (final message in messages) {
-      String timestamp = showTimestamp ? "[${message.getTimestamp()}] " : "";
+      String timestamp = ChatConfig.showTimestamp ? "[${message.getTimestamp()}] " : "";
       String channel = message.channel;
 
-      if (channel == "error" || channel == "notice") {
-        this.drawText(
-          "${timestamp}${message.text}",
-          new Position(10, start_offset + (i * line_height)), 
-          /* centered */ false, 
-          colors[channel]
-        );
-      } else {
-        this.drawText(
-          "${timestamp}${channelNamePrefix[channel]}[${message.name}]${channelNamePostfix[channel]}: ${message.text}", 
-          new Position(10, start_offset + (i * line_height)), 
-          /* centered */ false, 
-          colors[channel]
-        );
-      }
+      String text = 
+        (channel == "error" || channel == "notice")
+        ? "${timestamp}${message.text}"
+        : "${timestamp}${ChatConfig.channelNamePrefix[channel]}[${message.name}]${ChatConfig.channelNamePostfix[channel]}: ${message.text}"; 
+
+      this.drawText(
+        text,
+        new Position(10, start_offset + (i * line_height)), 
+        /* centered */ false, 
+        ChatConfig.colors[channel]
+      );
 
       i++;
     }
