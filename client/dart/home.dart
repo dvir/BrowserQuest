@@ -90,10 +90,6 @@ initGame() {
         case Key.ESC:
           Game.player.target = null;
           Game.app.hideWindows();
-          // TODO: wait what? are we stopping OTHER attackers?
-          Game.player.attackers.forEach((_, Character attacker) {
-            attacker.stop();
-          });
           break;
 
         case Key.LEFT:
