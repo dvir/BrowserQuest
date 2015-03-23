@@ -27,6 +27,7 @@ class Audio extends Base {
   num _fadeStep = 0.02;
   num _fadeSpeed = 50;
   Timer _fadeTimer;
+  bool _isPlaying = false;
   bool isFadingOut = false;
   bool isFadingIn = false;
 
@@ -49,7 +50,8 @@ class Audio extends Base {
           return;
         }
 
-        this.initBuffer(buffer);
+        this.buffer = buffer;
+        this.initBuffer();
         if (callback != null) {
           callback();
         }
@@ -60,8 +62,7 @@ class Audio extends Base {
   }
 
   // TODO(soundtrack): might need to take care of channels
-  void initBuffer(AudioBuffer buffer) {
-    this.buffer = buffer;
+  void initBuffer() {
     this.source = this.audioContext.createBufferSource();
     this.source.buffer = buffer;
     this.source.connectNode(this.gainNode, 0, 0);
@@ -74,6 +75,11 @@ return;
 //      throw "Audio ${name} has not been loaded yet";
     }
 
+    if (this._isPlaying == true) {
+      this.stop();
+    }
+
+    this._isPlaying = true;
     this.source.start(0);
   }
 
@@ -85,6 +91,8 @@ return;
     }
 
     this.source.stop(0);
+    this.initBuffer();
+    this._isPlaying = false;
   }
 
   void fadeIn([Function callback = null]) {
@@ -154,8 +162,8 @@ class Music extends Audio {
     [String extension = "ogg"]
   ): super(audioContext, gainNode, name, extension);
 
-  void initBuffer(AudioBuffer buffer) {
-    super.initBuffer(buffer);
+  void initBuffer() {
+    super.initBuffer();
     this.source.loop = true;
   }
 }
