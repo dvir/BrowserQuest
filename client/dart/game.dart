@@ -61,7 +61,7 @@ class Game extends Base {
   static Animation targetAnimation;
   static Animation sparksAnimation;
 
-  static Map<int, Position> deathpositions = new Map<int, Position>();
+  static Map<int, Position> deathPositions = new Map<int, Position>();
 
   static Position mouse;
   static Position selected; // selected grid position
@@ -591,6 +591,16 @@ class Game extends Base {
     Game.addToRenderingGrid(entity, entity.gridPosition);
   }
 
+  static void registerEntityDeathPosition(Entity entity) {
+    // keep track of where entities die in order to spawn their dropped items
+    // at the right position later
+    Game.deathPositions[entity.id] = entity.gridPosition;
+  }
+
+  static void unregisterEntityDeathPosition(int id) {
+    Game.deathPositions.remove(id);
+  }
+
   static void setServerOptions(String host, int port, String username) {
     Game.host = host;
     Game.port = port;
@@ -750,11 +760,8 @@ class Game extends Base {
     }
   }
 
-  // TODO(death): original code deleted the position from this array right after
-  // fetching it. figure out why and remove that requirement (possibly a
-  // timer that deletes it after some time?)
   static Position getDeadMobPosition(int id) {
-    return Game.deathpositions[id];
+    return Game.deathPositions[id];
   }
 
   static void removeObsoleteEntities() {
@@ -1239,7 +1246,7 @@ class Game extends Base {
        Game.audioManager.playSound("death");
 
        Game.entities = {};
-       Game.deathpositions = {};
+       Game.deathPositions = {};
        Game.currentCursor = null;
        Game.zoningQueue = [];
        Game.previousClickPosition = null;
@@ -1743,6 +1750,8 @@ class Game extends Base {
     static void initPlayer() {
       Game.player.on("EquipmentChange", () {
         Game.app.initEquipmentIcons();
+        // TODO(storage): imeplement differently
+        // Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
       });
 
       // TODO(storage): implement differently

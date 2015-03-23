@@ -16,10 +16,7 @@ class Mob extends Character {
   bool isHostile(Entity entity) => (entity is Player);
 
   void die() {
-    // TODO(death): implement a proper function receive deathpositions @ Game class
-    // Keep track of where mobs die in order to spawn their dropped items
-    // at the right position later.
-    Game.deathpositions[this.id] = this.gridPosition;
+    Game.registerEntityDeathPosition(this);
 
     super.die();
   }

@@ -525,6 +525,7 @@ class GameClient extends Base {
         data[5] 
         ? new Position(data[5]['x'], data[5]['y']) 
         : Game.getDeadMobPosition(entityId);
+      Game.unregisterEntityDeathPosition(entityId);
 
       Game.addItem(item, pos);
       Game.updateCursor();
