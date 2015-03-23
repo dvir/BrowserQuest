@@ -63,9 +63,11 @@ class Hero extends Player {
    */
   void beforeStep() {
     // TODO(block): entities shouldn't block each other anymore, so this could be removed.
-    Entity blockingEntity = Game.getEntityAt(new Position(this.nextGridX, this.nextGridY));
-    if (blockingEntity != null && blockingEntity.id != this.id) {
-      this.log_debug("Blocked by ${blockingEntity.id}");
+    if (this.nextGridPosition != null) {
+      Entity blockingEntity = Game.getEntityAt(this.nextGridPosition);
+      if (blockingEntity != null && blockingEntity.id != this.id) {
+        this.log_debug("Blocked by ${blockingEntity.id}");
+      }
     }
 
     Game.unregisterEntityPosition(this);

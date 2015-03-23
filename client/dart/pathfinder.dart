@@ -92,11 +92,9 @@ class Pathfinder extends Base {
 
   void applyIgnoreList_(bool ignored) {
     this.ignored.forEach((Character character) {
-      int x = character.isMoving() ? character.nextGridX : character.gridPosition.x;
-      int y = character.isMoving() ? character.nextGridY : character.gridPosition.y;
-
-      if (x >= 0 && y >= 0) {
-        this.grid[y][x] = ignored ? 0 : 1;
+      Position pos = character.isMoving() ? character.nextGridPosition : character.gridPosition;
+      if (pos != null) {
+        this.grid[pos.y][pos.x] = ignored ? 0 : 1;
       }
     });
   }

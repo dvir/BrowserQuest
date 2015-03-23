@@ -554,8 +554,8 @@ class Game extends Base {
   static void registerEntityDualPosition(Character entity) {
     Game.entityGrid[entity.gridPosition.y][entity.gridPosition.x][entity.id] = entity;
     Game.addToRenderingGrid(entity, entity.gridPosition);
-    if (entity.nextGridX >= 0 && entity.nextGridY >= 0) {
-      Game.entityGrid[entity.nextGridY][entity.nextGridX][entity.id] = entity;
+    if (entity.nextGridPosition != null) {
+      Game.entityGrid[entity.nextGridPosition.y][entity.nextGridPosition.x][entity.id] = entity;
     }
   }
 
@@ -569,10 +569,9 @@ class Game extends Base {
     Game.removeFromPathingGrid(entity.gridPosition);
     Game.removeFromRenderingGrid(entity, entity.gridPosition);
 
-    // TODO(beautify): I don't like this checks. get rid of them
-    if (entity is Character && entity.nextGridX >= 0 && entity.nextGridY >= 0) {
-      Game.removeFromEntityGrid(entity, new Position(entity.nextGridX, entity.nextGridY));
-      Game.removeFromPathingGrid(new Position(entity.nextGridX, entity.nextGridY));
+    if (entity is Character && entity.nextGridPosition != null) {
+      Game.removeFromEntityGrid(entity, entity.nextGridPosition);
+      Game.removeFromPathingGrid(entity.nextGridPosition);
     }
   }
 
@@ -711,8 +710,7 @@ class Game extends Base {
 
   static void teleport(Door dest) {
     Game.player.gridPosition = dest.destination;
-    Game.player.nextGridX = dest.destination.x;
-    Game.player.nextGridY = dest.destination.y;
+    Game.player.nextGridPosition = dest.destination;
     Game.player.turnTo(dest.orientation);
     Game.client.sendTeleport(dest.destination);
 
@@ -1197,7 +1195,7 @@ class Game extends Base {
      if (Game.started
          && Game.player != null
          && !Game.isZoning()
-         && !Game.isZoningTile(new Position(Game.player.nextGridX, Game.player.nextGridY))
+         && !Game.isZoningTile(Game.player.nextGridPosition)
          && !Game.player.isDead
          && !Game.isHoveringCollidingTile
          && !Game.isHoveringPlateauTile) {

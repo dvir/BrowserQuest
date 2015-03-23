@@ -19,9 +19,7 @@ class Character extends Entity {
   EntityKind _weapon;
   EntityKind _armor;
 
-  // Position and orientation
-  int nextGridX = -1;
-  int nextGridY = -1;
+  Position nextGridPosition;
 
   // Speeds
   int atkSpeed = 50;
@@ -58,9 +56,7 @@ class Character extends Entity {
   void reset() {
     super.reset();
 
-    // Position and orientation
-    this.nextGridX = -1;
-    this.nextGridY = -1;
+    this.nextGridPosition = null;
 
     // Speeds
     this.atkSpeed = 50;
@@ -285,8 +281,7 @@ class Character extends Entity {
       this.isMovementInterrupted = false;
     } else {
       if (this.hasNextStep()) {
-        this.nextGridX = this.path[this.step + 1][0];
-        this.nextGridY = this.path[this.step + 1][1];
+        this.nextGridPosition = new Position(this.path[this.step + 1][0], this.path[this.step + 1][1]);
       }
 
       this.doStep();
