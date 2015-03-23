@@ -39,8 +39,8 @@ class Character extends Entity {
   Position newDestination;
 
   // Combat
-  Character _target;
-  Character previousTarget;
+  Entity _target;
+  Entity previousTarget;
   Map<int, Character> attackers = {};
 
   // Modes
@@ -105,7 +105,7 @@ class Character extends Entity {
   bool isHostile(Entity entity) => false;
 
   Character get target => this._target;
-  void set target(Character target) {
+  void set target(Entity target) {
     this._target = target;
     this.trigger("TargetChange");
     this.trigger("change");
@@ -455,7 +455,6 @@ class Character extends Entity {
       return;
     }
 
-    this.target.removeAttacker(this);
     this.target = null;
   }
 

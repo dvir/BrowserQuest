@@ -5,6 +5,7 @@ import 'dart:html' hide Player;
 import 'dart:math';
 
 import 'base.dart';
+import 'character.dart';
 import 'config.dart';
 import 'entity.dart';
 import 'game.dart';
@@ -22,6 +23,8 @@ class Application extends Base {
   bool isParchmentReady = true;
   Timer messageTimer;
   String previousState;
+  HealthBar playerHealthBar;
+  HealthBar targetHealthBar;
   
   void center() {
     window.scrollTo(0, 1);
@@ -86,11 +89,8 @@ class Application extends Base {
   }
 
   void initHealthBar() {
-    Healthbar healthbar = new Healthbar(document.getElementById("player"), Game.player);
-
-    Game.events.on("HealthChange", () {
-      healthbar.update();
-    });
+    this.playerHealthBar = new HealthBar(document.getElementById("player"));
+    this.playerHealthBar.setTarget(Game.player);
   }
 
   void initXPBar() {
@@ -106,21 +106,11 @@ class Application extends Base {
   }
 
   void initTargetBar() {
-    Element $target = document.getElementById("target");
+    this.targetHealthBar = new HealthBar(document.getElementById("target"));
 
     Game.events.on("TargetChange", () {
       Entity target = Game.player.target;
-
-      if (target == null) {
-        $target.style.display = 'none';
-        return;
-      }
-
-      $target.style.display = 'block';
-      Healthbar healthbar = new Healthbar($target, target);
-      target.on("change", () {
-        healthbar.update();
-      });
+      this.targetHealthBar.setTarget(target is Character ? target : null);
     });
   }
   
