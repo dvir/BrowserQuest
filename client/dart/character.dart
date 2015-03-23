@@ -81,6 +81,9 @@ class Character extends Entity {
     // Modes
     this.attackingMode = false;
     this.followingMode = false;
+
+    // TODO(sprites): meh. refactor setSprite mechanics
+    this.setSprite(this.sprite);
   }
 
   void clean() {

@@ -26,7 +26,6 @@ class AnimatedTile extends Tile {
       this.id = (this.id + 1) % this.length;
       this.isDirty = true;
       this.dirtyRect = Game.renderer.getTileBoundingRect(this);
-      Game.checkOtherDirtyRects(this.dirtyRect, this, this.position);
     });
   }
 

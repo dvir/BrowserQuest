@@ -59,7 +59,7 @@ class GameClient extends Base {
             Game.makeCharacterGoTo(entity, position);
           }
         } else {
-          // TODO: this seems like a hack that was made for party updates. remove it
+          // TODO(party): this seems like a hack that was made for party updates. remove it
           // maybe it's a player location update
           // check if it's a player entity
           Player player = Game.getPlayerByID(id);
@@ -87,52 +87,38 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.LOOT.index}', (data) {
-      int itemId = data[1];
+      int itemID = data[1];
 
-      Item item = Game.player.inventory.find(itemId);
+      Item item = Game.player.inventory.find(itemID);
       if (item == null) {
-        html.window.console.error("Loot was picked up but couldn't be found in inventory. (${itemId})");
+        html.window.console.error("Loot was picked up but couldn't be found in inventory. (${itemID})");
         return;
       }
 
-      try {
-        Game.player.loot(item);
-        Game.showNotification(item.lootMessage);
+      Game.player.loot(item);
+      Game.showNotification(item.lootMessage);
 
-        if (item.type == "armor") {
-          Game.tryUnlockingAchievement("FAT_LOOT");
-        }
+      if (item.type == "armor") {
+        Game.tryUnlockingAchievement("FAT_LOOT");
+      } else if (item.type == "weapon") {
+        Game.tryUnlockingAchievement("A_TRUE_WARRIOR");
+      }
 
-        if (item.type == "weapon") {
-          Game.tryUnlockingAchievement("A_TRUE_WARRIOR");
-        }
+      if (item.kind == Entities.CAKE) {
+        Game.tryUnlockingAchievement("FOR_SCIENCE");
+      } else if (item.kind == Entities.FIREPOTION) {
+        Game.tryUnlockingAchievement("FOXY");
+        Game.audioManager.playSound("firefox");
+      }
 
-        if (item.kind == Entities.CAKE) {
-          Game.tryUnlockingAchievement("FOR_SCIENCE");
-        }
+      if (Types.isHealingItem(item.kind)) {
+        Game.audioManager.playSound("heal");
+      } else {
+        Game.audioManager.playSound("loot");
+      }
 
-        if (item.kind == Entities.FIREPOTION) {
-          Game.tryUnlockingAchievement("FOXY");
-          Game.audioManager.playSound("firefox");
-        }
-
-        if (Types.isHealingItem(item.kind)) {
-          Game.audioManager.playSound("heal");
-        } else {
-          Game.audioManager.playSound("loot");
-        }
-
-        if (item.wasDropped && !item.playersInvolved.contains(Game.player.id)) {
-          Game.tryUnlockingAchievement("NINJA_LOOT");
-        }
-      } catch (e) {
-        // TODO: find a better way to do this and remove the comments
-        /*if (e instanceof Exceptions.LootException) {*/
-          /*Game.showNotification(e.message);*/
-          /*Game.audioManager.playSound("noloot");*/
-        /*} else {*/
-          throw e;
-        /*}*/
+      if (item.wasDropped && !item.playersInvolved.contains(Game.player.id)) {
+        Game.tryUnlockingAchievement("NINJA_LOOT");
       }
     });
 
@@ -252,7 +238,7 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.GUILD_MEMBERS.index}', (data) {
-      // @TODO: move to a config
+      // TODO(guild): move to a config
       Map<int, String> rankToTitle = {0: "Leader", 1: "Member", 2: "Officer"};
 
       List<dynamic> members = data[1];
@@ -287,18 +273,7 @@ class GameClient extends Base {
       if (attacker != null && target != null && attacker.id != Game.player.id) {
         html.window.console.debug('${attacker.id} attacks ${target.id}');
 
-        if (target is Player && target.id != Game.player.id && target.target != null&& target.target.id == attacker.id && attacker.getDistanceToEntity(target) < 3) {
-          // TODO: eh? remove this crap and let the server decide on this AI behavior
-
-          // delay to prevent other players attacking mobs
-          // from ending up on the same tile as they walk
-          // towards each other.
-          new Timer(new Duration(milliseconds: 200), () {
-            Game.createAttackLink(attacker, target);
-          });
-        } else {
-          Game.createAttackLink(attacker, target);
-        }
+        Game.createAttackLink(attacker, target);
       }
     });
 
@@ -339,7 +314,7 @@ class GameClient extends Base {
       Position position = new Position(data[3], data[4]);
 
       if (Types.isSpell(kind)) {
-        //@TODO: handle properly
+        //TODO(spells): handle properly
 //        Entity spell = EntityFactory.createEntity(kind, id);
       } else if (Types.isItem(kind)) {
         Entity item = EntityFactory.createEntity(kind, id);
@@ -495,7 +470,7 @@ class GameClient extends Base {
             player.hurt();
             Game.infoManager.addInfo(new ReceivedDamageInfo('${diff}', player.x, player.y - 15));
             Game.audioManager.playSound("hurt");
-            // TODO: implement differently
+            // TODO(storage): implement differently
 //            Game.storage.addDamage(-diff);
             Game.tryUnlockingAchievement("MEATSHIELD");
             Game.events.trigger("Hurt");
@@ -640,24 +615,25 @@ class GameClient extends Base {
         }
       }
 
-      // TODO: implement differently
-//      Game.storage.incrementTotalKills();
+      // TODO(storage): implement differently
+      // Game.storage.incrementTotalKills();
       Game.tryUnlockingAchievement("HUNTER");
 
-      if (kind == Entities.RAT) {
-        // TODO: implement differently
-//        Game.storage.incrementRatCount();
-        Game.tryUnlockingAchievement("ANGRY_RATS");
-      }
-
-      if (kind == Entities.SKELETON || kind == Entities.SKELETON2) {
-        // TODO: implement differently
-//        Game.storage.incrementSkeletonCount();
-        Game.tryUnlockingAchievement("SKULL_COLLECTOR");
-      }
-
-      if (kind == Entities.BOSS) {
-        Game.tryUnlockingAchievement("HERO");
+      switch (kind) {
+        case Entities.RAT:
+          // TODO(storage): implement differently
+          // Game.storage.incrementRatCount();
+          Game.tryUnlockingAchievement("ANGRY_RATS");
+          break;
+        case Entities.SKELETON:
+        case Entities.SKELETON2:
+          // TODO(storage): implement differently
+          // Game.storage.incrementSkeletonCount();
+          Game.tryUnlockingAchievement("SKULL_COLLECTOR");
+          break;
+        case Entities.BOSS:
+          Game.tryUnlockingAchievement("HERO");
+          break;
       }
     });
 
@@ -852,7 +828,7 @@ class GameClient extends Base {
     Game.disconnected(message);
   }
 
-  // TODO: uncomment
+  // TODO(inventory): uncomment
   /*void sendInventory(Inventory inventory) {*/
     /*this.sendMessage([Message.INVENTORY,*/
       /*inventory.serialize()*/
@@ -904,7 +880,7 @@ class GameClient extends Base {
     this.sendMessage(message);
   }
 
-  // TODO: uncomment
+  // TODO(skillbar): uncomment
   /*void sendSkillbar(Skillbar skillbar) {*/
     /*this.sendMessage([Message.SKILLBAR,*/
       /*skillbar.serialize()*/

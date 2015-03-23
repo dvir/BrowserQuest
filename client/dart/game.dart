@@ -148,12 +148,12 @@ class Game extends Base {
   }
 
   static void initAchievements() {
-    // TODO: implement
+    // TODO(achievements): implement
     // possibly create an AchievementsManager
   }
 
   static void tryUnlockingAchievement(String name) {
-    // TODO: implement!
+    // TODO(achievements): implement!
   }
 
   static void addPlayer(Player player) {
@@ -554,8 +554,8 @@ class Game extends Base {
     Game.camera = Game.renderer.camera;
     Game.setSpriteScale(Game.renderer.scale);
 
-    // check every 100 milliseconds if all sprites and map has loaded.
-    // @TODO: listen for the relevant events instead.
+    // check every 500 milliseconds if all sprites and map has loaded.
+    // TODO: listen for the relevant events instead.
     new Timer.periodic(new Duration(milliseconds: 500), (Timer timer) {
       if (!Game.map.isLoaded || !Game.hasAllSpritesLoaded()) {
         return;
@@ -629,7 +629,7 @@ class Game extends Base {
 
     Game.resurrect();
 
-    // TODO: implement properly
+    // TODO(storage): implement properly
     //this.storage.incrementRevives();
 
     html.window.console.debug("Finished restart");
@@ -799,40 +799,6 @@ class Game extends Base {
      character.gridPosition = position;
      Game.registerEntityPosition(character);
      Game.assignBubbleTo(character);
-   }
-
-   // TODO: THIS CRAP IS ONLY CALLED FOR MOBILE BULLSHIT. SEE IF IT'S EVEN NEEDED.
-   // @TODO: below
-   // source might be a tile or an entity.
-   // split into two functions and a helper
-   static void checkOtherDirtyRects(Rect r1, dynamic source, Position position) {
-     Game.forEachEntityAround(position, 2, (Entity entity) {
-       if (source is Entity && source.id == entity.id) {
-         return;
-       }
-
-       if (!entity.isDirty && r1.isIntersecting(Game.renderer.getEntityBoundingRect(entity))) {
-         entity.dirty();
-       }
-     });
-
-     if (source != null && !(source is AnimatedTile)) {
-       Game.forEachAnimatedTile((Tile tile) {
-         if (!tile.isDirty) {
-           if (r1.isIntersecting(Game.renderer.getTileBoundingRect(tile))) {
-             tile.isDirty = true;
-           }
-         }
-       });
-     }
-
-     if (!Game.drawTarget && Game.selectedCellVisible) {
-       Rect targetRect = Game.renderer.getTargetBoundingRect();
-       if (r1.isIntersecting(targetRect)) {
-         Game.drawTarget = true;
-         Game.renderer.targetRect = targetRect;
-       }
-     }
    }
 
    static void assignBubbleTo(Character character) {
@@ -1169,7 +1135,7 @@ class Game extends Base {
    }
 
    /**
-    * Processes game logic when the user triggers a click/touch event during the gam>
+    * Processes game logic when the user triggers a click/touch event during the game
     */
    // TODO: I'm sure this can be simplified / commented and prettified. Do it.
    static void processInput(Position position, [bool isKeyboard = false]) {
@@ -1217,7 +1183,39 @@ class Game extends Base {
    }
 
    static void playerDeath() {
-     Game.app.playerDeath();
+     window.setImmediate(() {
+       Game.removeEntity(Game.player);
+       Game.removeFromRenderingGrid(Game.player, Game.player.gridPosition);
+
+       Game.audioManager.fadeOutCurrentMusic();
+       Game.audioManager.playSound("death");
+
+       Game.entities = {};
+       Game.deathpositions = {};
+       Game.currentCursor = null;
+       Game.zoningQueue = [];
+       Game.previousClickPosition = null;
+
+       Game.initPathingGrid();
+       Game.initEntityGrid();
+       Game.initRenderingGrid();
+       Game.initItemGrid();
+
+       Game.selected = new Position(0, 0);
+       Game.selectedCellVisible = false;
+       Game.targetColor = "rgba(255, 255, 255, 0.5)";
+       Game.targetCellVisible = true;
+       Game.hoveringTarget = null;
+       Game.hoveringPlayer = null;
+       Game.hoveringMob = null;
+       Game.hoveringNpc = null;
+       Game.hoveringItem = null;
+       Game.hoveringChest = null;
+       Game.isHoveringPlateauTile = false;
+       Game.isHoveringCollidingTile = false;
+
+       Game.app.playerDeath();
+     });
    }
 
    static void playerInvincible(bool state) {
@@ -1642,8 +1640,7 @@ class Game extends Base {
           Game.player.idle();
           Game.player.isRemoved = false;
         } else {
-          // TODO: fix to a proper id, ideally from the server
-          Game.player = new Hero(13371337, "Newbie");
+          Game.player = new Hero(data['id'], data['name']);
         }
 
         // make events from player to bubble to game
@@ -1672,7 +1669,7 @@ class Game extends Base {
         Game.initPlayer();
         Game.player.idle();
 
-        // TODO: implement differently
+        // TODO(storage): implement differently
         /*
         if (!Game.storage.hasAlreadyPlayed()) {
           Game.storage.initPlayer(Game.player.name);
@@ -1693,14 +1690,12 @@ class Game extends Base {
     }
 
     static void initPlayer() {
-      // TODO: implement differently
+      // TODO(storage): implement differently
 //      Game.player.setStorage(Game.storage);
 //      Game.player.loadFromStorage(() {
 //        Game.updateBars();
 //      });
 
-      // TODO: meh. refactor setSprite mechanics
-      Game.player.setSprite(Game.sprites["clotharmor"]);
       html.window.console.debug("Finished initPlayer");
     }
 

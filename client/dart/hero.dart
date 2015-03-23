@@ -26,12 +26,12 @@ class Hero extends Player {
   LocalStorage storage;
 
   Hero(int id, String name): super(id, name, Entities.PLAYER) {
-    // TODO: implement!
+    // TODO(skillbar): implement!
     this.skillbar = new Skillbar([]);
-    // TODO: implement!
+    // TODO(inventory): implement!
     this.inventory = new Inventory([]);
     this.on("EquipmentChange", () {
-      // TODO: imeplement differently
+      // TODO(storage): imeplement differently
 //      Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), this);
       Game.playerChangedEquipment();
     });
@@ -51,40 +51,7 @@ class Hero extends Player {
     this.animate("death", 120, 1, () {
       this.log_info("was removed");
 
-      new Timer(new Duration(seconds: 1), () {
-        // TODO: move this crap into a Game class helper function
-        Game.removeEntity(this);
-        Game.removeFromRenderingGrid(this, this.gridPosition);
-
-        Game.audioManager.fadeOutCurrentMusic();
-        Game.audioManager.playSound("death");
-
-        Game.entities = {};
-        Game.deathpositions = {};
-        Game.currentCursor = null;
-        Game.zoningQueue = [];
-        Game.previousClickPosition = null;
-
-        Game.initPathingGrid();
-        Game.initEntityGrid();
-        Game.initRenderingGrid();
-        Game.initItemGrid();
-
-        Game.selected = new Position(0, 0);
-        Game.selectedCellVisible = false;
-        Game.targetColor = "rgba(255, 255, 255, 0.5)";
-        Game.targetCellVisible = true;
-        Game.hoveringTarget = null;
-        Game.hoveringPlayer = null;
-        Game.hoveringMob = null;
-        Game.hoveringNpc = null;
-        Game.hoveringItem = null;
-        Game.hoveringChest = null;
-        Game.isHoveringPlateauTile = false;
-        Game.isHoveringCollidingTile = false;
-
-        Game.playerDeath();
-      });
+      Game.playerDeath();
     });
 
     this.forEachAttacker((Character attacker) {
@@ -278,9 +245,11 @@ class Hero extends Player {
   }
 
   void loadFromObject(data) {
+    // TODO(inventory): implement
     /*this.loadInventory(data.inventory);*/
     /*data.remove("inventory");*/
 
+    // TODO(skillbar): implement
     /*this.loadSkillbar(data.skillbar);*/
     /*data.remove("skillbar");*/
 
