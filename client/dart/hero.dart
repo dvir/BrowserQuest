@@ -1,7 +1,5 @@
 library hero;
 
-import "dart:async";
-
 import "character.dart";
 import "chest.dart";
 import "entity.dart";
@@ -9,7 +7,6 @@ import "game.dart";
 import "inventory.dart";
 import "inventoryitem.dart";
 import "item.dart";
-import "mob.dart";
 import "npc.dart";
 import "player.dart";
 import "skillbar.dart";

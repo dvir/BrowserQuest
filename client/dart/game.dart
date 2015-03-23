@@ -4,9 +4,9 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math';
 
-import "app.dart";
 import "animatedtile.dart";
 import "animation.dart";
+import "app.dart";
 import "audiomanager.dart";
 import "base.dart";
 import "bubble.dart";
@@ -22,21 +22,19 @@ import "renderer.dart";
 import "sprite.dart";
 import "transition.dart";
 import "updater.dart";
-import "lib/gametypes.dart";
-import 'dart:html' as html;
-import 'map.dart';
+import 'audio.dart';
+import 'camera.dart';
+import 'character.dart';
+import 'checkpoint.dart';
+import 'chest.dart';
 import 'gameclient.dart';
+import 'infomanager.dart';
+import 'map.dart';
 import 'mob.dart';
 import 'npc.dart';
-import 'chest.dart';
 import 'spelleffect.dart';
 import 'tile.dart';
-import 'camera.dart';
-import 'infomanager.dart';
-import 'character.dart';
-import 'rect.dart';
-import 'audio.dart';
-import 'checkpoint.dart';
+import "lib/gametypes.dart";
 
 class Game extends Base {
 
