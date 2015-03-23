@@ -288,13 +288,13 @@ class GameClient extends Base {
 
     this.on('Message.${Message.PLAYER_UPDATE.index}', (data) {
       dynamic playerData = data[1];
-      Player player = Game.getPlayerByID(playerData.id);
+      Player player = Game.getPlayerByID(playerData['id']);
       if (player == null || player.id == Game.player.id) {
         // irrelevant update
         return;
       }
 
-      player.loadFromObject(playerData.data);
+      player.loadFromObject(playerData['data']);
     });
 
     this.on('Message.${Message.PLAYER_EXIT.index}', (data) {
