@@ -93,29 +93,6 @@ class Hero extends Player {
     });
   }
 
-  // TODO: WHAT?! this is highly inefficient. improve this crap.
-  //       Also, this should be done on the server side.
-  void checkAggro() {
-    Game.forEachMob((Mob mob) {
-      if (mob.isAggressive
-          && !mob.isAttacking()
-          && this.isNear(mob, mob.aggroRange)
-      ) {
-        this.aggro(mob);
-      }
-    });
-  }
-
-  // TODO: this should be all in the server side. the client shouldn't be
-  //       the one telling the server who aggroed who.
-  void aggro(Character character) {
-    if (!character.isWaitingToAttack(this) && !this.isAttackedBy(character)) {
-      this.log_info("Aggroed by ${character.id} at (${this.gridPosition.x},${this.gridPosition.y})");
-      Game.client.sendAggro(character);
-      character.waitToAttack(this);
-    }
-  }
-
   /**
    * This function does pre-step preparations - as for now, just unregister
    * the previous entity position on the grid.

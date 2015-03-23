@@ -40,7 +40,6 @@ class Character extends Entity {
 
   // Combat
   Character _target;
-  Character unconfirmedTarget;
   Character previousTarget;
   Map<int, Character> attackers = {};
 
@@ -77,7 +76,6 @@ class Character extends Entity {
 
     // Combat
     this.target = null;
-    this.unconfirmedTarget = null;
     this.attackers = new Map<int, Entity>();
 
     // Modes
@@ -281,7 +279,6 @@ class Character extends Entity {
     this.beforeStep();
 
     this.updatePositionOnGrid();
-    this.checkAggro();
 
     if (this.isMovementInterrupted) { // if Character.stop() has been called
       stop = true;
@@ -348,12 +345,6 @@ class Character extends Entity {
   bool isNear(Character character, num distance) =>
     (this.gridPosition.x - character.gridPosition.x).abs() <= distance
     && (this.gridPosition.y - character.gridPosition.y).abs() <= distance;
-
-  checkAggro() {
-  }
-
-  aggro(Character character) {
-  }
 
   void lookAtTarget() {
     if (this.hasTarget()) {
@@ -456,7 +447,6 @@ class Character extends Entity {
     if (this.hasTarget()) {
       this.removeTarget(); // Cleanly remove the previous one
     }
-    this.unconfirmedTarget = null;
     this.target = entity;
   }
 
@@ -470,19 +460,6 @@ class Character extends Entity {
   }
 
   bool hasTarget() => (this.target != null);
-
-  // TODO: figure out if this is needed. applies to the next two methods.
-  /**
-   * Marks this character as waiting to attack a target.
-   * By sending an "attack" message, the server will later confirm (or not)
-   * that this character is allowed to acquire this target.
-   *
-   * @param {Character} character The target character
-   */
-  void waitToAttack(Character character) {
-    this.unconfirmedTarget = character;
-  }
-  bool isWaitingToAttack(Character character) => (this.unconfirmedTarget == character);
 
   bool canAttack(int time) =>
       this.canReachTarget()

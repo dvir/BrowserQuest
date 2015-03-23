@@ -12,17 +12,6 @@ import "lib/gametypes.dart";
 
 class Updater extends Base {
 
-  Updater() {
-    // TODO: eh?! we are removing this crap alltogether.
-    // should be done on the server.
-    new Timer.periodic(new Duration(seconds: 1), (Timer timer) {
-      // Check player aggro every 1s when not moving nor attacking
-      if (Game.player != null && !Game.player.isMoving() && !Game.player.isAttacking()) {
-        Game.player.checkAggro();
-      }
-    });
-  }
-
   void update() {
     int t = Game.currentTime;
 

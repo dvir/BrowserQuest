@@ -8,7 +8,6 @@ import "lib/gametypes.dart";
 
 class Mob extends Character {
 
-  int aggroRange = 1;
   bool isAggressive = true;
   bool targetable = true;
 

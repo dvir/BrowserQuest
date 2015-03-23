@@ -64,7 +64,6 @@ class Deathknight extends Mob {
     this.walkSpeed = 100;
     this.idleSpeed = 450;
     this.attackRate = 800;
-    this.aggroRange = 3;
   }
 
   void idle([Orientation orientation]) {
@@ -160,7 +159,6 @@ class Boss extends Mob {
     this.moveSpeed = 300;
     this.atkSpeed = 50;
     this.idleSpeed = 400;
-    this.aggroRange = 3;
     this.attackRate = 2000;
   }
 
