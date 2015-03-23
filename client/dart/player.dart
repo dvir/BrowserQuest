@@ -59,8 +59,7 @@ class Player extends Character {
             || !this.party.isMember(entity))
        );
 
-  // TODO: give a real type to paths
-  requestPathfindingTo(Position position) {
+  List<List<int>> requestPathfindingTo(Position position) {
     List<Entity> ignored = []; // Always ignore self
 
     // TODO: maybe we should stop ignoring the target??
