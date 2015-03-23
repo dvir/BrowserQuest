@@ -17,7 +17,6 @@ class Spell extends Base {
   int cooldown = 1;
   int castTime = 1;
   String name = "N/A";
-  String tooltip = "N/A";
   String spellType = "single";
   String type = "spell";
 

@@ -10,8 +10,6 @@ abstract class Item extends Entity {
   int amount = 1;
   int cooldown = 1;
   int castTime = 1;
-  // TODO: implement
-  final String tooltip = "N/A";
   final String lootMessage;
   List<int> playersInvolved = [];
 
