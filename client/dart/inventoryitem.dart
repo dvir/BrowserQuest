@@ -6,7 +6,7 @@ import "item.dart";
 import "lib/gametypes.dart";
 import 'hero.dart';
 
-// TODO: make it a class not dependant of Item.
+// TODO(inventory): make it a class not dependant of Item.
 class InventoryItem extends Item {
 
   int slot = 0;

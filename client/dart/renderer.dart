@@ -52,8 +52,7 @@ class Renderer extends Base {
   Rect targetRect;
   AnimationTimer fixFlickeringTimer = new AnimationTimer(new Duration(milliseconds: 100));
 
-  // TODO: update to fetch real values
-  bool upscaledRendering = true;
+  bool upscaledRendering = false;
 
   Renderer(
     html.CanvasElement this.canvas, 
@@ -403,7 +402,6 @@ class Renderer extends Base {
     int dh = h * ds;
 
     if (entity.isRemoved) {
-      // TODO: remove from grid?
       return;
     }
 

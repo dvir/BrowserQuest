@@ -13,7 +13,7 @@ initGame() {
   Element foreground = document.getElementById("foreground");
   Element input = document.getElementById("chatinput");
   Game.setup(new Application(), document.getElementById('bubbles'), canvas, background, foreground, input);
-// TODO: implement differently
+// TODO(storage): implement differently
   //Game.setStorage(Game.app.storage);
 
   if (Game.app.isDesktop && Game.app.supportsWorkers) {
@@ -301,7 +301,7 @@ void main() {
 
   document.getElementById('achievementsbutton').onClick.listen((Event event) {
     Game.app.toggleAchievements();
-    // TODO: implement or remove
+    // TODO(app): implement or remove
     /*
     if (Game.app.blinkInterval) {
       clearInterval(Game.app.blinkInterval);
@@ -339,7 +339,7 @@ void main() {
   });
 
   document.querySelector('.delete').onClick.listen((Event event) {
-    // TODO: implement properly
+    // TODO(storage): implement properly
     //Game.app.storage.clear();
     Game.app.animateParchment('confirmation', 'createcharacter');
   });
@@ -398,7 +398,7 @@ void main() {
     return false;
   });
 
-  // TODO: implement properly
+  // TODO(storage): implement properly
   /*
   dynamic data = Game.app.storage.data;
   if (data.hasAlreadyPlayed) {

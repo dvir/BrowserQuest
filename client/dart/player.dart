@@ -171,7 +171,7 @@ class Player extends Character {
   }
 
   void loadFromObject(data) {
-    // TODO: we need better mechanisms here to verify data integrity.
+    // TODO(data-sync): we need better mechanisms here to verify data integrity.
     // also, it would be better to split this function into two use cases:
     // either creating a new entity and filling it with data, 
     // or just updating an existing one. this will allow us to verify the data

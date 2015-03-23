@@ -571,7 +571,7 @@ class Game extends Base {
     Game.removeFromPathingGrid(entity.gridPosition);
     Game.removeFromRenderingGrid(entity, entity.gridPosition);
 
-    // TODO: I don't like this checks. get rid of them
+    // TODO(beautify): I don't like this checks. get rid of them
     if (entity is Character && entity.nextGridX >= 0 && entity.nextGridY >= 0) {
       Game.removeFromEntityGrid(entity, new Position(entity.nextGridX, entity.nextGridY));
       Game.removeFromPathingGrid(new Position(entity.nextGridX, entity.nextGridY));
@@ -614,7 +614,7 @@ class Game extends Base {
     Game.setSpriteScale(Game.renderer.scale);
 
     // check every 500 milliseconds if all sprites and map has loaded.
-    // TODO: listen for the relevant events instead.
+    // TODO(events): listen for the relevant events instead.
     new Timer.periodic(new Duration(milliseconds: 500), (Timer timer) {
       if (!Game.map.isLoaded || !Game.hasAllSpritesLoaded()) {
         return;
@@ -734,7 +734,7 @@ class Game extends Base {
 
     Game.updatePlateauMode();
 
-    // TODO: emit an event, i.e "ZoneChange" and check it there
+    // TODO(events): emit an event, i.e "ZoneChange" and check it there
     Game.checkUndergroundAchievement();
 
     if (dest.isPortal) {
@@ -756,7 +756,7 @@ class Game extends Base {
     }
   }
 
-  // TODO: original code deleted the position from this array right after
+  // TODO(death): original code deleted the position from this array right after
   // fetching it. figure out why and remove that requirement (possibly a
   // timer that deletes it after some time?)
   static Position getDeadMobPosition(int id) {
@@ -1067,9 +1067,7 @@ class Game extends Base {
        return Orientation.DOWN;
      }
 
-     // TODO: can this be ever null? what does it mean for the callsites?
-     // investigate.
-     return null;
+     return Game.player.orientation;
    }
 
    static void startZoningFrom(Position position) {
@@ -1196,7 +1194,7 @@ class Game extends Base {
    /**
     * Processes game logic when the user triggers a click/touch event during the game
     */
-   // TODO: I'm sure this can be simplified / commented and prettified. Do it.
+   // TODO(beautify): I'm sure this can be simplified / commented and prettified. Do it.
    static void processInput(Position position, [bool isKeyboard = false]) {
      if (Game.started
          && Game.player != null
@@ -1236,7 +1234,7 @@ class Game extends Base {
      Game.client.sendCheck(checkpoint.id);
    }
 
-   // TODO: convert to events
+   // TODO(events): convert to events
    static void playerChangedEquipment() {
      Game.app.initEquipmentIcons();
    }
@@ -1608,7 +1606,7 @@ class Game extends Base {
 
       if (character.isAttacking() && character.previousTarget == null) {
 
-        // TODO: this is stupid. we don't want this behavior, nor the client
+        // TODO(to-server-side): this is stupid. we don't want this behavior, nor the client
         //       suppose to take care of this.
 
         // Don't let multiple mobs stack on the same tile when attacking a player.
@@ -1631,7 +1629,7 @@ class Game extends Base {
               Game.audioManager.playSound("hit${(rng.nextInt(1) + 1)}");
             }
 
-            // TODO: this shouldn't be here, it should be on the server
+            // TODO(to-server-side): this shouldn't be here, it should be on the server
             if (character.hasTarget()
                 && Game.player != null
                 && character.target.id == Game.player.id

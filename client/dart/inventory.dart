@@ -3,7 +3,7 @@ library inventory;
 import 'base.dart';
 import 'inventoryitem.dart';
 
-// TODO: implement!
+// TODO(inventory): implement!
 class Inventory extends Base {
 
   Inventory(data) {
