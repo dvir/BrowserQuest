@@ -160,7 +160,7 @@ class Character extends Entity {
     this.idle();
   }
 
-  bool hasShadow() => false;
+  bool hasShadow() => true;
 
   void turnTo(Orientation orientation) {
     this.orientation = orientation;
