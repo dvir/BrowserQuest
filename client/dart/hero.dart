@@ -27,11 +27,6 @@ class Hero extends Player {
     this.skillbar = new Skillbar([]);
     // TODO(inventory): implement!
     this.inventory = new Inventory([]);
-    this.on("EquipmentChange", () {
-      // TODO(storage): imeplement differently
-//      Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), this);
-      Game.playerChangedEquipment();
-    });
   }
 
   void die() {

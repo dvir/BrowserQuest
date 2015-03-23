@@ -631,7 +631,6 @@ class Game extends Base {
 
       Game.pathfinder = new Pathfinder(Game.map.width, Game.map.height);
 
-      //this.initPlayer();
       Game.setCursor("hand");
 
       Game.connect(started_callback);
@@ -730,7 +729,6 @@ class Game extends Base {
 
     Game.updatePlateauMode();
 
-    // TODO(events): emit an event, i.e "ZoneChange" and check it there
     Game.checkUndergroundAchievement();
 
     if (dest.isPortal) {
@@ -1230,11 +1228,6 @@ class Game extends Base {
      }
 
      Game.client.sendCheck(checkpoint.id);
-   }
-
-   // TODO(events): convert to events
-   static void playerChangedEquipment() {
-     Game.app.initEquipmentIcons();
    }
 
    static void playerDeath() {
@@ -1748,6 +1741,10 @@ class Game extends Base {
     }
 
     static void initPlayer() {
+      Game.player.on("EquipmentChange", () {
+        Game.app.initEquipmentIcons();
+      });
+
       // TODO(storage): implement differently
 //      Game.player.setStorage(Game.storage);
 //      Game.player.loadFromStorage(() {
