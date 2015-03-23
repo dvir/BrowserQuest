@@ -60,14 +60,7 @@ class Player extends Character {
        );
 
   List<List<int>> requestPathfindingTo(Position position) {
-    List<Entity> ignored = []; // Always ignore self
-
-    // TODO: maybe we should stop ignoring the target??
-    //       if we want to move to a location, we just want to get there asap.
-    if (this.hasTarget()) {
-      ignored.add(this.target);
-    }
-    return Game.findPath(this, position, ignored);
+    return Game.findPath(this, position);
   }
 
   String get areaName => "";
