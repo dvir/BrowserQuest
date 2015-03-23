@@ -166,6 +166,10 @@ class Entity extends Base {
   }
 
   void setSprite(Sprite sprite) {
+    if (sprite == null) {
+      throw "cannot setSprite to null for entity ${this.id}";
+    }
+
     // don't change to the same sprite
     if (this._sprite != null && this._sprite.name == sprite.name) {
       return;

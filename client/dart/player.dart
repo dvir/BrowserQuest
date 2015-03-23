@@ -32,7 +32,13 @@ class Player extends Character {
   bool isInvincible = false;
   Timer invincibilityTimer;
 
-  Player(int id, String this.name, EntityKind kind): super(id, kind);
+  Player(int id, String this.name, EntityKind kind): super(id, kind) {
+    // TODO(sprites): meh. refactor setSprite mechanics
+    this.setSprite(this.sprite);
+  }
+
+  EntityKind get weapon => super.weapon == null ? Entities.SWORD1 : super.weapon;
+  EntityKind get armor => super.armor == null ? Entities.CLOTHARMOR : super.armor;
 
   void reset() {
     super.reset();

@@ -96,29 +96,20 @@ class Sprite extends Base {
     html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
-    html.ImageData spriteData;
-    Uint8ClampedList data;
-
     ctx.drawImageScaled(this.image, 0, 0, width, height);
+    html.ImageData spriteData = ctx.getImageData(0, 0, width, height);
+
     try {
-      spriteData = ctx.getImageData(0, 0, width, height);
-
-      data = spriteData.data;
-
-      for (int i = 0; i < data.length; i += 4) {
-        data[i] = 255;
-        data[i + 1] = data[i + 2] = 75;
+      for (int i = 0; i < spriteData.data.length; i += 4) {
+        spriteData.data[i] = 255;
+        spriteData.data[i + 1] = spriteData.data[i + 2] = 75;
       }
-      // TODO: figure out if this is needed. this throws an error as there is
-      // no setter for data on ImageData. Is it possible to alter ImageData?
-//      spriteData.data = data;
 
       ctx.putImageData(spriteData, 0, 0);
 
+      html.ImageElement image = new html.ImageElement(src: canvas.toDataUrl()); 
       this.whiteSprite = new Sprite(
-        // TODO: what??? can't return canvas here, need imagelement
-        // canvas,
-        this.image,
+        image,
         true,
         this.offsetX,
         this.offsetY,
@@ -140,11 +131,9 @@ class Sprite extends Base {
     html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int width = this.image.width;
     int height = this.image.height;
-
     ctx.drawImageScaled(this.image, 0, 0, width, height);
-    Uint8ClampedList data = ctx.getImageData(0, 0, width, height).data;
     html.ImageData finalData = ctx.getImageData(0, 0, width, height);
-    Uint8ClampedList fdata = finalData.data;
+    Uint8ClampedList data = ctx.getImageData(0, 0, width, height).data;
 
     int getIndex(int x, int y) {
       return ((width * (y - 1)) + x - 1) * 4;
@@ -181,20 +170,16 @@ class Sprite extends Base {
 
     for (int i = 0; i < data.length; i += 4) {
       if (isBlankPixel(i) && hasAdjacentPixel(i)) {
-        fdata[i] = fdata[i + 1] = 255;
-        fdata[i + 2] = 150;
-        fdata[i + 3] = 150;
+        finalData.data[i] = finalData.data[i + 1] = 255;
+        finalData.data[i + 2] = 150;
+        finalData.data[i + 3] = 150;
       }
     }
-    // TODO: figure out if this is needed. this throws an error as there is
-    // no setter for data on ImageData. Is it possible to alter ImageData?
-    //finalData.data = fdata;
-    ctx.putImageData(finalData, 0, 0);
 
+    ctx.putImageData(finalData, 0, 0);
+    html.ImageElement image = new html.ImageElement(src: canvas.toDataUrl()); 
     this.silhouetteSprite = new Sprite(
-      // TODO: what??? can't return canvas here, need imagelement
-      // canvas,
-      this.image,
+      image,
       true,
       this.offsetX,
       this.offsetY,

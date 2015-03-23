@@ -81,9 +81,6 @@ class Character extends Entity {
     // Modes
     this.attackingMode = false;
     this.followingMode = false;
-
-    // TODO(sprites): meh. refactor setSprite mechanics
-    this.setSprite(this.sprite);
   }
 
   void clean() {
@@ -98,7 +95,7 @@ class Character extends Entity {
   Sprite get sprite {
     Sprite sprite = super.sprite;
     if (this.armor != null) {
-      String kindString = Types.getKindAsString(this._armor);
+      String kindString = Types.getKindAsString(this.armor);
       sprite = Game.sprites[kindString];
     }
 
