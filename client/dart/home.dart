@@ -273,19 +273,6 @@ void main() {
   initGame();
   Game.app.center();
 
-  // TODO: figure out alternative or remove
-  /*
-  if (Detect.isWindows()) {
-    // Workaround for graphical glitches on text
-    document.querySelector('body').classes.add('windows');
-  }
-
-  if (Detect.isOpera()) {
-    // Fix for no pointer events
-    document.querySelector('body').classes.add('opera');
-  }
-  */
-
   document.querySelector('body').onClick.listen((event) {
     if (document.getElementById('parchment').classes.contains('credits')) {
       Game.app.toggleCredits();
