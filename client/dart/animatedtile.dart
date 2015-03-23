@@ -7,8 +7,9 @@ import "position.dart";
 
 class AnimatedTile extends Tile {
 
-  int id;
-  int startID;
+  int _startID;
+  int _currentID = 0;
+
   int length;
   int speed;
   int index;
@@ -16,18 +17,20 @@ class AnimatedTile extends Tile {
 
   AnimatedTile(
     Position position, 
-    int this.id, 
+    int this._startID, 
     int this.length, 
     int this.speed, 
     int this.index
   ): super(position) {
     this.timer = new AnimationTimer(new Duration(milliseconds: this.speed));
     this.timer.on("Tick", () {
-      this.id = (this.id + 1) % this.length;
+      this._currentID = (this._currentID + 1) % this.length;
       this.isDirty = true;
       this.dirtyRect = Game.renderer.getTileBoundingRect(this);
     });
   }
+
+  int get id => this._startID + this._currentID;
 
   void update(int time) {
     this.timer.update(time);
