@@ -495,10 +495,6 @@ class Game extends Base {
     Game.addToRenderingGrid(entity, entity.gridPosition);
     if (entity.nextGridX >= 0 && entity.nextGridY >= 0) {
       Game.entityGrid[entity.nextGridY][entity.nextGridX][entity.id] = entity;
-      if (!(entity is Player)) {
-        // TODO: don't block the grid? remove this if so
-//        Game.pathingGrid[entity.nextGridY][entity.nextGridX] = 1;
-      }
     }
   }
 
