@@ -570,9 +570,8 @@ class Renderer extends Base {
   }
 
   void drawEntityName(Entity entity) {
-    String name = entity.name;
-    if (this.isDebugInfoVisible) {
-      name = "${name} (${entity.id},${entity.distanceTo(Game.player)})";
+    if (entity.name == null) {
+      return;
     }
 
     this.context.save();
@@ -592,7 +591,9 @@ class Renderer extends Base {
     }
 
     this.drawText(
-      name, 
+      this.isDebugInfoVisible 
+        ? "${name} (${entity.id},${entity.distanceTo(Game.player)})" 
+        : entity.name,
       new Position((entity.x + 8) * this.scale, (entity.y + nameOffsetY) * this.scale),
       true,
       color

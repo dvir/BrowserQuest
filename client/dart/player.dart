@@ -17,7 +17,6 @@ class Player extends Character {
   int _xp = 0;
   int _maxXP = 0;
 
-  String name;
   Party party;
   Map<String, String> guild;
 
@@ -32,7 +31,9 @@ class Player extends Character {
   bool isInvincible = false;
   Timer invincibilityTimer;
 
-  Player(int id, String this.name, EntityKind kind): super(id, kind) {
+  Player(int id, String name, EntityKind kind): super(id, kind) {
+    this.name = name;
+
     // TODO(sprites): meh. refactor setSprite mechanics
     this.setSprite(this.sprite);
   }
