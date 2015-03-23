@@ -110,6 +110,7 @@ class Game extends Base {
 
   static GameClient client;
 
+  static bool allSpritesLoaded = false;
   static Map<String, Sprite> sprites;
   static Map<int, Map<String, Sprite>> spriteSets;
   static List<String> spriteNames = [
@@ -254,6 +255,10 @@ class Game extends Base {
       Game.renderer.tileset = Game.map.tilesets[tilesetIndex];
 
       Game.app.trigger('start');
+
+      if (Game.allSpritesLoaded) {
+        Game.events.trigger("Ready");
+      }
     });
   }
 
@@ -299,15 +304,16 @@ class Game extends Base {
     Game.sprites["item-cake"].createSilhouette();
   }
 
-  static void loadSprite(String name) {
+  static void loadSprite(String name, void afterEachSpriteLoaded()) {
     html.window.console.debug("-- loading ${name}");
 
-    if (Game.renderer.upscaledRendering) {
-      Game.spriteSets[0][name] = new Sprite.FromJSON(name, 1);
-      return;
-    }
-
-    Game.spriteSets[1][name] = new Sprite.FromJSON(name, 2);
+    int scale = Game.renderer.upscaledRendering ? 1 : 2;
+    Sprite sprite = new Sprite.FromJSON(name, scale); 
+    sprite.on("Load", () {
+      Game.spriteSets[scale - 1][name] = sprite;
+      afterEachSpriteLoaded();
+    });
+    sprite.load();
   }
 
   static void loadSprites() {
@@ -316,20 +322,16 @@ class Game extends Base {
     Game.spriteSets[0] = new Map<String, Sprite>();
     Game.spriteSets[1] = new Map<String, Sprite>();
     Game.spriteSets[2] = new Map<String, Sprite>();
+    var loadedSpritesCount = 0;
     Game.spriteNames.forEach((String name) {
-      Game.loadSprite(name);
+      Game.loadSprite(name, () {
+        loadedSpritesCount++;
+        if (loadedSpritesCount == Game.spriteNames.length) {
+          Game.allSpritesLoaded = true;
+          Game.events.trigger("AllSpritesLoaded");
+        }
+      });
     });
-  }
-
-  static bool hasAllSpritesLoaded() {
-    for (Sprite sprite in Game.sprites.values) {
-      if (!sprite.isLoaded) {
-        html.window.console.info("Still waiting for ${sprite.name} (${sprite.id})");
-        return false;
-      }
-    }
-
-    return true;
   }
 
   static void setCursor(String name) {
@@ -606,22 +608,8 @@ class Game extends Base {
   }
 
   static void run(started_callback) {
-    Game.loadSprites();
-    Game.updater = new Updater();
-    Game.camera = Game.renderer.camera;
-    Game.setSpriteScale(Game.renderer.scale);
-
-    // check every 500 milliseconds if all sprites and map has loaded.
-    // TODO(events): listen for the relevant events instead.
-    new Timer.periodic(new Duration(milliseconds: 500), (Timer timer) {
-      if (!Game.map.isLoaded || !Game.hasAllSpritesLoaded()) {
-        return;
-      }
-      timer.cancel();
-
+    Game.events.on("Ready", () {
       Game.ready = true;
-
-      html.window.console.debug('All sprites loaded.');
 
       Game.loadAudio();
 
@@ -648,6 +636,17 @@ class Game extends Base {
 
       Game.connect(started_callback);
     });
+
+    Game.events.on("AllSpritesLoaded", () {
+      html.window.console.debug('All sprites loaded.');
+
+      Game.updater = new Updater();
+      Game.camera = Game.renderer.camera;
+      Game.setSpriteScale(Game.renderer.scale);
+
+      Game.events.trigger("Ready");
+    });
+    Game.loadSprites();
   }
 
   static void tick(num time) {

@@ -58,8 +58,6 @@ class Sprite extends Base {
     this.height = data["height"];
     this.offsetX = data["offset_x"] != null ? data["offset_x"] : -16;
     this.offsetY = data["offset_y"] != null ? data["offset_y"] : -16;
-
-    this.load();
   }
 
   bool get isLoaded => _isLoaded;
