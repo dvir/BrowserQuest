@@ -327,8 +327,8 @@ class Character extends Entity {
 
     Game.registerEntityDualPosition(this);
 
-    this.forEachAttacker((attacker) {
-      if (attacker.isAdjacent(attacker.target)) {
+    this.forEachAttacker((Character attacker) {
+      if (attacker.hasTarget() && attacker.isAdjacent(attacker.target)) {
         attacker.lookAtTarget();
       } else {
         attacker.follow(this);

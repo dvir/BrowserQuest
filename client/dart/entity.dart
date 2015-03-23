@@ -239,7 +239,7 @@ class Entity extends Base {
 
   bool isCloseTo(Entity entity) => (this.gridPosition.x - entity.gridPosition.x).abs() < 30 && (this.gridPosition.y - entity.gridPosition.y).abs() < 14;
 
-  bool isAdjacent(Entity entity) => this.getDistanceToEntity(entity) > 1 ? false : true;
+  bool isAdjacent(Entity entity) => this.getDistanceToEntity(entity) <= 1;
 
   bool isAdjacentNonDiagonal(Entity entity) => this.isAdjacent(entity) && !(this.gridPosition.x != entity.gridPosition.x && this.gridPosition.y != entity.gridPosition.y);
 
