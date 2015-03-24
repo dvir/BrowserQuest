@@ -1547,10 +1547,14 @@ class Game extends Base {
       Game.app.disconnected(message);
     }
 
+    // TODO(critical): most of this should be on the server side, while some
+    // other parts shouldn't exist, and others need to be split to helper
+    // methods that will be called when the server tells us so.
     static void updateCharacter(Character character) {
       int time = Game.currentTime;
 
-      // If mob has finished moving to a different tile in order to avoid stacking, a>
+      // If mob has finished moving to a different tile in order to avoid
+      // stacking, attack again from the new position.
       if (character.previousTarget != null
           && !character.isMoving()
           && character is Mob) {
@@ -1564,37 +1568,28 @@ class Game extends Base {
       }
 
       if (character.isAttacking() && character.previousTarget == null) {
-
-        // TODO(to-server-side): this is stupid. we don't want this behavior, nor the client
-        //       suppose to take care of this.
-
-        // Don't let multiple mobs stack on the same tile when attacking a player.
-        bool isMoving = false; // Game.tryMovingToADifferentTile(character);
         if (character.canAttack(time)) {
-          if (!isMoving) { // don't hit target if moving to a different tile.
-            if (character.hasTarget()
-                && character.getOrientationTo(character.target) != character.orientation) {
-              character.lookAtTarget();
-            }
+          if (character.hasTarget()
+              && character.getOrientationTo(character.target) != character.orientation) {
+            character.lookAtTarget();
+          }
 
-            character.hit();
+          character.hit();
 
-            if (Game.player != null && character.id == Game.player.id) {
-              Game.client.sendHit(character.target);
-            }
+          if (Game.player != null && character.id == Game.player.id) {
+            Game.client.sendHit(character.target);
+          }
 
-            if (character is Player && Game.camera.isVisible(character)) {
-              Random rng = new Random();
-              Game.audioManager.playSound("hit${(rng.nextInt(1) + 1)}");
-            }
+          if (character is Player && Game.camera.isVisible(character)) {
+            Random rng = new Random();
+            Game.audioManager.playSound("hit${(rng.nextInt(1) + 1)}");
+          }
 
-            // TODO(to-server-side): this shouldn't be here, it should be on the server
-            if (character.hasTarget()
-                && Game.player != null
-                && character.target.id == Game.player.id
-                && !Game.player.isInvincible) {
-              Game.client.sendHurt(character);
-            }
+          if (character.hasTarget()
+              && Game.player != null
+              && character.target.id == Game.player.id
+              && !Game.player.isInvincible) {
+            Game.client.sendHurt(character);
           }
         } else if (character.hasTarget()
                    && character.isDiagonallyAdjacent(character.target)
