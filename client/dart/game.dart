@@ -966,6 +966,11 @@ class Game extends Base {
      }
 
      Game.forEachVisibleTileIndex((int tileIndex) {
+       if (Game.map.data.length <= tileIndex || tileIndex < 0) {
+         html.window.console.error('tileIndex ${tileIndex} is out of bound');
+         return;
+       }
+
        if (Game.map.data[tileIndex] is List) {
          Game.map.data[tileIndex].forEach((int id) {
            callback(id - 1, tileIndex);
