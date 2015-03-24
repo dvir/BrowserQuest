@@ -1244,9 +1244,6 @@ class Game extends Base {
    /**
      * Finds a path to a grid position for the specified character.
      * The path will pass through any entity present in the ignore list.
-     *
-     * TODO(block): we won't need entity ignore lists once we make all entities
-     * non-blocking
      */
     static List<List<int>> findPath(Character character, Position position, [List<Entity> ignoreList = null]) {
        if (Game.map.isColliding(position)) {
