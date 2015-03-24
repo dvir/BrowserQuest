@@ -138,7 +138,6 @@ class Entity extends Base {
         : Types.getOrientationAsString(this.orientation);
       this.flipSpriteX = this.orientation == Orientation.LEFT;
     }
-
     this.setAnimation(animationName, speed, count, onEndCount);
     return true;
   }

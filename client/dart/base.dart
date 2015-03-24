@@ -17,6 +17,26 @@ class EventHandler {
 class Base {
   Map<String, Map<EventHandler, Function>> callbacks = new Map<String, Map<EventHandler, Function>>();
   List<Base> bubbleTargets = new List<Base>();
+  Map<Base, Map<String, EventHandler>> exclusiveHandlers = {};
+
+  /**
+   * onExclusive can be used for the common pattern of having a single instance
+   * of an event attached to a context object. New bindings will overwrite the
+   * previous callback binding by calling .off on the previous handler first.
+   */
+  Map<String, EventHandler> onExclusive(Base context, String name, Function callback, [bool overwritePrevious = false]) {
+    if (this.exclusiveHandlers[context] != null && this.exclusiveHandlers[context][name] != null) {
+      this.off(new Map<String, EventHandler>()..putIfAbsent(name, () => this.exclusiveHandlers[context][name]));
+      this.exclusiveHandlers[context].remove(name);
+    }
+
+    Map<String, EventHandler> newHandlers = this.on(name, callback, overwritePrevious);
+
+    this.exclusiveHandlers.putIfAbsent(context, () => {});
+    this.exclusiveHandlers[context].addAll(newHandlers);
+
+    return newHandlers; 
+  }
 
   Map<String, EventHandler> on(String name, Function callback, [bool overwritePrevious = false]) {
     return this.onMulti(new List<String>()..add(name), callback, overwritePrevious);

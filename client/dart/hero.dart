@@ -43,7 +43,7 @@ class Hero extends Player {
     this.animate("death", 120, 1, () {
       this.log_info("was removed");
 
-      Game.playerDeath();
+      this.trigger("Death");
     });
 
     this.forEachAttacker((Character attacker) {

@@ -257,7 +257,7 @@ class Game extends Base {
       Game.app.trigger('start');
 
       if (Game.allSpritesLoaded) {
-        Game.events.trigger("Ready");
+        Game.events.trigger("GameReady");
       }
     });
   }
@@ -618,7 +618,7 @@ class Game extends Base {
   }
 
   static void run(started_callback) {
-    Game.events.on("Ready", () {
+    Game.events.on("GameReady", () {
       Game.ready = true;
 
       Game.loadAudio();
@@ -653,7 +653,7 @@ class Game extends Base {
       Game.camera = Game.renderer.camera;
       Game.setSpriteScale(Game.renderer.scale);
 
-      Game.events.trigger("Ready");
+      Game.events.trigger("GameReady");
     });
     Game.loadSprites();
   }
@@ -1237,42 +1237,6 @@ class Game extends Base {
      Game.client.sendCheck(checkpoint.id);
    }
 
-   static void playerDeath() {
-     scheduleMicrotask(() {
-       Game.removeEntity(Game.player);
-       Game.removeFromRenderingGrid(Game.player, Game.player.gridPosition);
-
-       Game.audioManager.fadeOutCurrentMusic();
-       Game.audioManager.playSound("death");
-
-       Game.entities = {};
-       Game.deathPositions = {};
-       Game.currentCursor = null;
-       Game.zoningQueue = [];
-       Game.previousClickPosition = null;
-
-       Game.initPathingGrid();
-       Game.initEntityGrid();
-       Game.initRenderingGrid();
-       Game.initItemGrid();
-
-       Game.selected = new Position(0, 0);
-       Game.selectedCellVisible = false;
-       Game.targetColor = "rgba(255, 255, 255, 0.5)";
-       Game.targetCellVisible = true;
-       Game.hoveringTarget = null;
-       Game.hoveringPlayer = null;
-       Game.hoveringMob = null;
-       Game.hoveringNpc = null;
-       Game.hoveringItem = null;
-       Game.hoveringChest = null;
-       Game.isHoveringPlateauTile = false;
-       Game.isHoveringCollidingTile = false;
-
-       Game.app.playerDeath();
-     });
-   }
-
    static void playerInvincible(bool state) {
      Game.app.playerInvincible(state);
    }
@@ -1752,6 +1716,40 @@ class Game extends Base {
         Game.app.initEquipmentIcons();
         // TODO(storage): imeplement differently
         // Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
+      });
+
+      Game.player.onExclusive(Game.events, "Death", () {
+        Game.removeEntity(Game.player);
+        Game.removeFromRenderingGrid(Game.player, Game.player.gridPosition);
+
+        Game.audioManager.fadeOutCurrentMusic();
+        Game.audioManager.playSound("death");
+
+        Game.entities = {};
+        Game.deathPositions = {};
+        Game.currentCursor = null;
+        Game.zoningQueue = [];
+        Game.previousClickPosition = null;
+
+        Game.initPathingGrid();
+        Game.initEntityGrid();
+        Game.initRenderingGrid();
+        Game.initItemGrid();
+ 
+        Game.selected = new Position(0, 0);
+        Game.selectedCellVisible = false;
+        Game.targetColor = "rgba(255, 255, 255, 0.5)";
+        Game.targetCellVisible = true;
+        Game.hoveringTarget = null;
+        Game.hoveringPlayer = null;
+        Game.hoveringMob = null;
+        Game.hoveringNpc = null;
+        Game.hoveringItem = null;
+        Game.hoveringChest = null;
+        Game.isHoveringPlateauTile = false;
+        Game.isHoveringCollidingTile = false;
+ 
+        Game.app.playerDeath();
       });
 
       // TODO(storage): implement differently
