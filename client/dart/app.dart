@@ -260,15 +260,11 @@ class Application extends Base {
     } else {
       if (currentState != 'animate') {
         if (currentState == 'about') {
-          // TODO(localstorage): implement properly
-          /*
-          if (localStorage && localStorage.data) {
+          if (Game.storage.hasAlreadyPlayed) {
             this.animateParchment(currentState, 'loadcharacter');
           } else {
             this.animateParchment(currentState, 'createcharacter');
           }
-          */
-          this.animateParchment(currentState, 'createcharacter');
         } else {
           this.animateParchment(currentState, 'about');
           this.previousState = currentState;
@@ -388,9 +384,7 @@ class Application extends Base {
   }
   
   void start(String username) {
-    // TODO(localstorage): implement properly
-    //bool firstTimePlaying = !this.storage.hasAlreadyPlayed();
-    bool firstTimePlaying = true;
+    bool firstTimePlaying = !Game.storage.hasAlreadyPlayed;
 
     if (username.isEmpty) {
       throw new Exception('Cannot start the game with an empty username');

@@ -467,8 +467,7 @@ class GameClient extends Base {
             player.hurt();
             Game.infoManager.addInfo(new ReceivedDamageInfo('${diff}', player.x, player.y - 15));
             Game.audioManager.playSound("hurt");
-            // TODO(storage): implement differently
-//            Game.storage.addDamage(-diff);
+            Game.storage.addDamage(-diff);
             Game.tryUnlockingAchievement("MEATSHIELD");
             Game.events.trigger("Hurt");
           } else if (!isRegen) {
@@ -613,20 +612,15 @@ class GameClient extends Base {
         }
       }
 
-      // TODO(storage): implement differently
-      // Game.storage.incrementTotalKills();
+      Game.storage.recordKill(kind);
       Game.tryUnlockingAchievement("HUNTER");
 
       switch (kind) {
         case Entities.RAT:
-          // TODO(storage): implement differently
-          // Game.storage.incrementRatCount();
           Game.tryUnlockingAchievement("ANGRY_RATS");
           break;
         case Entities.SKELETON:
         case Entities.SKELETON2:
-          // TODO(storage): implement differently
-          // Game.storage.incrementSkeletonCount();
           Game.tryUnlockingAchievement("SKULL_COLLECTOR");
           break;
         case Entities.BOSS:

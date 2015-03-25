@@ -13,8 +13,7 @@ initGame() {
   Element foreground = document.getElementById("foreground");
   Element input = document.getElementById("chatinput");
   Game.setup(new Application(), document.getElementById('bubbles'), canvas, background, foreground, input);
-// TODO(storage): implement differently
-  //Game.setStorage(Game.app.storage);
+  document.getElementById('parchment').classes.add(Game.storage.hasAlreadyPlayed ? 'loadcharacter' : 'createcharacter');
 
   if (Game.app.isDesktop && Game.app.supportsWorkers) {
     Game.loadMap();
@@ -339,8 +338,7 @@ void main() {
   });
 
   document.querySelector('.delete').onClick.listen((Event event) {
-    // TODO(storage): implement properly
-    //Game.app.storage.clear();
+    Game.storage.clear();
     Game.app.animateParchment('confirmation', 'createcharacter');
   });
 
@@ -398,19 +396,20 @@ void main() {
     return false;
   });
 
-  // TODO(storage): implement properly
-  /*
-  dynamic data = Game.app.storage.data;
-  if (data.hasAlreadyPlayed) {
-    if (data.player.name && data.player.name != "") {
-      document.getElementById('playername').html(data.player.name);
-      document.getElementById('playerimage').attr('src', data.player.image);
+  if (Game.storage.hasAlreadyPlayed) {
+    if (Game.storage.name != null && Game.storage.name != "") {
+      document.getElementById('playername').innerHtml = Game.storage.name;
+      document.getElementById('playerimage').src = Game.storage.image;
     }
   }
-  */
 
-  document.querySelector('.play div').onClick.listen((Event event) {
-    Game.app.tryStartingGame((document.getElementById('nameinput') as InputElement).value);
+  document.getElementById('createcharacterbutton').onClick.listen((Event event) {
+    String inputValue = (document.getElementById('nameinput') as InputElement).value;
+    Game.app.tryStartingGame(inputValue);
+  });
+
+  document.getElementById('loadcharacterbutton').onClick.listen((Event event) {
+    Game.app.tryStartingGame(Game.storage.name);
   });
 
   document.onTouchStart.listen((Event event) {});

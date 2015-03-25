@@ -233,6 +233,7 @@ class Entities {
 class EntityKind {
   final int index;
   const EntityKind(int this.index);
+  String toString() => Types.getKindAsString(this);
 }
 
 class Orientations {

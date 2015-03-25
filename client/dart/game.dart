@@ -1,6 +1,5 @@
 library game;
 
-import 'dart:async';
 import 'dart:html' as html;
 import 'dart:math';
 
@@ -16,6 +15,7 @@ import "door.dart";
 import "entity.dart";
 import "hero.dart";
 import "item.dart";
+import "localstorage.dart";
 import "pathfinder.dart";
 import "player.dart";
 import "position.dart";
@@ -107,6 +107,7 @@ class Game extends Base {
   static Renderer renderer;
   static Updater updater;
   static WorldMap map;
+  static LocalStorage storage;
 
   static GameClient client;
 
@@ -204,6 +205,7 @@ class Game extends Base {
     html.CanvasElement foreCanvas,
     html.Element chatInput
   ) {
+    Game.initStorage();
     Game.app = app;
     Game.bubbleManager = new BubbleManager(bubbleContainer);
     Game.renderer = new Renderer(canvas, backCanvas, foreCanvas);
@@ -607,6 +609,10 @@ class Game extends Base {
     Game.username = username;
   }
 
+  static void initStorage() {
+    Game.storage = new LocalStorage();
+  }
+
   static void loadAudio() {
     Game.audioManager = new AudioManager();
   }
@@ -694,8 +700,7 @@ class Game extends Base {
 
     Game.resurrect();
 
-    // TODO(storage): implement properly
-    //this.storage.incrementRevives();
+    Game.storage.incrementRevives();
 
     html.window.console.debug("Finished restart");
   }
@@ -1688,16 +1693,13 @@ class Game extends Base {
         Game.initPlayer();
         Game.player.idle();
 
-        // TODO(storage): implement differently
-        /*
-        if (!Game.storage.hasAlreadyPlayed()) {
-          Game.storage.initPlayer(Game.player.name);
+        if (!Game.storage.hasAlreadyPlayed) {
+          Game.storage.initPlayer(Game.player);
           Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
           Game.showNotification("Welcome to BrowserQuest!");
         } else {
           Game.showNotification("Welcome back to BrowserQuest!");
         }
-        */
 
         if (Game.hasNeverStarted) {
           Game.start();
@@ -1711,8 +1713,6 @@ class Game extends Base {
     static void initPlayer() {
       Game.player.on("EquipmentChange", () {
         Game.app.initEquipmentIcons();
-        // TODO(storage): imeplement differently
-        // Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
       });
 
       Game.player.onExclusive(Game.events, "Death", () {
@@ -1749,11 +1749,7 @@ class Game extends Base {
         Game.app.playerDeath();
       });
 
-      // TODO(storage): implement differently
-//      Game.player.setStorage(Game.storage);
-//      Game.player.loadFromStorage(() {
-//        Game.updateBars();
-//      });
+      Game.updateBars();
 
       html.window.console.debug("Finished initPlayer");
     }
