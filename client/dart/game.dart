@@ -874,7 +874,7 @@ class Game extends Base {
 
      int t = 16 * Game.renderer.scale; // tile size
      int x = ((character.x - Game.camera.x) * Game.renderer.scale);
-     int w = (bubble.element.style.width.isEmpty ? 0 : int.parse(bubble.element.style.width)) + 24;
+     int w = bubble.element.clientWidth;
      int offset = ((w / 2) - (t / 2)).round();
      int offsetY;
      int y;
@@ -887,7 +887,7 @@ class Game extends Base {
 
      y = ((character.y - Game.camera.y) * Game.renderer.scale) - (t * 2) - offsetY;
 
-     bubble.element.style.left = "${x - offset} px";
+     bubble.element.style.left = "${x - offset}px";
      bubble.element.style.top = "${y}px";
    }
 
