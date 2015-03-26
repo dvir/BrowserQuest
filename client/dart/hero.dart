@@ -1,5 +1,6 @@
 library hero;
 
+import "achievements.dart";
 import "character.dart";
 import "chest.dart";
 import "entity.dart";
@@ -76,23 +77,23 @@ class Hero extends Player {
     }
 
     if ((this.gridPosition.x <= 85 && this.gridPosition.y <= 179 && this.gridPosition.y > 178) || (this.gridPosition.x <= 85 && this.gridPosition.y <= 266 && this.gridPosition.y > 265)) {
-      Game.tryUnlockingAchievement("INTO_THE_WILD");
+      Game.tryUnlockingAchievement(Achievement.INTO_THE_WILD);
     }
 
     if (this.gridPosition.x <= 85 && this.gridPosition.y <= 293 && this.gridPosition.y > 292) {
-      Game.tryUnlockingAchievement("AT_WORLDS_END");
+      Game.tryUnlockingAchievement(Achievement.AT_WORLDS_END);
     }
 
     if (this.gridPosition.x <= 85 && this.gridPosition.y <= 100 && this.gridPosition.y > 99) {
-      Game.tryUnlockingAchievement("NO_MANS_LAND");
+      Game.tryUnlockingAchievement(Achievement.NO_MANS_LAND);
     }
 
     if (this.gridPosition.x <= 85 && this.gridPosition.y <= 51 && this.gridPosition.y > 50) {
-      Game.tryUnlockingAchievement("HOT_SPOT");
+      Game.tryUnlockingAchievement(Achievement.HOT_SPOT);
     }
 
     if (this.gridPosition.x <= 27 && this.gridPosition.y <= 123 && this.gridPosition.y > 112) {
-      Game.tryUnlockingAchievement("TOMB_RAIDER");
+      Game.tryUnlockingAchievement(Achievement.TOMB_RAIDER);
     }
 
     Game.updatePlayerCheckpoint();

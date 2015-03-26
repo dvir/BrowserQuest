@@ -3,6 +3,7 @@ library localstorage;
 import "dart:convert";
 import "dart:html" as html;
 
+import "achievements.dart";
 import "base.dart";
 import "game.dart";
 import "player.dart";
@@ -17,31 +18,41 @@ class LocalStorage extends Base {
   JsonCodec codec;
 
   LocalStorage() {
-    this.codec = new JsonCodec(
-      reviver: (dynamic key, dynamic value) {
-      if (key == "armor" || key == "weapon") {
-        return Entities.get(value);
-      }
-
-      return value;
-      },
-      toEncodable: (dynamic v) {
-        if (v is EntityKind) {
-          return v.index;
-        }
-
-        return v;
-      }); 
+    this.codec = new JsonCodec.withReviver(this.reviver);
 
     if (this.storage.containsKey("data")) {
-      this.load(JSON.decode(this.storage["data"]));
+      this.load(this.codec.decode(this.storage["data"]));
     } else {
       this.reset();
     }
   }
 
+  dynamic reviver(dynamic key, dynamic value) {
+    if (key == "armor" || key == "weapon") {
+      return Entities.get(value);
+    }
+
+    if (key == "unlocked") {
+      return value.map((int id) => Achievement.getByID(id)).toList();
+    }
+
+    return value;
+  }
+
+  dynamic toEncodableImpl(dynamic v) {
+    if (v is EntityKind) {
+      return v.index;
+    }
+
+    if (v is Achievement) {
+      return v.id;
+    }
+
+    return v;
+  }
+
   void save() {
-    this.storage["data"] = this.codec.encode(this.data); 
+    this.storage["data"] = this.codec.encode(this.data, toEncodable: this.toEncodableImpl); 
   }
 
   void load(data) {
@@ -172,18 +183,18 @@ class LocalStorage extends Base {
     return this.data["kills"].containsKey(kind.toString()) ? this.data["kills"][kind.toString()] : 0;
   }
 
-  int getAchievementCount() => this.data["achievements"].unlocked.length;
+  int getAchievementCount() => this.data["achievements"]["unlocked"].length;
 
-  bool hasUnlockedAchievement(int id) => 
-    this.data["achievements"]["unlocked"].contains(id); 
+  bool hasUnlockedAchievement(Achievement achievement) => 
+    this.data["achievements"]["unlocked"].contains(achievement); 
 
-  bool unlockAchievement(int id) {
-    if (this.hasUnlockedAchievement(id)) {
+  bool unlockAchievement(Achievement achievement) {
+    if (this.hasUnlockedAchievement(achievement)) {
       // already unlocked this achievement, don't report it as unlocked again
       return false;
     }
 
-    this.data["achievements"]["unlocked"].add(id);
+    this.data["achievements"]["unlocked"].add(achievement);
     this.save();
     return true;
   }

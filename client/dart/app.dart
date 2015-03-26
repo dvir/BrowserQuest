@@ -4,6 +4,7 @@ import "dart:async";
 import 'dart:html' hide Player;
 import 'dart:math';
 
+import 'achievements.dart';
 import 'base.dart';
 import 'character.dart';
 import 'config.dart';
@@ -292,6 +293,105 @@ class Application extends Base {
 
   void togglePopulationInfo() {
     document.getElementById('population').classes.toggle('visible');
+  }
+
+  void setAchievementData(Element $el, Achievement achievement) {
+    $el.querySelector('.achievement-name').innerHtml = achievement.name;
+    $el.querySelector('.achievement-description').innerHtml = achievement.description;
+  }
+
+  void initAchievementList() {
+    Element $lists = document.getElementById('lists');
+    Element $page = document.getElementById('page-tmpl');
+    Element $achievement = document.getElementById('achievement-tmpl');
+    Element $p = null;
+    int page = 0;
+    int count = 0;
+
+    Achievement.forEach((Achievement achievement) {
+      count++;
+
+      Element $a = $achievement.clone(true);
+      $a.setAttribute('id', '');
+      $a.classes.add('achievement${count}');
+      if (!achievement.hidden) {
+        this.setAchievementData($a, achievement);
+      }
+      $a.querySelector('.twitter').setAttribute('href', 'http://twitter.com/share?url=http%3A%2F%2Fbrowserquest.mozilla.org&text=I%20unlocked%20the%20%27${achievement.name}%27%20achievement%20on%20Mozilla%27s%20%23BrowserQuest%21&related=glecollinet:Creators%20of%20BrowserQuest%2Cwhatthefranck');
+      $a.style.display = 'block';
+      $a.querySelector('a').addEventListener('click', (Event event) {
+        String url = (event.target as LinkElement).href;
+        this.openPopup('twitter', url);
+        return false;
+      });
+
+      if ((count - 1) % 4 == 0) {
+        page++;
+        $p = $page.clone(true);
+        $p.setAttribute('id', 'page${page}');
+        $p.style.display = 'block';
+        $lists.append($p);
+      }
+      $p.append($a);
+    });
+
+    document.getElementById('total-achievements').innerHtml = '${count}';
+
+    if (Game.storage.hasAlreadyPlayed) {
+      this.initUnlockedAchievements();
+    }
+  }
+
+  void initUnlockedAchievements() {
+    int count = 0;
+    Achievement.forEach((Achievement achievement) {
+      if (!Game.storage.hasUnlockedAchievement(achievement)) {
+        return;
+      }
+
+      this.displayUnlockedAchievement(achievement);
+      count++;
+    });
+
+    document.getElementById('unlocked-achievements').innerHtml = '${count}';
+  }
+
+  void showAchievementNotification(Achievement achievement) {
+    Element $notif = document.getElementById('achievement-notification');
+    Element $name = $notif.querySelector('.name');
+//    Element $button = document.getElementById('achievementsbutton');
+
+    $notif.classes.clear();
+    $notif.classes.add('active');
+    $notif.classes.add('achievement${achievement.id}');
+    $name.innerHtml = achievement.name;
+/*
+    if (Game.game.storage.getAchievementCount() === 1) {
+      this.blinkInterval = setInterval(function () {
+        $button.classes.toggle('blink');
+      }, 500);
+    }
+    setTimeout(function () {
+      $notif.classes.remove('active');
+      $button.classes.remove('blink');
+    }, 5000);
+*/
+  }
+
+  void displayUnlockedAchievement(Achievement achievement) {
+    Element $achievement = document.getElementById('achievements').querySelector('li.achievement${achievement.id}');
+    if (achievement.hidden) {
+      this.setAchievementData($achievement, achievement);
+    }
+    $achievement.classes.add('unlocked');
+  }
+
+  void unlockAchievement(Achievement achievement) {
+    this.showAchievementNotification(achievement);
+    this.displayUnlockedAchievement(achievement);
+
+    Element unlockedCount = document.getElementById('unlocked-achievements');
+    unlockedCount.innerHtml = '${int.parse(unlockedCount.innerHtml) + 1}';
   }
 
   void openPopup(type, url) {

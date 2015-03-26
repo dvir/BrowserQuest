@@ -3,6 +3,7 @@ library game;
 import 'dart:html' as html;
 import 'dart:math';
 
+import "achievements.dart";
 import "animatedtile.dart";
 import "animation.dart";
 import "app.dart";
@@ -213,12 +214,14 @@ class Game extends Base {
   }
 
   static void initAchievements() {
-    // TODO(achievements): implement
-    // possibly create an AchievementsManager
+    Game.app.initAchievementList();
   }
 
-  static void tryUnlockingAchievement(String name) {
-    // TODO(achievements): implement!
+  static void tryUnlockingAchievement(Achievement achievement) {
+    if (achievement.isCompleted() && Game.storage.unlockAchievement(achievement)) {
+      Game.app.unlockAchievement(achievement);
+      Game.audioManager.playSound("achievement");
+    }
   }
 
   static void addPlayer(Player player) {
@@ -755,7 +758,7 @@ class Game extends Base {
     }
 
     if (hadAttackers) {
-      Game.tryUnlockingAchievement("COWARD");
+      Game.tryUnlockingAchievement(Achievement.COWARD);
     }
   }
 
@@ -1141,7 +1144,7 @@ class Game extends Base {
    static void checkUndergroundAchievement() {
      Audio music = Game.audioManager.getSurroundingMusic(Game.player);
      if (music != null && music.name == 'cave') {
-       Game.tryUnlockingAchievement("UNDERGROUND");
+       Game.tryUnlockingAchievement(Achievement.UNDERGROUND);
      }
    }
 
@@ -1499,10 +1502,10 @@ class Game extends Base {
         Game.destroyBubble(npc.id);
         Game.audioManager.playSound("npc-end");
       }
-      Game.tryUnlockingAchievement("SMALL_TALK");
+      Game.tryUnlockingAchievement(Achievement.SMALL_TALK);
 
       if (npc.kind == Entities.RICK) {
-        Game.tryUnlockingAchievement("RICKROLLD");
+        Game.tryUnlockingAchievement(Achievement.RICKROLLD);
       }
 
     }
@@ -1706,7 +1709,7 @@ class Game extends Base {
           started_callback();
         }
 
-        Game.tryUnlockingAchievement("STILL_ALIVE");
+        Game.tryUnlockingAchievement(Achievement.STILL_ALIVE);
       });
     }
 

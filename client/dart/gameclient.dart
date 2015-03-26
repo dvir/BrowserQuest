@@ -3,6 +3,7 @@ library gameclient;
 import "dart:convert";
 import "dart:html" as html;
 
+import "achievements.dart";
 import "base.dart";
 import "character.dart";
 import "chat.dart";
@@ -52,7 +53,7 @@ class GameClient extends Base {
         if (entity != null) {
           if (entity is Character) {
             if (Game.player.isAttackedBy(entity)) {
-              Game.tryUnlockingAchievement("COWARD");
+              Game.tryUnlockingAchievement(Achievement.COWARD);
             }
             entity.disengage();
             entity.idle();
@@ -99,15 +100,15 @@ class GameClient extends Base {
       Game.showNotification(item.lootMessage);
 
       if (item.type == "armor") {
-        Game.tryUnlockingAchievement("FAT_LOOT");
+        Game.tryUnlockingAchievement(Achievement.FAT_LOOT);
       } else if (item.type == "weapon") {
-        Game.tryUnlockingAchievement("A_TRUE_WARRIOR");
+        Game.tryUnlockingAchievement(Achievement.A_TRUE_WARRIOR);
       }
 
       if (item.kind == Entities.CAKE) {
-        Game.tryUnlockingAchievement("FOR_SCIENCE");
+        Game.tryUnlockingAchievement(Achievement.FOR_SCIENCE);
       } else if (item.kind == Entities.FIREPOTION) {
-        Game.tryUnlockingAchievement("FOXY");
+        Game.tryUnlockingAchievement(Achievement.FOXY);
         Game.audioManager.playSound("firefox");
       }
 
@@ -118,7 +119,7 @@ class GameClient extends Base {
       }
 
       if (item.wasDropped && !item.playersInvolved.contains(Game.player.id)) {
-        Game.tryUnlockingAchievement("NINJA_LOOT");
+        Game.tryUnlockingAchievement(Achievement.NINJA_LOOT);
       }
     });
 
@@ -468,7 +469,7 @@ class GameClient extends Base {
             Game.infoManager.addInfo(new ReceivedDamageInfo('${diff}', player.x, player.y - 15));
             Game.audioManager.playSound("hurt");
             Game.storage.addDamage(-diff);
-            Game.tryUnlockingAchievement("MEATSHIELD");
+            Game.tryUnlockingAchievement(Achievement.MEATSHIELD);
             Game.events.trigger("Hurt");
           } else if (!isRegen) {
             Game.infoManager.addInfo(new HealedDamageInfo('+${diff}', player.x, player.y - 15));
@@ -613,18 +614,18 @@ class GameClient extends Base {
       }
 
       Game.storage.recordKill(kind);
-      Game.tryUnlockingAchievement("HUNTER");
+      Game.tryUnlockingAchievement(Achievement.HUNTER);
 
       switch (kind) {
         case Entities.RAT:
-          Game.tryUnlockingAchievement("ANGRY_RATS");
+          Game.tryUnlockingAchievement(Achievement.ANGRY_RATS);
           break;
         case Entities.SKELETON:
         case Entities.SKELETON2:
-          Game.tryUnlockingAchievement("SKULL_COLLECTOR");
+          Game.tryUnlockingAchievement(Achievement.SKULL_COLLECTOR);
           break;
         case Entities.BOSS:
-          Game.tryUnlockingAchievement("HERO");
+          Game.tryUnlockingAchievement(Achievement.HERO);
           break;
       }
     });
