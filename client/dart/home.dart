@@ -382,7 +382,7 @@ void main() {
 
   document.querySelector('#notifications div').onTransitionEnd.listen((_) => Game.app.resetMessagesPosition);
 
-  document.querySelector('.close').onClick.listen((Event event) {
+  document.querySelectorAll('.close').onClick.listen((Event event) {
     Game.app.hideWindows();
   });
 
