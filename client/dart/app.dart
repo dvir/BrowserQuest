@@ -22,6 +22,7 @@ class Application extends Base {
   int currentPage = 0;
   bool isParchmentReady = true;
   Timer messageTimer;
+  Timer blinkTimer;
   String previousState;
   HealthBar playerHealthBar;
   HealthBar targetHealthBar;
@@ -188,6 +189,14 @@ class Application extends Base {
   }
 
   toggleAchievements() {
+    // if the achievements icon was flashing (happens when the player achieves
+    // the first achievement), turn the flashing off
+    if (this.blinkTimer != null) {
+      this.blinkTimer.cancel();
+      this.blinkTimer = null;
+      document.getElementById('achievementsbutton').classes.remove('blink');
+    }
+
     if (document.getElementById('instructions').classes.contains('active')) {
       this.toggleInstructions();
       document.getElementById('helpbutton').classes.remove('active');
@@ -359,23 +368,21 @@ class Application extends Base {
   void showAchievementNotification(Achievement achievement) {
     Element $notif = document.getElementById('achievement-notification');
     Element $name = $notif.querySelector('.name');
-//    Element $button = document.getElementById('achievementsbutton');
+    Element $button = document.getElementById('achievementsbutton');
 
     $notif.classes.clear();
     $notif.classes.add('active');
     $notif.classes.add('achievement${achievement.id}');
     $name.innerHtml = achievement.name;
-/*
-    if (Game.game.storage.getAchievementCount() === 1) {
-      this.blinkInterval = setInterval(function () {
+    if (Game.storage.getAchievementCount() == 1) {
+      this.blinkTimer = new Timer.periodic(new Duration(milliseconds: 500), (Timer timer) {
         $button.classes.toggle('blink');
-      }, 500);
+      });
     }
-    setTimeout(function () {
+    new Timer(new Duration(seconds: 5), () {
       $notif.classes.remove('active');
       $button.classes.remove('blink');
-    }, 5000);
-*/
+    });
   }
 
   void displayUnlockedAchievement(Achievement achievement) {

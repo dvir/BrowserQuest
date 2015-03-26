@@ -300,13 +300,6 @@ void main() {
 
   document.getElementById('achievementsbutton').onClick.listen((Event event) {
     Game.app.toggleAchievements();
-    // TODO(app): implement or remove
-    /*
-    if (Game.app.blinkInterval) {
-      clearInterval(Game.app.blinkInterval);
-    }
-    */
-    (event.target as Element).classes.remove('blink');
   });
 
   document.getElementById('inventorybutton').onClick.listen((Event event) {
