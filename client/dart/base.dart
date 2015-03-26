@@ -38,6 +38,16 @@ class Base {
     return newHandlers; 
   }
 
+  /**
+   * onAndExecute can be used for the common pattern of having a callback to
+   * attach to an event but also immediately execute.
+   */
+  Map<String, EventHandler> onAndExecute(String name, Function callback, [bool overwritePrevious = false]) {
+    Map<String, EventHandler> handlers = this.on(name, callback, overwritePrevious);
+    this.trigger(name);
+    return handlers;
+  }
+
   Map<String, EventHandler> on(String name, Function callback, [bool overwritePrevious = false]) {
     return this.onMulti(new List<String>()..add(name), callback, overwritePrevious);
   }

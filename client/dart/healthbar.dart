@@ -2,22 +2,28 @@ library healthbar;
 
 import 'dart:html' hide Player;
 
-import 'base.dart';
 import 'character.dart';
 import 'player.dart';
+import 'progressbar.dart';
 
-class HealthBar extends Base {
+class HealthBar extends ProgressBar {
 
-  Element element;
-  Element barContainer;
-  Element hpContainer;
   Character target;
   Map<String, EventHandler> handlers;
 
-  HealthBar(Element this.element) {
-    this.barContainer = this.element.querySelector(".healthbar");
-    this.hpContainer = this.element.querySelector(".hitpoints");
-    this.element.style.display = 'none'; 
+  HealthBar(Element $container, Element $bar, $progress): super($container, $bar, $progress);
+
+  int getAmount() {
+    return this.target.hp;
+  }
+
+  int getTotal() {
+    return this.target.maxHP;
+  }
+
+  bool shouldHide() {
+    return this.target.hp == 0 
+      && !(this.target is Player); 
   }
 
   void setTarget(Character target) {
@@ -42,21 +48,10 @@ class HealthBar extends Base {
     }
 
     if (this.target == null) {
-      this.element.style.display = 'none'; 
+      this.$container.style.display = 'none'; 
       return;
     }
 
     this.update();
-  }
-
-  void update() {
-    this.element.style.display = 
-      this.target.hp == 0 
-        && !(this.target is Player) 
-      ? 'none' 
-      : 'block';
-    int barWidth = this.target.maxHP > 0 ? (this.target.hp * 100 / this.target.maxHP).round() : 0;
-    this.hpContainer.style.width = "${barWidth}%";
-    this.barContainer.innerHtml = "${this.target.hp}/${this.target.maxHP}";
   }
 }

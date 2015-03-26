@@ -13,6 +13,7 @@ import 'game.dart';
 import 'healthbar.dart';
 import 'player.dart';
 import 'position.dart';
+import 'xpbar.dart';
 import "lib/gametypes.dart";
 
 class Application extends Base {
@@ -26,6 +27,7 @@ class Application extends Base {
   String previousState;
   HealthBar playerHealthBar;
   HealthBar targetHealthBar;
+  XPBar xpBar;
   
   void center() {
     window.scrollTo(0, 1);
@@ -90,24 +92,31 @@ class Application extends Base {
   }
 
   void initHealthBar() {
-    this.playerHealthBar = new HealthBar(document.getElementById("player"));
+    Element $element = document.getElementById("player");
+    Element $bar = $element.querySelector(".healthbar");
+    Element $progress = $element.querySelector(".hitpoints");
+    this.playerHealthBar = new HealthBar($element, $bar, $progress);
     this.playerHealthBar.setTarget(Game.player);
   }
 
   void initXPBar() {
-    Game.events.on("XPChange", () {
-      Element xpBar = document.getElementById('xpbar');
-      Player player = Game.player;
+    Element $element = document.getElementById("xp-container");
+    Element $bar = document.getElementById("xpbar");
+    Element $progress = document.getElementById("xp");
+    this.xpBar = new XPBar(Game.player, $element, $bar, $progress);
 
-      int barWidth = player.maxXP > 0 ? (player.xp * 100 / player.maxXP).round() : 0;
-      xpBar.innerHtml = "${player.xp}/${player.maxXP}";
-      document.getElementById("xp").style.width = "${barWidth}%";
-      document.getElementById("level").innerHtml = player.level.toString();
-    });
+    Element $level = document.getElementById("level");
+    void updateLevel() {
+      $level.innerHtml = Game.player.level.toString();
+    }
+    Game.events.onAndExecute("LevelChange", updateLevel);
   }
 
   void initTargetBar() {
-    this.targetHealthBar = new HealthBar(document.getElementById("target"));
+    Element $element = document.getElementById("target");
+    Element $bar = $element.querySelector(".healthbar");
+    Element $progress = $element.querySelector(".hitpoints");
+    this.targetHealthBar = new HealthBar($element, $bar, $progress);
 
     Game.events.on("TargetChange", () {
       Entity target = Game.player.target;
