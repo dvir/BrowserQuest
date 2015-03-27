@@ -2,6 +2,7 @@ library healthbar;
 
 import 'dart:html' hide Player;
 
+import 'base.dart';
 import 'character.dart';
 import 'player.dart';
 import 'progressbar.dart';

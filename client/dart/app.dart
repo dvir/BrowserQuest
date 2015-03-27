@@ -11,7 +11,6 @@ import 'config.dart';
 import 'entity.dart';
 import 'game.dart';
 import 'healthbar.dart';
-import 'player.dart';
 import 'position.dart';
 import 'xpbar.dart';
 import "lib/gametypes.dart";
