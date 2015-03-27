@@ -10,12 +10,9 @@ import "base.dart";
 
 class Audio extends Base {
   
-  static final String SOUND_PATH = "audio/sounds/";
-  static final String MUSIC_PATH = "audio/music/";
   String extension;
 
   String name;
-  String path_prefix = "";
   AudioBuffer buffer;
   AudioBufferSourceNode source;
   AudioContext audioContext;
@@ -23,7 +20,7 @@ class Audio extends Base {
   List<Area> areas = [];
   num volume = 1;
 
-  num _fadeVolume = 1;
+  num _fadeVolume = 0;
   num _fadeStep = 0.02;
   num _fadeSpeed = 50;
   Timer _fadeTimer;
@@ -37,9 +34,11 @@ class Audio extends Base {
     String this.name, 
     [String this.extension = "ogg"]
   );
+
+  String get path => "audio/";
   
   void load(Function callback) {
-    String path = "${this.path_prefix}${this.name}.${this.extension}";
+    String path = "${this.path}${this.name}.${this.extension}";
     HttpRequest request = new HttpRequest();
     request.open("GET", path, async: true);
     request.responseType = "arraybuffer";
@@ -61,7 +60,6 @@ class Audio extends Base {
     request.send();
   }
 
-  // TODO(soundtrack): might need to take care of channels
   void initBuffer() {
     this.source = this.audioContext.createBufferSource();
     this.source.buffer = buffer;
@@ -70,12 +68,10 @@ class Audio extends Base {
 
   void play() {
     if (this.source == null) {
-// TODO(soundtrack): for now, just return instead of crashing
-return;
-//      throw "Audio ${name} has not been loaded yet";
+      throw "Audio ${name} has not been loaded yet";
     }
 
-    if (this._isPlaying == true) {
+    if (this._isPlaying) {
       this.stop();
     }
 
@@ -85,9 +81,7 @@ return;
 
   void stop() {
     if (this.source == null) {
-// TODO(soundtrack): for now, just return instead of crashing
-return;
-//      throw "Audio ${name} has not been loaded yet";
+      throw "Audio ${name} has not been loaded yet";
     }
 
     this.source.stop(0);
@@ -95,14 +89,30 @@ return;
     this._isPlaying = false;
   }
 
+  void _setCurrentGainNodeVolume() {
+    this.gainNode.gain.value = this._fadeVolume * this._fadeVolume;
+  }
+
   void fadeIn([Function callback = null]) {
-    this._clearFade();
-    this._fadeVolume = 0;
+    if (this.isFadingIn) {
+      return;
+    }
+
+    if (this.isFadingOut) {
+      this._clearFadeTimer();
+      this.isFadingOut = false;
+    } else {
+      this._clearFade();
+    }
+
     this.isFadingIn = true;
 
+    if (!this._isPlaying) {
+      this.play();
+    }
     this._fadeTimer = new Timer.periodic(new Duration(milliseconds: this._fadeSpeed), (Timer timer) {
-      gainNode.gain.value = this._fadeVolume * this._fadeVolume;
-      this._fadeVolume = max(this.volume, this._fadeVolume + this._fadeStep);
+      this._setCurrentGainNodeVolume();
+      this._fadeVolume = min(this.volume, this._fadeVolume + this._fadeStep);
       if (this._fadeVolume == this.volume) {
         this._clearFade();
         if (callback != null) {
@@ -113,14 +123,24 @@ return;
   }
 
   void fadeOut([Function callback = null]) {
-    this._clearFade();
-    this._fadeVolume = this.volume;
+    if (this.isFadingOut) {
+      return;
+    }
+
+    if (this.isFadingIn) {
+      this._clearFadeTimer();
+      this.isFadingIn = false;
+    } else {
+      this._clearFade();
+    }
+
     this.isFadingOut = true;
 
     this._fadeTimer = new Timer.periodic(new Duration(milliseconds: this._fadeSpeed), (Timer timer) {
-      gainNode.gain.value = this._fadeVolume * this._fadeVolume;
+      this._setCurrentGainNodeVolume();
       this._fadeVolume = max(0, this._fadeVolume - this._fadeStep);
       if (this._fadeVolume == 0) {
+        this.stop();
         this._clearFade();
         if (callback != null) {
           callback();
@@ -129,19 +149,22 @@ return;
     });
   }
 
-  void _clearFade() {
+  void _clearFadeTimer() {
     if (this._fadeTimer != null && this._fadeTimer.isActive) {
       this._fadeTimer.cancel();
     }
+  }
+
+  void _clearFade() {
+    this._clearFadeTimer();
 
     this.isFadingOut = false;
     this.isFadingIn = false;
+    this.gainNode.gain.value = 1;
   }
 }
 
 class Sound extends Audio {
-
-  String path_prefix = Audio.SOUND_PATH;
 
   Sound(
     AudioContext audioContext, 
@@ -149,11 +172,11 @@ class Sound extends Audio {
     String name, 
     [String extension = "ogg"]
   ): super(audioContext, gainNode, name, extension);
+
+  String get path => "audio/sounds/";
 }
 
 class Music extends Audio {
-
-  String path_prefix = Audio.MUSIC_PATH;
 
   Music(
     AudioContext audioContext, 
@@ -161,6 +184,8 @@ class Music extends Audio {
     String name, 
     [String extension = "ogg"]
   ): super(audioContext, gainNode, name, extension);
+
+  String get path => "audio/music/";
 
   void initBuffer() {
     super.initBuffer();

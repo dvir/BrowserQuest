@@ -20,26 +20,38 @@ class AudioManager extends Base {
   AudioContext audioContext;
   GainNode gainNode;
   Audio currentMusic;
+  Audio queuedMusic;
 
-  AudioManager() {
+  AudioManager({void onLoaded()}) {
     this.audioContext = new AudioContext();
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connectNode(this.audioContext.destination, 0, 0);
+
+    this.on("Loaded", onLoaded);
+    this.onMulti(["SoundLoaded", "MusicLoaded"], () {
+      if (this.isLoaded) {
+        this.trigger("Loaded");
+      }
+    });
 
     AudioManager.soundNames.forEach((String name) {
       Sound sound = new Sound(this.audioContext, this.gainNode, name);
       sound.load(() {
         this.sounds[name] = sound;
+        if (this.hasSoundLoaded) {
+          this.trigger("SoundLoaded");
+        }
       });
     });
 
     AudioManager.musicNames.forEach((String name) {
       Music music = new Music(this.audioContext, this.gainNode, name);
-      // TODO(soundtrack): fill in music with a placeholder music and load it properly
-      // for now, we will just add the music optimistically so we have zone names
-      //music.load(() {
+      music.load(() {
         this.musics[name] = music;
-      //});
+        if (this.hasMusicLoaded) {
+          this.trigger("MusicLoaded");
+        }
+      });
     });
   }
 
@@ -49,6 +61,19 @@ class AudioManager extends Base {
 
   Audio getMusic(String name) {
     return this.musics[name];
+  }
+
+  bool get hasSoundLoaded => this.sounds.length == AudioManager.soundNames.length;
+  bool get hasMusicLoaded => this.musics.length == AudioManager.musicNames.length;
+  bool get isLoaded => this.hasSoundLoaded && this.hasMusicLoaded;
+
+  void updateMusicWhenLoaded() {
+    if (this.hasMusicLoaded) {
+      this.updateMusic();
+      return;
+    }
+
+    this.on("MusicLoaded", this.updateMusic);
   }
 
   void playSound(String name) {
@@ -70,14 +95,38 @@ class AudioManager extends Base {
       return;
     }
 
-    Music music = this.musics[name];
-    if (music.isFadingOut) {
-      music.fadeIn();
-    } else {
-      music.play();
+    if (this.isCurrentMusic(this.musics[name])) {
+      // it's already the current music
+      return;
     }
 
+    if (this.currentMusic == null) {
+      this.startMusic(this.musics[name]);
+      return;
+    }
+
+    this.queueMusic(this.musics[name]);
+    this.currentMusic.fadeOut(() {
+      this.currentMusic = null;
+
+      if (this.queuedMusic != null) {
+        this.startMusic(this.queuedMusic);
+        this.clearQueuedMusic();
+      }
+    });
+  }
+
+  void queueMusic(Music music) {
+    this.queuedMusic = music;
+  }
+
+  void clearQueuedMusic() {
+    this.queuedMusic = null;
+  }
+
+  void startMusic(Music music) {
     this.currentMusic = music;
+    this.currentMusic.fadeIn();
   }
   
   void toggle() {
@@ -132,20 +181,27 @@ class AudioManager extends Base {
       return;
     }
 
-    this.fadeOutCurrentMusic();
-    this.playMusic(music.name);
+    this.fadeOutCurrentMusic(() {
+      this.playMusic(music.name);
+    });
   }
 
   bool isCurrentMusic(Music music) => (this.currentMusic == music);
 
-  void fadeOutCurrentMusic() {
+  void fadeOutCurrentMusic([void callback()]) {
     if (this.currentMusic == null) {
       // there is no current music to fade out.
+      if (callback != null) {
+        callback();
+      }
       return;
     }
 
     this.currentMusic.fadeOut(() {
       this.currentMusic = null;
-    });
+      if (callback != null) {
+        callback();
+      }
+    }); 
   }
 }

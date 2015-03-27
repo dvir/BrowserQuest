@@ -100,7 +100,7 @@ class Game extends Base {
   static Map<int, Entity> obsoleteEntities = {};
 
   static Application app = new Application();
-  static AudioManager audioManager = new AudioManager();
+  static AudioManager audioManager;
   static BubbleManager bubbleManager;
   static InfoManager infoManager = new InfoManager();
   static html.InputElement chatInput;
@@ -211,7 +211,10 @@ class Game extends Base {
     Game.bubbleManager = new BubbleManager(bubbleContainer);
     Game.renderer = new Renderer(canvas, backCanvas, foreCanvas);
     Game.chatInput = chatInput;
+    Game.initAudio();
   }
+
+  static bool get isReady => Game.allSpritesLoaded && Game.map.isLoaded && Game.audioManager.isLoaded;
 
   static void initAchievements() {
     Game.app.initAchievementList();
@@ -261,7 +264,7 @@ class Game extends Base {
 
       Game.app.trigger('start');
 
-      if (Game.allSpritesLoaded) {
+      if (Game.isReady) {
         Game.events.trigger("GameReady");
       }
     });
@@ -616,8 +619,12 @@ class Game extends Base {
     Game.storage = new LocalStorage();
   }
 
-  static void loadAudio() {
-    Game.audioManager = new AudioManager();
+  static void initAudio() {
+    Game.audioManager = new AudioManager(onLoaded: () {
+      if (Game.isReady) {
+        Game.events.trigger("GameReady");
+      }
+    });
   }
 
   static void initMusicAreas() {
@@ -629,8 +636,6 @@ class Game extends Base {
   static void run(started_callback) {
     Game.events.on("GameReady", () {
       Game.ready = true;
-
-      Game.loadAudio();
 
       Game.initMusicAreas();
       Game.initAchievements();
@@ -662,7 +667,9 @@ class Game extends Base {
       Game.camera = Game.renderer.camera;
       Game.setSpriteScale(Game.renderer.scale);
 
-      Game.events.trigger("GameReady");
+      if (Game.isReady) {
+        Game.events.trigger("GameReady");
+      }
     });
     Game.loadSprites();
   }
@@ -1688,7 +1695,7 @@ class Game extends Base {
         Game.updateBars();
         Game.resetCamera();
         Game.updatePlateauMode();
-        Game.audioManager.updateMusic();
+        Game.audioManager.updateMusicWhenLoaded();
 
         Game.addEntity(Game.player);
         Game.player.dirtyRect = Game.renderer.getEntityBoundingRect(Game.player);
