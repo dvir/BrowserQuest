@@ -3,7 +3,6 @@ library hero;
 import "achievements.dart";
 import "character.dart";
 import "chest.dart";
-import "entity.dart";
 import "game.dart";
 import "inventory.dart";
 import "inventoryitem.dart";

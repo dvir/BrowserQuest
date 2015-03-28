@@ -5,7 +5,6 @@ import "dart:html" as html;
 
 import "achievements.dart";
 import "base.dart";
-import "game.dart";
 import "player.dart";
 import "lib/gametypes.dart";
 

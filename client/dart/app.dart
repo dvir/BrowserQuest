@@ -244,10 +244,6 @@ class Application extends Base {
       this.toggleInstructions();
       document.getElementById('helpbutton').classes.remove('active');
     }
-    if (document.getElementById('inventory').classes.contains('active')) {
-      this.toggleInventory();
-      document.getElementById('inventorybutton').classes.remove('active');
-    }
     if (document.querySelector('body').classes.contains('credits')) {
       this.closeInGameCredits();
     }
