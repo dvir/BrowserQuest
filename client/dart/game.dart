@@ -1675,6 +1675,7 @@ class Game extends Base {
           Game.player.isRemoved = false;
         } else {
           Game.player = new Hero(data['id'], data['name']);
+          Game.player.storage = Game.storage;
         }
 
         // make events from player to bubble to game
@@ -1704,12 +1705,18 @@ class Game extends Base {
         Game.player.idle();
 
         if (!Game.storage.hasAlreadyPlayed) {
-          Game.storage.initPlayer(Game.player);
-          Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
           Game.showNotification("Welcome to BrowserQuest!");
         } else {
           Game.showNotification("Welcome back to BrowserQuest!");
         }
+
+        Game.storage.initPlayer(Game.player);
+        void updateAndSavePlayer() { 
+          Game.storage.savePlayer(Game.renderer.getPlayerImage(Game.player), Game.player);
+        };
+        Game.player.onExclusive(Game.events, "LevelChange", updateAndSavePlayer);
+        Game.player.onExclusive(Game.events, "ArmorChange", updateAndSavePlayer);
+        Game.player.onExclusive(Game.events, "WeaponChange", updateAndSavePlayer);
 
         if (Game.hasNeverStarted) {
           Game.start();

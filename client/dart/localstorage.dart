@@ -138,13 +138,6 @@ class LocalStorage extends Base {
   void initPlayer(Player player) {
     this.hasAlreadyPlayed = true;
     this.updatePlayer(player);
-
-    void updateAndSavePlayer() { 
-      this.savePlayer(Game.renderer.getPlayerImage(player), player);
-    };
-    player.onExclusive(this, "LevelChange", updateAndSavePlayer);
-    player.onExclusive(this, "ArmorChange", updateAndSavePlayer);
-    player.onExclusive(this, "WeaponChange", updateAndSavePlayer);
   }
 
   void savePlayer(String image, Player player) {
