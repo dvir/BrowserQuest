@@ -11,12 +11,15 @@ import 'config.dart';
 import 'entity.dart';
 import 'game.dart';
 import 'healthbar.dart';
+import 'inventory.dart';
+import 'inventoryitem.dart';
 import 'position.dart';
 import 'xpbar.dart';
 import "lib/gametypes.dart";
 
 class Application extends Base {
 
+  bool debugInventory = false;
   bool isDesktop = true;
   bool supportsWorkers = true;
   int currentPage = 0;
@@ -72,8 +75,117 @@ class Application extends Base {
     });
   }
 
-  // TODO(inventory): implement or remove. the relevant code is complicated
-  void updateInventory() {}
+  void updateInventory() {
+    Inventory inventory = Game.player.inventory;
+    Element $inventory = document.getElementById('inventory');
+    Element $list = $inventory.querySelector('ul');
+    Element $dragSrc = null;
+
+    _dragStart(MouseEvent event) {
+      Element $target = event.currentTarget;
+      $target.style.opacity = '0.4';
+      $dragSrc = $target;
+      event.dataTransfer.effectAllowed = 'move';
+    }
+
+    _dragEnd(MouseEvent event) {
+      Element $target = event.currentTarget;
+      $target.style.opacity = '1';
+
+      // if $dragSrc is still set on the end of the drag, that means that the
+      // drag failed. (never reached the drop event)
+      if ($dragSrc != null) {
+        $dragSrc = null;
+
+        // I threw it on the ground (https://youtu.be/gAYL5H46QnQ)
+        inventory.throwItem(int.parse($target.dataset['slot']));
+        this.updateInventory();
+      }
+    }
+
+    _mouseDown(MouseEvent event) {
+      Element $target = event.currentTarget;
+      if (event.which == 3) { // right click
+        InventoryItem item = inventory.get(int.parse($target.dataset['slot']));
+        item.use();
+      }
+    }
+
+    _dragOver(MouseEvent event) {
+      event.preventDefault(); // necessary. allows us to drop.
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    _dragEnter(MouseEvent event) {
+      Element $target = event.currentTarget;
+      $target.classes.add('over');
+    }
+
+    _dragLeave(MouseEvent event) {
+      Element $target = event.currentTarget;
+      $target.classes.remove('over');
+    }
+
+    _drop(MouseEvent event) {
+      Element $target = (event.currentTarget as Element).querySelector('div');
+      event.stopPropagation();
+
+      if ($dragSrc.dataset['source'] != 'inventory') {
+        window.console.debug('Drag and drop denied for source ${$target.dataset['source']}');
+        return false;
+      }
+
+      inventory.swap(int.parse($dragSrc.dataset['slot']), int.parse($target.dataset['slot']));
+
+      $dragSrc = null;
+      this.updateInventory();
+    }
+
+    $list.innerHtml = '';
+    inventory.forEach((int slot, InventoryItem item) {
+      Element $listItem = new Element.li();
+
+      $listItem.onDragOver.listen(_dragOver);
+      $listItem.onDragEnter.listen(_dragEnter);
+      $listItem.onDragLeave.listen(_dragLeave);
+      $listItem.onDrop.listen(_drop);
+
+      Element $div = new Element.div();
+      $div.dataset['slot'] = '${slot}';
+      $listItem.append($div);
+
+      if (this.debugInventory) {
+        Element $slot = new Element.span()..classes.add('slot');
+        $slot.innerHtml = '${slot}';
+        $div.append($slot);
+      }
+
+      if (item == null) {
+        $list.append($listItem);
+        return;
+      }
+
+      $div.draggable = true;
+      $div.dataset['itemID'] = item.inventoryID;
+      $div.dataset['source'] = 'inventory';
+
+      $div.onDragStart.listen(_dragStart);
+      $div.onDragEnd.listen(_dragEnd);
+      $div.onMouseDown.listen(_mouseDown);
+
+      if (item.isStackable && item.amount > 0) {
+        Element $amount = new Element.span()..classes.add('amount');
+        $amount.innerHtml = '${item.amount}';
+        $div.append($amount);
+      }
+
+      $list.append($listItem);
+
+      // we can only set backgroundImage after the div has been inserted into
+      // the DOM
+      $div.style.backgroundImage = "url('/img/${Game.renderer.getScaleFactor()}/item-${item.kind}.png')";
+    });
+  }
 
   // TODO(skillbar): implement or remove. the relevant code is complicated
   void updateSkillbar() {}

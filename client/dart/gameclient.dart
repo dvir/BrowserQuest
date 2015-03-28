@@ -12,6 +12,7 @@ import "config.dart";
 import "damageinfo.dart";
 import "entityfactory.dart";
 import "game.dart";
+import "inventory.dart";
 import "inventoryitem.dart";
 import "item.dart";
 import "mob.dart";
@@ -88,12 +89,13 @@ class GameClient extends Base {
     });
 
     this.on('Message.${Message.LOOT.index}', (data) {
-      int itemID = data[1];
+      String itemID = data[1];
 
       Item item = Game.player.inventory.find(itemID);
       if (item == null) {
-        html.window.console.error("Loot was picked up but couldn't be found in inventory. (${itemID})");
-        return;
+        // we expect this to happen because an inventory update should have
+        // been sent before a loot message
+        throw "Loot was picked up but couldn't be found in inventory. (${itemID})";
       }
 
       Game.player.loot(item);
@@ -522,7 +524,7 @@ class GameClient extends Base {
       item.playersInvolved = data[4];
 
       Position pos = 
-        data[5] 
+        data[5] != null 
         ? new Position(data[5]['x'], data[5]['y']) 
         : Game.getDeadMobPosition(entityId);
       Game.unregisterEntityDeathPosition(entityId);
@@ -821,12 +823,11 @@ class GameClient extends Base {
     Game.disconnected(message);
   }
 
-  // TODO(inventory): uncomment
-  /*void sendInventory(Inventory inventory) {*/
-    /*this.sendMessage([Message.INVENTORY,*/
-      /*inventory.serialize()*/
-    /*]);*/
-  /*}*/
+  void sendInventory(Inventory inventory) {
+    this.sendMessage([Message.INVENTORY,
+      inventory.serialize()
+    ]);
+  }
 
   void sendInventoryItem(InventoryItem item) {
     this.sendMessage([Message.INVENTORYITEM,

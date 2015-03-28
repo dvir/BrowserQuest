@@ -24,9 +24,7 @@ class Hero extends Player {
   LocalStorage storage;
 
   Hero(int id, String name): super(id, name, Entities.PLAYER) {
-    // TODO(skillbar): implement!
     this.skillbar = new Skillbar([]);
-    // TODO(inventory): implement!
     this.inventory = new Inventory([]);
   }
 
@@ -240,9 +238,8 @@ class Hero extends Player {
   }
 
   void loadFromObject(data) {
-    // TODO(inventory): implement
-    /*this.loadInventory(data.inventory);*/
-    /*data.remove("inventory");*/
+    this.loadInventory(data['inventory']);
+    data.remove("inventory");
 
     // TODO(skillbar): implement
     /*this.loadSkillbar(data.skillbar);*/

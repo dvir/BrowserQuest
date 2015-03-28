@@ -6,11 +6,14 @@ import "item.dart";
 import "lib/gametypes.dart";
 import 'hero.dart';
 
-// TODO(inventory): make it a class not dependant of Item.
 class InventoryItem extends Item {
 
   int slot = 0;
   int barSlot = 0;
+
+  // the inventory ID in which the item is in (there may be multiple
+  // inventories per player, or multiple players per inventory)
+  String inventoryID;
 
   InventoryItem(EntityKind kind, [data = null]): super(0, kind) {
 
@@ -29,14 +32,14 @@ class InventoryItem extends Item {
   }
 
   void load(data) {
-    this.id = data.inventoryId;
-    this.kind = data.kind;
-    this.amount = data.amount;
-    this.slot = data.slot;
-    this.barSlot = data.barSlot;
+    this.id = data['id'];
+    this.inventoryID = data['inventoryId'];
+    this.amount = data['amount'];
+    this.slot = data['slot'];
+    this.barSlot = data['barSlot'];
   }
 
-  Map serialize() {
+  Map<String, dynamic> serialize() {
     return {
       "id": this.id,
       "kind": this.kind,

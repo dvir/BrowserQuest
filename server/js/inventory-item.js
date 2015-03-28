@@ -144,6 +144,7 @@ module.exports = InventoryItem = Entity.extend({
 
   remove: function () {
     this.amount = 0;
+    this.inventory.remove(this.id);
   },
 
   save: function (callback) {

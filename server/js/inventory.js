@@ -63,6 +63,17 @@ module.exports = Inventory = DBEntity.extend({
     return null;
   },
 
+  remove: function(itemId) {
+    for (var i in this.items) {
+      var item = this.items[i];
+      if (item && item.id == itemId) {
+        this.items[i] = null;
+        this.player.syncInventory();
+        return;
+      }
+    }
+  },
+
   add: function (item) {
     if (item.isStackable) {
       // find item in the list so we can just increase its amount
@@ -82,6 +93,7 @@ module.exports = Inventory = DBEntity.extend({
     // but first, check if we have room for it in the inventory
     if (Object.keys(this.items).length >= this.size) {
       // not enough room!
+      log.debug('not enough room in inventory');
       return false;
     }
 

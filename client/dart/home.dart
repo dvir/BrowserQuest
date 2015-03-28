@@ -124,23 +124,23 @@ initGame() {
           break;
 
         case Key.I:
-          document.getElementById('inventorybutton').click();
+          Game.app.toggleInventory();
           break;
 
         case Key.K:
-          document.getElementById('achievementsbutton').click();
+          Game.app.toggleAchievements();
           break;
 
         case Key.H:
-          document.getElementById('helpbutton').click();
+          Game.app.toggleAbout();
           break;
 
         case Key.M:
-          document.getElementById('mutebutton').click();
+          Game.audioManager.toggle();
           break;
 
         case Key.P:
-          document.getElementById('playercount').click();
+          Game.app.togglePopulationInfo();
           break;
 
         case Key.T:

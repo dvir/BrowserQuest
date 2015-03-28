@@ -1791,5 +1791,6 @@ class Game extends Base {
      */
     static void toggleDebugInfo() {
       Game.renderer.isDebugInfoVisible = Game.renderer == null || !Game.renderer.isDebugInfoVisible; 
+      Game.app.debugInventory = !Game.app.debugInventory;
     }
 }
