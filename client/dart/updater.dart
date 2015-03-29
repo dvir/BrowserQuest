@@ -25,10 +25,6 @@ class Updater extends Base {
 
   void updateCharacters(int t) {
     Game.forEachEntity((Entity entity) {
-      if (!entity.isLoaded) {
-        return;
-      }
-
       if (entity is Character) {
         this.updateCharacter(entity);
         Game.updateCharacter(entity);

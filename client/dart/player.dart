@@ -33,9 +33,6 @@ class Player extends Character {
 
   Player(int id, String name, EntityKind kind): super(id, kind) {
     this.name = name;
-
-    // TODO(sprites): meh. refactor setSprite mechanics
-    this.setSprite(this.sprite);
   }
 
   EntityKind get weapon => super.weapon == null ? Entities.SWORD1 : super.weapon;
@@ -70,8 +67,6 @@ class Player extends Character {
     item.looted(this);
   }
 
-  String getSpriteName() => this.sprite.name;
-
   EntityKind get skin {
     if (this.isDying) {
       return Entities.DEATH;
@@ -81,11 +76,7 @@ class Player extends Character {
       return Entities.FIREFOX;
     }
 
-    if (this.armor != null) {
-      return this.kind;
-    }
-
-    return this.armor;
+    return super.skin;
   }
 
   int get xp => this._xp;

@@ -29,14 +29,13 @@ class Hero extends Player {
 
   void die() {
     this.removeTarget();
+
     this.isDead = true;
+    this.isDying = true;
 
     this.log_info("is dead");
 
-    this.isDying = true;
-
     this.stopBlinking();
-    this.setSprite(Game.sprites["death"]);
 
     this.animate("death", 120, 1, () {
       this.log_info("was removed");

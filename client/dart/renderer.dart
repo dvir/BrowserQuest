@@ -479,10 +479,6 @@ class Renderer extends Base {
 
   void drawEntities([bool dirtyOnly = false]) {
     Game.forEachVisibleEntityByDepth((Entity entity) {
-      if (!entity.isLoaded) {
-        return;
-      }
-
       if (dirtyOnly) {
         if (entity.isDirty) {
           this.drawEntity(entity);
@@ -798,7 +794,7 @@ class Renderer extends Base {
     html.CanvasRenderingContext2D ctx = canvas.getContext('2d');
     int os = this.upscaledRendering ? 1 : this.scale;
     Sprite sprite = Game.sprites[Types.getKindAsString(player.armor)];
-    Animation spriteAnim = player.animations["idle_down"];
+    Animation spriteAnim = player.getAnimation("idle_down");
     
     // character
     int row = spriteAnim.row;

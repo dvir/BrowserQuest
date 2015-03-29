@@ -441,7 +441,6 @@ class Game extends Base {
   }
 
   static void addSpellEffect(SpellEffect spellEffect, Position position) {
-    spellEffect.setSprite(Game.sprites[spellEffect.getSpriteName()]);
     spellEffect.gridPosition = position;
     spellEffect.setAnimation("idle", 150);
     Game.addEntity(spellEffect);
@@ -455,7 +454,6 @@ class Game extends Base {
   }
 
   static void addItem(Entity item, Position position) {
-    item.setSprite(Game.sprites[item.getSpriteName()]);
     item.gridPosition = position;
     item.setAnimation("idle", 150);
     Game.addEntity(item);
@@ -1558,9 +1556,6 @@ class Game extends Base {
       } else {
         Game.sprites = Game.spriteSets[scale - 1];
 
-        Game.entities.forEach((int id, Entity entity) {
-          entity.setSprite(Game.sprites[entity.getSpriteName()]);
-        });
         Game.initHurtSprites();
         Game.initShadows();
         Game.initCursors();

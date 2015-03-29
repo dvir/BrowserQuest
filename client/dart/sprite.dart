@@ -22,6 +22,7 @@ class Sprite extends Base {
   int height;
   html.ImageElement image;
   Map<String, Map<String, int>> animationData;
+  Sprite _rootSprite;
   Sprite _whiteSprite;
   Sprite _silhouetteSprite;
 
@@ -34,7 +35,8 @@ class Sprite extends Base {
     int this.offsetX,
     int this.offsetY,
     int this.width,
-    int this.height
+    int this.height,
+    Sprite this._rootSprite
   ) {
     this._isLoaded = isLoaded;
   }
@@ -60,6 +62,8 @@ class Sprite extends Base {
     this.offsetY = data["offset_y"] != null ? data["offset_y"] : -16;
   }
 
+  Sprite get rootSprite => this._rootSprite == null ? this : this._rootSprite;
+
   bool get isLoaded => _isLoaded;
   void set isLoaded(bool isLoaded) {
     this._isLoaded = isLoaded;
@@ -68,23 +72,20 @@ class Sprite extends Base {
 
   void load() {
     this.image = new html.ImageElement();
-    this.image.src = this.filepath;
     this.image.onLoad.listen((e) {
       this.isLoaded = true;
     });
+    this.image.src = this.filepath;
   }
 
-  Map<String, Animation> createAnimations() {
-    Map<String, Animation> animations = new Map<String, Animation>();
-
-    for (String name in this.animationData.keys) {
-      Map<String, int> a = this.animationData[name];
-      Animation animation =
-        new Animation(name, a['length'], a['row'], this.width, this.height);
-      animations.putIfAbsent(name, () => animation);
+  Animation createAnimation(String name) {
+    if (this.animationData == null) {
+      // some sprites cannot be animated
+      return null;
     }
 
-    return animations;
+    Map<String, int> data = this.animationData[name];
+    return new Animation(name, data['length'], data['row'], this.width, this.height);
   }
 
   void createHurtSprite() {
@@ -111,12 +112,13 @@ class Sprite extends Base {
       this.offsetX,
       this.offsetY,
       this.width,
-      this.height
+      this.height,
+      this
     );
   }
 
   Sprite getHurtSprite() {
-    return this._whiteSprite;
+    return this._whiteSprite == null ? this : this._whiteSprite;
   }
 
   void createSilhouette() {
@@ -179,11 +181,12 @@ class Sprite extends Base {
       this.offsetX,
       this.offsetY,
       this.width,
-      this.height
+      this.height,
+      this
     );
   }
 
   Sprite getSilhouetteSprite() {
-    return this._silhouetteSprite;
+    return this._silhouetteSprite == null ? this : this._silhouetteSprite;
   }
 }

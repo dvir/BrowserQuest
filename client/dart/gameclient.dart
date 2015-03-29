@@ -324,7 +324,6 @@ class GameClient extends Base {
         Entity chest = EntityFactory.createEntity(kind, id);
 
         html.window.console.info("Spawned chest (${chest.id}) at ${position}");
-        chest.setSprite(Game.sprites[chest.getSpriteName()]);
         chest.gridPosition = position;
         chest.setAnimation("idle_down", 150);
         Game.addEntity(chest);
@@ -332,7 +331,6 @@ class GameClient extends Base {
         Entity npc = EntityFactory.createEntity(kind, id);
 
         html.window.console.info("Spawned ${Types.getKindAsString(npc.kind)} (${npc.id}) at ${npc.gridPosition}");
-        npc.setSprite(Game.sprites[npc.getSpriteName()]);
         npc.gridPosition = position;
         npc.setAnimation("idle_down", 150);
         Game.addEntity(npc);
@@ -370,8 +368,6 @@ class GameClient extends Base {
         if (!Game.entityIdExists(character.id)) {
           try {
             if (character.id != Game.player.id) {
-              String kindString = Types.getKindAsString(character.skin);
-              character.setSprite(Game.sprites[kindString]);
               character.gridPosition = position;
               character.orientation = orientation;
               character.idle();

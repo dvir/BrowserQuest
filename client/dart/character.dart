@@ -89,13 +89,15 @@ class Character extends Entity {
   }
 
   Sprite get sprite {
-    Sprite sprite = super.sprite;
+    return this.isHurting ? super.sprite.getHurtSprite() : super.sprite;
+  }
+
+  EntityKind get skin {
     if (this.armor != null) {
-      String kindString = Types.getKindAsString(this.armor);
-      sprite = Game.sprites[kindString];
+      return this.armor;
     }
 
-    return this.isHurting ? sprite.getHurtSprite() : sprite;
+    return super.skin;
   }
 
   bool isHostile(Entity entity) => false;

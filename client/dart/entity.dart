@@ -25,7 +25,6 @@ class Entity extends Base {
 
   bool isDead = false;
   bool isDying = false;
-  bool isLoaded = false;
   bool isHighlighted = false;
   bool isVisible = true;
   bool isDirty = false;
@@ -38,7 +37,6 @@ class Entity extends Base {
   Timer blinkingTimer;
 
   // Renderer
-  Sprite _sprite;
   Map<String, Animation> animations = {};
   Animation currentAnimation;
   int nameOffsetY = -10;
@@ -63,15 +61,12 @@ class Entity extends Base {
   }
 
   Sprite get sprite {
-    if (this._sprite == null) {
-      return null;
+    Sprite sprite = Game.sprites[this.getSpriteName()];
+    if (this.isDead) {
+      sprite = Game.sprites["death"];
     }
 
-    return this.isHighlighted ? this._sprite.getSilhouetteSprite() : this._sprite;
-  }
-
-  void set sprite(Sprite sprite) {
-    this._sprite = sprite;
+    return this.isHighlighted ? sprite.getSilhouetteSprite() : sprite;
   }
 
   void reset() {
@@ -98,7 +93,6 @@ class Entity extends Base {
 
     this.isDead = true;
     this.isDying = true;
-    this.setSprite(Game.sprites["death"]);
 
     this.animate("death", 120, 1, () {
       html.window.console.info("${this.id} was removed");
@@ -164,41 +158,29 @@ class Entity extends Base {
     this.gridPosition = new Position(gridX, gridY);
   }
 
-  void setSprite(Sprite sprite) {
-    if (sprite == null) {
-      throw "cannot setSprite to null for entity ${this.id}";
-    }
-
-    // don't change to the same sprite
-    if (this._sprite != null && this._sprite.name == sprite.name) {
-      return;
-    }
-
-    this._sprite = sprite;
-    this.animations.addAll(sprite.createAnimations());
-
-    this.isLoaded = true;
-    this.trigger("Ready");
-  }
-
   EntityKind get skin => this.kind;
 
-  String getSpriteName() => Types.getKindAsString(this.kind);
+  String getSpriteName() => Types.getKindAsString(this.skin);
 
   void idle([Orientation orientation]) {}
 
-  void setAnimation(String name, int speed, [int count = 0, Function onEndCount]) {
-    if (!this.isLoaded) {
-      this.log_error("Not ready for animation");
-    }
+  Animation getAnimation(String name) {
+    return this.sprite.rootSprite.createAnimation(name);
+  }
 
+  void setAnimation(String name, int speed, [int count = 0, Function onEndCount]) {
     // if we are already animating the given animation, stop.
     if (this.currentAnimation != null && this.currentAnimation.name == name) {
       return;
     }
 
-    Animation animation = this.animations[name];
+    Animation animation = this.getAnimation(name);
     this.currentAnimation = animation;
+
+    if (animation == null) {
+      throw "${name} is not a valid animation for sprite ${this.sprite.name}";
+    }
+
     if (name.substring(0, 3) == "atk") {
       this.currentAnimation.reset();
     }
