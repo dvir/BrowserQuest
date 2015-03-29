@@ -315,13 +315,14 @@ class Game extends Base {
   static void loadSprite(String name, void afterEachSpriteLoaded()) {
     html.window.console.debug("-- loading ${name}");
 
-    int scale = Game.renderer.upscaledRendering ? 1 : 2;
-    Sprite sprite = new Sprite.FromJSON(name, scale); 
-    sprite.on("Load", () {
-      Game.spriteSets[scale - 1][name] = sprite;
-      afterEachSpriteLoaded();
-    });
-    sprite.load();
+    for (int scale = 1; scale <= Game.spriteSets.length; ++scale) {
+      Sprite sprite = new Sprite.FromJSON(name, scale); 
+      sprite.on("Load", () {
+        Game.spriteSets[scale - 1][name] = sprite;
+        afterEachSpriteLoaded();
+      });
+      sprite.load();
+    }
   }
 
   static void loadSprites() {
@@ -334,7 +335,7 @@ class Game extends Base {
     Game.spriteNames.forEach((String name) {
       Game.loadSprite(name, () {
         loadedSpritesCount++;
-        if (loadedSpritesCount == Game.spriteNames.length) {
+        if (loadedSpritesCount == Game.spriteNames.length * Game.spriteSets.length) {
           Game.allSpritesLoaded = true;
           Game.events.trigger("AllSpritesLoaded");
         }
@@ -1548,7 +1549,7 @@ class Game extends Base {
     }    
 
     static void setSpriteScale(int scale) {
-      if (scale < 0 || scale > 2) {
+      if (scale < 1 || scale > 3) {
         throw new Exception("Unsupported scale $scale");
       }
 

@@ -47,11 +47,12 @@ class Renderer extends Base {
   int animatedTileCount = 0;
   int highTileCount = 0;
   html.ImageElement _tileset;
-  int scale = 2;
+  int scale;
   Camera camera;
   Position lastTargetPos;
   Rect targetRect;
   AnimationTimer fixFlickeringTimer = new AnimationTimer(new Duration(milliseconds: 100));
+  int fontSize;
 
   bool upscaledRendering = false;
 
@@ -86,9 +87,6 @@ class Renderer extends Base {
   }
 
   int getScaleFactor() {
-    return 2;
-// TODO(scale): get rid of the idea of scale in the game
-/*
     if (html.window.innerWidth <= 1000) {
       return 2;
     }
@@ -98,7 +96,6 @@ class Renderer extends Base {
     }
 
     return 3;
-*/
   }
 
   void rescale() {
@@ -156,6 +153,7 @@ class Renderer extends Base {
   }
 
   void setFontSize(int size) {
+    this.fontSize = size;
     String font = "${size}px GraphicPixel";
     this.context.font = font;
     this.background.font = font;
@@ -598,7 +596,8 @@ class Renderer extends Base {
     );
 
     if (entity is Player && entity.guild != null) {
-      this.setFontSize(9);
+      int currentFontSize = this.fontSize;
+      this.setFontSize(currentFontSize - (2 * this.scale));
       String guildName = entity.guild['name'];
       this.drawText(
         guildName, 
@@ -608,6 +607,7 @@ class Renderer extends Base {
         ),
         true,
         "white");
+      this.setFontSize(currentFontSize);
     }
 
     this.context.restore();

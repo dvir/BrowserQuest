@@ -412,7 +412,7 @@ void main() {
 
   document.onTouchStart.listen((Event event) {});
 
-  document.getElementById('resize-check').onTransitionEnd.listen((_) => Game.app.resizeUi);
+  document.getElementById('resize-check').onTransitionEnd.listen((_) => Game.app.resizeUi());
 
   window.console.info("App initialized.");
 }
