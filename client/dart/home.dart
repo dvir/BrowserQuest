@@ -264,6 +264,7 @@ initGame() {
 
   document.getElementById('mutebutton').onClick.listen((Event event) {
     Game.audioManager.toggle();
+    document.getElementById('mutebutton').classes.toggle('active');
   });
 }
 
