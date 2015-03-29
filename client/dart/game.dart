@@ -620,11 +620,14 @@ class Game extends Base {
   }
 
   static void initAudio() {
-    Game.audioManager = new AudioManager(onLoaded: () {
-      if (Game.isReady) {
-        Game.events.trigger("GameReady");
+    Game.audioManager = new AudioManager(
+      enabled: !Game.storage.isMusicMuted,
+      onLoaded: () {
+        if (Game.isReady) {
+          Game.events.trigger("GameReady");
+        }
       }
-    });
+    );
   }
 
   static void initMusicAreas() {

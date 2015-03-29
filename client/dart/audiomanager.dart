@@ -11,7 +11,7 @@ import "game.dart";
 
 class AudioManager extends Base {
 
-  bool enabled = true;
+  bool enabled;
   List<Area> areas = [];
   static final List<String> musicNames = const ["village", "beach", "forest", "cave", "desert", "lavaland", "boss"];
   static final List<String> soundNames = const ["loot", "hit1", "hit2", "hurt", "heal", "chat", "revive", "death", "firefox", "achievement", "kill1", "kill2", "noloot", "teleport", "chest", "npc", "npc-end"];
@@ -22,7 +22,7 @@ class AudioManager extends Base {
   Audio currentMusic;
   Audio queuedMusic;
 
-  AudioManager({void onLoaded()}) {
+  AudioManager({bool this.enabled, void onLoaded()}) {
     this.audioContext = new AudioContext();
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connectNode(this.audioContext.destination, 0, 0);
@@ -131,6 +131,7 @@ class AudioManager extends Base {
   
   void toggle() {
     this.enabled = !this.enabled;
+    Game.storage.isMusicMuted = !this.enabled;
     if (this.enabled) {
       this.currentMusic = null;
       this.updateMusic();

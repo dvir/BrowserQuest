@@ -262,10 +262,14 @@ initGame() {
     return false; // prevent form submit
   });
 
+  void updateMuteButtonState() {
+    document.getElementById('mutebutton').classes.toggle('active', Game.audioManager.enabled);
+  }
   document.getElementById('mutebutton').onClick.listen((Event event) {
     Game.audioManager.toggle();
-    document.getElementById('mutebutton').classes.toggle('active');
+    updateMuteButtonState();
   });
+  updateMuteButtonState();
 }
 
 void main() {

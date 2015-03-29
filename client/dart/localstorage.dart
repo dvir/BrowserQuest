@@ -83,6 +83,12 @@ class LocalStorage extends Base {
     this.save(); 
   }
 
+  bool get isMusicMuted => this.data["isMusicMuted"] == null ? false : this.data["isMusicMuted"];
+  void set isMusicMuted(bool muted) {
+    this.data["isMusicMuted"] = muted;
+    this.save();
+  }
+
   String get name => this.data["player"]["name"];
   void set name(String name) { 
     this.data["player"]["name"] = name; 
