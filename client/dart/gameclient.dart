@@ -61,7 +61,6 @@ class GameClient extends Base {
             Game.makeCharacterGoTo(entity, position);
           }
         } else {
-          // TODO(party): this seems like a hack that was made for party updates. remove it
           // maybe it's a player location update
           // check if it's a player entity
           Player player = Game.getPlayerByID(id);
