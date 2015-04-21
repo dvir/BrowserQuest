@@ -336,7 +336,7 @@ void main() {
   });
 
   document.querySelector('.delete').onClick.listen((Event event) {
-    Game.storage.clear();
+    Game.storage.reset();
     Game.app.animateParchment('confirmation', 'createcharacter');
   });
 
@@ -397,7 +397,7 @@ void main() {
   if (Game.storage.hasAlreadyPlayed) {
     if (Game.storage.name != null && Game.storage.name != "") {
       document.getElementById('playername').innerHtml = Game.storage.name;
-      document.getElementById('playerimage').src = Game.storage.image;
+      (document.getElementById('playerimage') as ImageElement).src = Game.storage.image;
     }
   }
 
