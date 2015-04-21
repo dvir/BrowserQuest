@@ -1,7 +1,49 @@
 library config;
 
-class Config {
-  String host = "localhost";
-  int port = 8000;
-  bool dispatcher = false;
+class ServerConfig {
+  static String host = "localhost";
+  static int port = 8000;
+  static bool dispatcher = false;
+}
+
+class GuildConfig {
+  static Map<int, String> rankToTitle = {
+    0: "Leader",
+    1: "Member",
+    2: "Officer"
+  };
+}
+
+class ChatConfig {
+  static bool showTimestamp = false;
+
+  static Map<String, String> colors = {
+   "global": "orange",
+    "party": "cyan",
+    "guild": "#1eff00",
+    "say": "white",
+    "yell": "red",
+    "error": "#f2db2c",
+    "notice": "#f2db2c"
+  };
+
+  static Map<String, String> channelNamePrefix = {
+    "global": "[General] ",
+    "party": "[Party] ",
+    "guild": "[Guild] ",
+    "say": "",
+    "yell": "",
+    "error": "",
+    "notice": ""
+  };
+
+  static Map<String, String> channelNamePostfix = {
+    "global": "",
+    "party": "",
+    "guild": "",
+    "say": " says",
+    "yell": " yells",
+    "error": "",
+    "notice": ""
+  };
 }
