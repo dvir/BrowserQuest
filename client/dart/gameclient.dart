@@ -313,7 +313,7 @@ class GameClient extends Base {
       Position position = new Position(data[3], data[4]);
 
       if (Types.isSpell(kind)) {
-        //TODO(spells): handle properly
+        // TODO(#13): handle spells creation received from the server
 //        Entity spell = EntityFactory.createEntity(kind, id);
       } else if (Types.isItem(kind)) {
         Entity item = EntityFactory.createEntity(kind, id);
@@ -869,7 +869,7 @@ class GameClient extends Base {
     this.sendMessage(message);
   }
 
-  // TODO(skillbar): uncomment
+  // TODO(#14): implement spells
   /*void sendSkillbar(Skillbar skillbar) {*/
     /*this.sendMessage([Message.SKILLBAR,*/
       /*skillbar.serialize()*/

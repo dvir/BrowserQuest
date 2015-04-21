@@ -8,7 +8,7 @@ import "base.dart";
 import "player.dart";
 import "lib/gametypes.dart";
 
-// TODO(to-server-side): move stats storage to the server side. 
+// TODO(#15): move stats storage to the server side. 
 // name can probably be the only remaining field, and the rest can be pulled from the server.
 class LocalStorage extends Base {
 

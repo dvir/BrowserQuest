@@ -3,7 +3,7 @@ library skillbar;
 import 'character.dart';
 import 'lib/gametypes.dart';
 
-// TODO(skillbar): implement
+// TODO(#14): implement spells
 class Skillbar {
 
   Skillbar(data) {

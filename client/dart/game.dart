@@ -1566,9 +1566,6 @@ class Game extends Base {
       Game.app.disconnected(message);
     }
 
-    // TODO(critical): most of this should be on the server side, while some
-    // other parts shouldn't exist, and others need to be split to helper
-    // methods that will be called when the server tells us so.
     static void updateCharacter(Character character) {
       int time = Game.currentTime;
 
@@ -1604,6 +1601,8 @@ class Game extends Base {
             Game.audioManager.playSound("hit${(rng.nextInt(1) + 1)}");
           }
 
+          // TODO(#12): move to server side. the client shouldn't tell the server
+          // when someone gets hurt.
           if (character.hasTarget()
               && Game.player != null
               && character.target.id == Game.player.id

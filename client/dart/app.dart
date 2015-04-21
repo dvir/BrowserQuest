@@ -187,7 +187,7 @@ class Application extends Base {
     });
   }
 
-  // TODO(skillbar): implement or remove. the relevant code is complicated
+  // TODO(#14): implement spells
   void updateSkillbar() {}
 
   void disconnected(String message) {

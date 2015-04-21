@@ -231,7 +231,7 @@ class Hero extends Player {
     this.loadInventory(data['inventory']);
     data.remove("inventory");
 
-    // TODO(skillbar): implement
+    // TODO(#14): implement spells
     /*this.loadSkillbar(data.skillbar);*/
     /*data.remove("skillbar");*/
 
