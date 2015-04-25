@@ -32,7 +32,7 @@ class Entity extends Base {
 
   bool isFading = false;
   num fadingAlpha = 1;
-  int startFadingTime;
+  num startFadingTime = 0;
 
   Timer blinkingTimer;
 
@@ -233,7 +233,7 @@ class Entity extends Base {
     callback(this.gridPosition.x, this.gridPosition.y + 1, Orientation.DOWN);
   }
 
-  void fadeIn(int currentTime) {
+  void fadeIn(num currentTime) {
     this.isFading = true;
     this.startFadingTime = currentTime;
   }

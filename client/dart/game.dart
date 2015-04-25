@@ -42,8 +42,8 @@ class Game extends Base {
 
   static Base events = new Base();
 
-  static int currentTime = 0;
-  static int lastAnimateTime = 0;
+  static num currentTime = 0;
+  static num lastAnimateTime = 0;
 
   static String host;
   static int port;
@@ -1567,7 +1567,7 @@ class Game extends Base {
     }
 
     static void updateCharacter(Character character) {
-      int time = Game.currentTime;
+      num time = Game.currentTime;
 
       // If mob has finished moving to a different tile in order to avoid
       // stacking, attack again from the new position.

@@ -22,7 +22,7 @@ class InfoManager extends Base {
     infos.forEach(callback);
   }
 
-  void update(int time) {
+  void update(num time) {
     this.forEachInfo((Info info) {
       info.update(time);
     });

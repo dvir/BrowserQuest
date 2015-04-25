@@ -30,7 +30,7 @@ class Bubble extends Base {
     this.trigger("MessageChanged");
   }
 
-  void update(int time) {
+  void update(num time) {
     this.timer.update(time);
   }
 

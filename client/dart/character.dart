@@ -102,7 +102,7 @@ class Character extends Entity {
 
   bool isHostile(Entity entity) => false;
 
-  Character get target => this._target;
+  Entity get target => this._target;
   void set target(Entity target) {
     this._target = target;
     this.trigger("TargetChange");
@@ -457,7 +457,7 @@ class Character extends Entity {
 
   bool hasTarget() => (this.target != null);
 
-  bool canAttack(int time) =>
+  bool canAttack(num time) =>
       this.canReachTarget()
       && (this.attackCooldown == null || !this.attackCooldown.isActive);
 

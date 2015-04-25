@@ -20,7 +20,7 @@ class Inventory extends Base {
 
   InventoryItem find(String id) {
     return this._items.values.firstWhere(
-      (item) => item.id == id,
+      (item) => item.itemID == id,
       orElse: () => null
     );
   }

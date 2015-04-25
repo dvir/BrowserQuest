@@ -5,19 +5,21 @@ import "dart:html";
 import "base.dart";
 
 class Transition extends Base {
-  int startTime = 0;
+  num startTime = 0;
   int startValue = 0;
   int endValue = 0;
   int duration = 0;
   bool inProgress = false;
   int count = 0;
 
-  void start(int currentTime, 
-             Function updateFunction, 
-             Function stopFunction, 
-             int startValue, 
-             int endValue, 
-             int duration) {
+  void start(
+    num currentTime,
+    Function updateFunction,
+    Function stopFunction,
+    int startValue,
+    int endValue,
+    int duration
+  ) {
     this.startTime = currentTime;
     this.on("Update", updateFunction, true);
     this.on("Stop", stopFunction, true);
@@ -28,13 +30,13 @@ class Transition extends Base {
     this.count = 0;
   }
 
-  void step(int currentTime) {
+  void step(num currentTime) {
     if (this.inProgress) {
       if (this.count > 0) {
         this.count -= 1;
         window.console.debug("${currentTime}: jumped frame");
       } else {
-        int elapsed = currentTime - this.startTime;
+        num elapsed = currentTime - this.startTime;
 
         if (elapsed > this.duration) {
           elapsed = this.duration;
@@ -55,7 +57,7 @@ class Transition extends Base {
     }
   }
 
-  void restart(int currentTime, int startValue, int endValue) {
+  void restart(num currentTime, int startValue, int endValue) {
     this.startTime = currentTime;
     this.startValue = startValue;
     this.endValue = endValue;

@@ -44,7 +44,7 @@ class BubbleManager extends Base {
     });
   }
 
-  void update(int time) {
+  void update(num time) {
     Map<int, Bubble> bubbles = new Map<int, Bubble>.from(this.bubbles);
     bubbles.forEach((int id, Bubble bubble) {
       bubble.update(time);

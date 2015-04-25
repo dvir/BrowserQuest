@@ -436,7 +436,7 @@ class GameClient extends Base {
       int entityId = data[1];
       int hp = data[2];
       int maxHP = data[3];
-      bool isRegen = data[4] ? true : false;
+      bool isRegen = data[4] == 1 ? true : false;
 
       if (!Game.entityIdExists(entityId)) {
         html.window.console.debug("Received HEALTH message for an entity that doesn't exist. (id=${entityId})");
@@ -837,9 +837,9 @@ class GameClient extends Base {
     ]);
   }
 
-  void sendUseItem(Item item, [Entity target = null]) {
+  void sendUseItem(InventoryItem item, [Entity target = null]) {
     List<dynamic> message = [Message.USEITEM,
-      item.id
+      item.itemID
     ];
     if (target != null) {
       message.add(target.id);

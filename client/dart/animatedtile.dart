@@ -32,7 +32,7 @@ class AnimatedTile extends Tile {
 
   int get id => this._startID + this._currentID;
 
-  void update(int time) {
+  void update(num time) {
     this.timer.update(time);
   }
 }

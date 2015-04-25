@@ -47,7 +47,7 @@ class Info extends Base {
     this.timer.on("Tick", this.tick);
   }
   
-  void update(int time) {
+  void update(num time) {
     this.timer.update(time);
   }
 }

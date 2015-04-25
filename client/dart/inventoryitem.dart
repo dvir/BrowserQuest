@@ -15,6 +15,9 @@ class InventoryItem extends Item {
   // inventories per player, or multiple players per inventory)
   String inventoryID;
 
+  // item ID on the server
+  String itemID;
+
   InventoryItem(EntityKind kind, [data = null]): super(0, kind) {
 
     if (data != null) {
@@ -32,7 +35,7 @@ class InventoryItem extends Item {
   }
 
   void load(data) {
-    this.id = data['id'];
+    this.itemID = data['id'];
     this.inventoryID = data['inventoryId'];
     this.amount = data['amount'];
     this.slot = data['slot'];
@@ -41,7 +44,7 @@ class InventoryItem extends Item {
 
   Map<String, dynamic> serialize() {
     return {
-      "id": this.id,
+      "id": this.itemID,
       "kind": this.kind,
       "amount": this.amount,
       "slot": this.slot,

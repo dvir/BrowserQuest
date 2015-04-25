@@ -231,6 +231,11 @@ class Application extends Base {
 
     Game.events.on("TargetChange", () {
       Entity target = Game.player.target;
+      if (target is Character) {
+        this.targetHealthBar.setTarget(target);
+      } else {
+        this.targetHealthBar.setTarget(null);
+      }
       this.targetHealthBar.setTarget(target is Character ? target : null);
     });
   }

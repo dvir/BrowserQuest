@@ -25,7 +25,7 @@ class Animation extends Base {
   int height;
   int speed = 0;
   int count = 0;
-  int lastTime;
+  num lastTime;
   Frame currentFrame;
 
   Animation(String this.name, int this.length, int this.row, int this.width, int this.height) {
@@ -49,9 +49,9 @@ class Animation extends Base {
     this.currentFrame.index = i;
   }
 
-  bool isTimeToAnimate(int time) => ((time - this.lastTime) > this.speed);
+  bool isTimeToAnimate(num time) => ((time - this.lastTime) > this.speed);
 
-  bool update(int time) {
+  bool update(num time) {
     if (this.lastTime == 0 && this.name.substring(0, 3) == "atk") {
       this.lastTime = time;
     }

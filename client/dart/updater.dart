@@ -11,7 +11,7 @@ import "lib/gametypes.dart";
 class Updater extends Base {
 
   void update() {
-    int t = Game.currentTime;
+    num t = Game.currentTime;
 
     this.updateZoning(t);
     this.updateCharacters(t);
@@ -23,7 +23,7 @@ class Updater extends Base {
     this.updateKeyboardMovement(t);
   }
 
-  void updateCharacters(int t) {
+  void updateCharacters(num t) {
     Game.forEachEntity((Entity entity) {
       if (entity is Character) {
         this.updateCharacter(entity);
@@ -40,7 +40,7 @@ class Updater extends Base {
     }
 
     int duration = 1000;
-    int dt = Game.currentTime - entity.startFadingTime;
+    num dt = Game.currentTime - entity.startFadingTime;
 
     if (dt > duration) {
       entity.isFading = false;
@@ -50,7 +50,7 @@ class Updater extends Base {
     }
   }
 
-  void updateTransitions(int t) {
+  void updateTransitions(num t) {
     Game.forEachCharacter((Character character) {
       if (character.movement.inProgress) {
         character.movement.step(t);
@@ -62,7 +62,7 @@ class Updater extends Base {
     }
   }
 
-  void updateZoning(int t) {
+  void updateZoning(num t) {
     int ts = 16;
     int speed = 500;
 
@@ -181,7 +181,7 @@ class Updater extends Base {
     }
   }
 
-  void updateAnimations(int t) {
+  void updateAnimations(num t) {
     Game.forEachEntity((Entity entity) {
       if (entity.currentAnimation != null && entity.currentAnimation.update(t)) {
         entity.dirty();
@@ -197,21 +197,21 @@ class Updater extends Base {
     }
   }
 
-  void updateAnimatedTiles(int t) {
+  void updateAnimatedTiles(num t) {
     Game.forEachAnimatedTile((AnimatedTile tile) {
       tile.update(t);
     });
   }
 
-  void updateChatBubbles(int t) {
+  void updateChatBubbles(num t) {
     Game.bubbleManager.update(t);
   }
 
-  void updateInfos(int t) {
+  void updateInfos(num t) {
     Game.infoManager.update(t);
   }
 
-  void updateKeyboardMovement(int t) {
+  void updateKeyboardMovement(num t) {
     if (Game.player == null || Game.player.isMoving()) {
       return;
     }

@@ -223,7 +223,7 @@ class Hero extends Player {
     List<Character> nearestEnemies = Game.characters
       .where((Character character) => this != character && this.isHostile(character) && !character.isDead)
       .toList();
-    nearestEnemies.sort((Character a, Character b) => this.distanceTo(a) - this.distanceTo(b));
+    nearestEnemies.sort((Character a, Character b) => this.distanceTo(a).compareTo(this.distanceTo(b)));
     return nearestEnemies;
   }
 

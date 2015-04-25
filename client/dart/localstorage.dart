@@ -101,13 +101,13 @@ class LocalStorage extends Base {
     this.save(); 
   }
 
-  EntityKind get armor => this.data["player"]["armor"];
+  EntityKind get armor => Entities.get(this.data["player"]["armor"]);
   void set armor(EntityKind armor) { 
     this.data["player"]["armor"] = armor; 
     this.save(); 
   }
 
-  EntityKind get weapon => this.data["player"]["weapon"];
+  EntityKind get weapon => Entities.get(this.data["player"]["weapon"]);
   void set weapon(EntityKind weapon) { 
     this.data["player"]["weapon"] = weapon; 
     this.save(); 
@@ -127,7 +127,7 @@ class LocalStorage extends Base {
 
   int get totalKills {
     int total = 0;
-    this.data["kills"].forEach((EntityKind kind, int kills) {
+    this.data["kills"].forEach((String kindString, int kills) {
       total += kills;
     });
 

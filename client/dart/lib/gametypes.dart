@@ -507,7 +507,7 @@ class Types {
     throw "Inexistant kind given to Types.getType ${kind}";
   }
 
-  static String getKindFromString(String str) {
+  static EntityKind getKindFromString(String str) {
     if (kinds.containsKey(str)) {
       return kinds[str][0];
     }

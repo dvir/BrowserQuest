@@ -6,13 +6,13 @@ import "game.dart";
 class AnimationTimer extends Base {
 
   Duration duration;
-  int lastTime = 0;
+  num lastTime = 0;
 
   AnimationTimer(Duration this.duration) {
     this.reset();
   }
 
-  void update(int time) {
+  void update(num time) {
     if ((time - this.lastTime) > this.duration.inMilliseconds) {
       this.lastTime = time;
       this.trigger("Tick");
